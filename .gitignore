@@ -1,3 +1,6 @@
+infra/cdk.out
+*/.build
+
 # OS and IDE
 .DS_Store
 .idea/

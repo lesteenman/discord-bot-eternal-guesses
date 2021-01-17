@@ -19,4 +19,4 @@ def test_ping():
     response = handler.handle_lambda(event, context)
 
     # Then
-    assert response == body
+    assert json.loads(response['body']) == body

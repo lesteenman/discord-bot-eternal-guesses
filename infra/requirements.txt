@@ -1,0 +1,2 @@
+aws_cdk.aws_apigateway
+aws_cdk.aws_lambda

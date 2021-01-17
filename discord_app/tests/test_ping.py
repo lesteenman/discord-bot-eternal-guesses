@@ -1,4 +1,4 @@
-from eternal_guesses.views import ping
+from eternal_guesses.handlers import ping
 
 
 def test_ping():
