@@ -15,10 +15,11 @@ if [ -d "$DISCORD_APP_BUILD_DIR" ]; then
 fi
 mkdir -p "$DISCORD_APP_BUILD_DIR"
 
-pip install -r "$DISCORD_APP_DIR/requirements.txt" --target "$DISCORD_APP_BUILD_DIR/package/"
+#pip install -r "$DISCORD_APP_DIR/requirements.txt" --target "$DISCORD_APP_BUILD_DIR/package/"
+docker container run --rm -v $(pwd)/discord_app/:/discord_app python:3.8-buster pip install -r /discord_app/requirements.txt --target /discord_app/.build/package
 
-cd "$DISCORD_APP_BUILD_DIR"
-zip -r deployment.zip package/*info
+cd "$DISCORD_APP_BUILD_DIR/package"
+zip -r "$DISCORD_APP_BUILD_DIR/deployment.zip" *
 
 cd "$DISCORD_APP_DIR/eternal_guesses"
 zip -r -g "$DISCORD_APP_BUILD_DIR/deployment.zip" *

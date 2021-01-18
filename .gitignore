@@ -1,3 +1,5 @@
+app_config.json
+
 infra/cdk.out
 */.build
 

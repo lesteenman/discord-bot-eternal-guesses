@@ -1,5 +1,10 @@
+import logging
 from typing import Dict
 
 
-def call(body: Dict):
-    return body
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+
+
+def call(body: Dict) -> Dict:
+    return {"type": 1}
