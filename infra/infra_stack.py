@@ -18,11 +18,14 @@ class InfraStack(core.Stack):
 
         discord_app_handler = aws_lambda.Function(self, "DiscordAppFunction",
                                                   runtime=aws_lambda.Runtime.PYTHON_3_8,
+                                                  timeout=core.Duration.seconds(10),
+                                                  memory_size=512,
                                                   code=aws_lambda.Code.from_asset(
                                                       "../discord_app/.build/deployment.zip"),
                                                   handler="handler.handle_lambda",
                                                   environment={
-                                                    'DISCORD_PUBLIC_KEY': config['DISCORD_PUBLIC_KEY']
+                                                      'DISCORD_PUBLIC_KEY': config['DISCORD_PUBLIC_KEY'],
+                                                      'DISCORD_BOT_TOKEN': config['DISCORD_BOT_TOKEN'],
                                                   })
 
         api = aws_apigateway.RestApi(self, "eternal-guesses-api",
