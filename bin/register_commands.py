@@ -58,11 +58,13 @@ def register(config: Dict):
                     "name": "game-id",
                     "description": "The ID of the Eternal Guess game",
                     "type": COMMAND_OPTION_TYPE_STRING,
+                    "required": True,
                 },
                 {
                     "name": "guess",
                     "description": "Your guess",
                     "type": COMMAND_OPTION_TYPE_STRING,
+                    "required": True,
                 }
             ]
         },
@@ -79,6 +81,7 @@ def register(config: Dict):
                             "name": "game-id",
                             "description": "The ID of the Eternal Guess game. If omitted, will generate a random ID.",
                             "type": COMMAND_OPTION_TYPE_STRING,
+                            "required": False,
                         }
                     ],
                 },
@@ -96,6 +99,7 @@ def register(config: Dict):
                                     "name": "game-id",
                                     "description": "The ID of the Eternal Guess game",
                                     "type": COMMAND_OPTION_TYPE_STRING,
+                                    "required": True,
                                 },
                                 {
                                     "name": "channel",
@@ -114,6 +118,7 @@ def register(config: Dict):
                                     "name": "game-id",
                                     "description": "The ID of the Eternal Guess game",
                                     "type": COMMAND_OPTION_TYPE_STRING,
+                                    "required": True,
                                 },
                             ]
                         }
@@ -138,6 +143,7 @@ def register(config: Dict):
                                     "name": "channel",
                                     "description": "The channel to add.",
                                     "type": COMMAND_OPTION_TYPE_CHANNEL,
+                                    "required": True,
                                 },
                             ]
                         },
@@ -150,6 +156,7 @@ def register(config: Dict):
                                     "name": "channel",
                                     "description": "The channel to remove.",
                                     "type": COMMAND_OPTION_TYPE_CHANNEL,
+                                    "required": True,
                                 },
                             ]
                         },
@@ -162,6 +169,7 @@ def register(config: Dict):
                                     "name": "role",
                                     "description": "The role to add permission to.",
                                     "type": COMMAND_OPTION_TYPE_ROLE,
+                                    "required": True,
                                 },
                             ]
                         },
@@ -174,6 +182,7 @@ def register(config: Dict):
                                     "name": "role",
                                     "description": "The role to remove permission from.",
                                     "type": COMMAND_OPTION_TYPE_ROLE,
+                                    "required": True,
                                 },
                             ]
                         },
