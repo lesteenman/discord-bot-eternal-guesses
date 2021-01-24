@@ -9,8 +9,8 @@ setuptools.setup(
 
     author="author",
 
-    package_dir={"": "infra"},
-    packages=setuptools.find_packages(where="infra"),
+    package_dir={"": "src"},
+    packages=setuptools.find_packages(where="src"),
 
     install_requires=[
         "aws-cdk.core==1.84.0",

@@ -1,16 +1,17 @@
 import json
 from unittest.mock import patch
 
-from discord_interactions import InteractionType
-from eternal_guesses import handler
+import handler
+from authorizer import AuthorizationResult
+from model.response import Response
 
 
-@patch('discord_interactions.verify_key')
-@patch('handlers.ping.call')
-def test_handle_ping(mock_handler_ping, mock_verify_key):
+@patch('authorizer.authorize')
+@patch('router.route')
+def test_authorized_request(mock_router, mock_authorize):
     # Given
-    mock_verify_key.return_value = True
-    mock_handler_ping.return_value = {'type': InteractionType.PING}
+    mock_authorize.return_value = (AuthorizationResult.PASS, None)
+    mock_router.return_value = Response.success({'response': 'mocked'})
 
     body = {'type': 1}
     event = {
@@ -26,15 +27,16 @@ def test_handle_ping(mock_handler_ping, mock_verify_key):
     response = handler.handle_lambda(event, context)
 
     # Then
-    mock_handler_ping.assert_called_with(body)
     assert response['statusCode'] == 200
-    assert json.loads(response['body']) == body
+
+    mock_router.assert_called_with(body)
+    assert json.loads(response['body']) == {'response': 'mocked'}
 
 
-@patch('discord_interactions.verify_key')
-def test_unauthorized_request(mock_verify_key):
+@patch('authorizer.authorize')
+def test_unauthorized_request(mock_authorize):
     # Given
-    mock_verify_key.return_value = False
+    mock_authorize.return_value = (AuthorizationResult.FAIL, Response.unauthorized("key does not check out"))
 
     body = {'type': 1}
     event = {
