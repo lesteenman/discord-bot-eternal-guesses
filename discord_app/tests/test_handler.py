@@ -2,12 +2,12 @@ import json
 from unittest.mock import patch
 
 from eternal_guesses import handler
-from eternal_guesses.authorizer import AuthorizationResult
+from eternal_guesses.api_authorizer import AuthorizationResult
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.lambda_response import LambdaResponse
 
 
-@patch('eternal_guesses.authorizer.authorize')
+@patch.object(handler.api_authorizer, 'authorize', autospec=True)
 def test_unauthorized_request(mock_authorize):
     # Given
     mock_authorize.return_value = (AuthorizationResult.FAIL, LambdaResponse.unauthorized("key does not check out"))
@@ -29,14 +29,14 @@ def test_unauthorized_request(mock_authorize):
     assert response['statusCode'] == 401
 
 
-@patch('eternal_guesses.authorizer.authorize')
-@patch('eternal_guesses.model.discord_event')
-@patch('eternal_guesses.router.route')
-def test_authorized_request(mock_router, mock_discord_event, mock_authorize):
+@patch.object(handler.api_authorizer, 'authorize')
+@patch.object(handler.discord_event, 'from_event')
+@patch.object(handler.router, 'route')
+def test_authorized_request(mock_router, mock_from_event, mock_authorize):
     # Given
     mock_authorize.return_value = (AuthorizationResult.PASS, None)
     mock_router.return_value = LambdaResponse.success({'response': 'mocked'})
-    mock_discord_event.from_event.return_value = None
+    mock_from_event.return_value = None
 
     event = {
         'body': json.dumps({'type': 1}),
@@ -54,9 +54,9 @@ def test_authorized_request(mock_router, mock_discord_event, mock_authorize):
     assert json.loads(response['body']) == {'response': 'mocked'}
 
 
-@patch('eternal_guesses.authorizer.authorize')
-@patch('eternal_guesses.model.discord_event.from_event')
-@patch('eternal_guesses.router.route')
+@patch.object(handler.api_authorizer, 'authorize')
+@patch.object(handler.discord_event, 'from_event')
+@patch.object(handler.router, 'route')
 def test_discord_event(mock_router, mock_from_event, mock_authorize):
     # Given
     mock_authorize.return_value = (AuthorizationResult.PASS, None)

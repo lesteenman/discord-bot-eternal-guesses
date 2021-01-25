@@ -1,5 +1,5 @@
-from model.discord_event import DiscordEvent
-from model.discord_response import DiscordResponse
+from eternal_guesses.model.discord_event import DiscordEvent
+from eternal_guesses.model.discord_response import DiscordResponse
 
 
 def post(event: DiscordEvent) -> DiscordResponse:

@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from pprint import pprint
 
 from eternal_guesses import routes
 from eternal_guesses.model.discord_event import DiscordEvent, CommandType, DiscordCommand
