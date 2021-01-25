@@ -3,14 +3,8 @@ from eternal_guesses.routes import ping
 
 
 def test_ping():
-    # Given
-    body = {
-        'type': 1,
-        'bogus': 'value',
-    }
-
     # When
-    response = ping.call(body)
+    response = ping.call()
 
     # Then
-    assert response == {'type': InteractionType.PING}
+    assert response.json() == {'type': InteractionType.PING}

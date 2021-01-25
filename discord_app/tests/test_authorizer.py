@@ -1,8 +1,8 @@
 import json
 from unittest.mock import patch
 
-import authorizer
-from authorizer import AuthorizationResult
+from eternal_guesses import authorizer
+from eternal_guesses.authorizer import AuthorizationResult
 
 
 @patch('discord_interactions.verify_key')

@@ -2,8 +2,9 @@ import json
 import logging
 from typing import Dict
 
-import authorizer
-import router
+from eternal_guesses import authorizer
+from eternal_guesses import router
+from eternal_guesses.model import discord_event
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -16,7 +17,8 @@ def handle_lambda(event, context) -> Dict:
 
     result, response = authorizer.authorize(event)
     if result == authorizer.AuthorizationResult.PASS:
-        body = json.loads(event['body'])
-        response = router.route(body)
+        body_json = json.loads(event['body'])
+        event = discord_event.from_event(body_json)
+        response = router.route(event)
 
     return response.json()

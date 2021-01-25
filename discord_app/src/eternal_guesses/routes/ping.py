@@ -1,10 +1,10 @@
 import logging
-from typing import Dict
 
+from eternal_guesses.model.discord_response import DiscordResponse
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-def call(body: Dict) -> Dict:
-    return {"type": 1}
+def call() -> DiscordResponse:
+    return DiscordResponse.pong()

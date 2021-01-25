@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Dict
 
 import discord_interactions
-from model.response import Response
+from eternal_guesses.model.lambda_response import LambdaResponse
 
 
 class AuthorizationResult(Enum):
@@ -11,7 +11,7 @@ class AuthorizationResult(Enum):
     FAIL = False
 
 
-def authorize(event: Dict) -> (AuthorizationResult, Response):
+def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
     body = event['body'].encode()
     headers = event['headers']
     signature = headers['x-signature-ed25519']
@@ -21,4 +21,4 @@ def authorize(event: Dict) -> (AuthorizationResult, Response):
     if result:
         return AuthorizationResult.PASS, None
     else:
-        return AuthorizationResult.FAIL, Response.unauthorized("could not verify authorization")
+        return AuthorizationResult.FAIL, LambdaResponse.unauthorized("could not verify authorization")

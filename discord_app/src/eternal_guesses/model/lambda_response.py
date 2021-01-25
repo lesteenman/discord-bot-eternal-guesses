@@ -2,7 +2,7 @@ import json
 from typing import Dict
 
 
-class Response():
+class LambdaResponse():
     body: str
     status_code: int
     content_type: str
@@ -18,7 +18,7 @@ class Response():
 
     @staticmethod
     def success(body: Dict):
-        response = Response()
+        response = LambdaResponse()
         response.status_code = 200
         response.body = json.dumps(body)
 
@@ -26,7 +26,7 @@ class Response():
 
     @staticmethod
     def unauthorized(error: str):
-        response = Response()
+        response = LambdaResponse()
         response.status_code = 401
         response.body = error
 
@@ -34,7 +34,7 @@ class Response():
 
     @staticmethod
     def invalid(error: str):
-        response = Response()
+        response = LambdaResponse()
         response.status_code = 500
         response.body = error
 
