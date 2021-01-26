@@ -1,9 +1,8 @@
 import json
 from unittest.mock import patch
 
-from discord_interactions import InteractionType
 from eternal_guesses import router
-from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand
+from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType
 from eternal_guesses.model.discord_response import DiscordResponse
 
 
@@ -11,7 +10,7 @@ from eternal_guesses.model.discord_response import DiscordResponse
 def test_handle_ping(mock_route):
     # Given
     event = DiscordEvent()
-    event.type = InteractionType.PING
+    event.type = CommandType.PING
 
     pong_response = DiscordResponse.pong()
     mock_route.return_value = pong_response
@@ -31,7 +30,7 @@ def test_handle_guess(mock_route):
     command.command_name = "guess"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     guess_response = DiscordResponse.acknowledge()
@@ -55,7 +54,7 @@ def test_handle_manage_post(mock_route):
     command.subcommand_name = "post"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()
@@ -79,7 +78,7 @@ def test_handle_manage_close(mock_route):
     command.subcommand_name = "close"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()
@@ -102,7 +101,7 @@ def test_handle_create(mock_route):
     command.command_name = "create"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()
@@ -126,7 +125,7 @@ def test_handle_admin_info(mock_route):
     command.subcommand_name = "info"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()
@@ -150,7 +149,7 @@ def test_handle_admin_add_management_channel(mock_route):
     command.subcommand_name = "add-management-channel"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()
@@ -174,7 +173,7 @@ def test_handle_admin_remove_management_channel(mock_route):
     command.subcommand_name = "remove-management-channel"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()
@@ -198,7 +197,7 @@ def test_handle_admin_add_management_role(mock_route):
     command.subcommand_name = "add-management-role"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()
@@ -222,7 +221,7 @@ def test_handle_admin_remove_management_role(mock_route):
     command.subcommand_name = "remove-management-role"
 
     event = DiscordEvent()
-    event.type = InteractionType.APPLICATION_COMMAND
+    event.type = CommandType.COMMAND
     event.command = command
 
     mock_response = DiscordResponse.acknowledge()

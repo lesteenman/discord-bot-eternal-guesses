@@ -132,6 +132,8 @@ def test_from_manage_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
+    assert event.channel_id == "1001"
+    assert event.guild_id == "4001"
 
     command = event.command
     assert command.command_id == "2001"
@@ -195,6 +197,8 @@ def test_from_admin_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
+    assert event.channel_id == "1001"
+    assert event.guild_id == "4001"
 
     command = event.command
     assert command.command_id == "2001"
@@ -253,6 +257,8 @@ def test_from_guess_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
+    assert event.channel_id == "1001"
+    assert event.guild_id == "4001"
 
     command = event.command
     assert command.command_id == "2001"
@@ -313,6 +319,8 @@ def test_from_create_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
+    assert event.channel_id == "1001"
+    assert event.guild_id == "3001"
 
     command = event.command
     assert command.command_id == "2001"
@@ -321,3 +329,49 @@ def test_from_create_command_event():
     assert command.options == {
         "game-id": "test-game-1",
     }
+
+
+def test_from_create_without_options_command_event():
+    # Given
+    event_body = {
+        "channel_id": "1001",
+        "data": {
+            "id": "2001",
+            "name": "eternal-guess",
+            "options": [
+                {
+                    "name": "create",
+                }
+            ]
+        },
+        "guild_id": "3001",
+        "id": "4001",
+        "member": {
+            "deaf": False,
+            "is_pending": False,
+            "joined_at": "2021-01-16T20:21:19.053000+00:00",
+            "mute": False,
+            "nick": None,
+            "pending": False,
+            "permissions": "2147483647",
+            "premium_since": None,
+            "roles": [],
+            "user": {
+                "avatar": "abcdefghijklmop",
+                "discriminator": "5",
+                "id": "9001",
+                "public_flags": 0,
+                "username": "User-Name"
+            }
+        },
+        "token": "whfjwhfukwynexfl823yflwf9wauf928fh82e",
+        "type": 2,
+        "version": 1
+    }
+
+    # When
+    event = discord_event.from_event(event_body)
+
+    # Then
+    command = event.command
+    assert command.options == {}

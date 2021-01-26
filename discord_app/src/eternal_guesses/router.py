@@ -10,6 +10,11 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 
+class UnknownEventException(Exception):
+    def __init__(self, event: DiscordEvent):
+        super().__init__(f"could not handle event (type={event.type}")
+
+
 class UnknownCommandException(Exception):
     def __init__(self, command: DiscordCommand):
         super().__init__(f"could not handle command (command={command.command_name}, "
@@ -52,15 +57,17 @@ async def handle_application_command(event: DiscordEvent) -> DiscordResponse:
 
 
 def route(event: DiscordEvent) -> LambdaResponse:
-    if event.type == CommandType.PING.value:
+    if event.type is CommandType.PING:
         log.info("handling 'ping'")
         discord_response = routes.ping.call()
 
         return LambdaResponse.success(discord_response.json())
 
-    if event.type == CommandType.COMMAND.value:
+    if event.type is CommandType.COMMAND:
         log.info("handling application command")
         discord_response = asyncio.get_event_loop() \
             .run_until_complete(handle_application_command(event))
 
         return LambdaResponse.success(discord_response.json())
+
+    raise UnknownEventException(event)

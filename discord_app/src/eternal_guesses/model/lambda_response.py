@@ -10,7 +10,7 @@ class LambdaResponse():
     def json(self):
         return {
             'headers': {
-                'Content-Type': 'text/json'
+                'Content-Type': 'application/json'
             },
             'statusCode': self.status_code,
             'body': self.body,

@@ -32,6 +32,7 @@ class DiscordEvent:
     command: DiscordCommand = None
     member: DiscordMember = None
     guild_id: str = None
+    channel_id: str = None
 
 
 def _guess_command_from_data(event_data: Dict) -> DiscordCommand:
@@ -56,7 +57,7 @@ def _create_command_from_data(event_data: Dict) -> DiscordCommand:
     command.command_name = sub_command['name']
 
     command.options = {}
-    for option in sub_command['options']:
+    for option in sub_command.get('options', {}):
         command.options[option['name']] = option['value']
 
     return command
@@ -112,6 +113,8 @@ def from_event(event_source: Dict) -> DiscordEvent:
         event.type = CommandType.PING
     else:
         event.type = CommandType.COMMAND
+        event.channel_id = event_source['channel_id']
+        event.guild_id = event_source['guild_id']
         event.command = _command_from_data(event_source['data'])
         event.member = _member_from_data(event_source['member'])
 

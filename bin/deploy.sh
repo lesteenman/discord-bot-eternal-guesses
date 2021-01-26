@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 PROJECT_ROOT="$(pwd)"
 if [ ! -f "$PROJECT_ROOT/bin/deploy.sh" ]; then
@@ -8,21 +9,20 @@ fi
 
 INFRA_DIR="$PROJECT_ROOT/infra"
 DISCORD_APP_DIR="$PROJECT_ROOT/discord_app"
-DISCORD_APP_BUILD_DIR="$PROJECT_ROOT/discord_app/.build"
 
-if [ -d "$DISCORD_APP_BUILD_DIR" ]; then
-    rm -rf "$DISCORD_APP_BUILD_DIR"
-fi
-mkdir -p "$DISCORD_APP_BUILD_DIR"
+# Tox tests
+cd $DISCORD_APP_DIR
+tox
 
-#pip install -r "$DISCORD_APP_DIR/requirements.txt" --target "$DISCORD_APP_BUILD_DIR/package/"
-docker container run --rm -v $(pwd)/discord_app/:/discord_app python:3.8-buster pip install -r /discord_app/requirements.txt --target /discord_app/.build/package
+# Package using a Python container to be cross-platform
+cd $PROJECT_ROOT
+docker run \
+    --rm \
+    --workdir=/discord_app \
+    -v "$DISCORD_APP_DIR":/discord_app \
+    python:3.8-buster \
+    python setup.py ldist
 
-cd "$DISCORD_APP_BUILD_DIR/package"
-zip -r "$DISCORD_APP_BUILD_DIR/deployment.zip" *
-
-cd "$DISCORD_APP_DIR/eternal_guesses"
-zip -r -g "$DISCORD_APP_BUILD_DIR/deployment.zip" *
-
+# Deploy
 cd "$INFRA_DIR"
 cdk deploy

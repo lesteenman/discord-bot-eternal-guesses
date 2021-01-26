@@ -1,6 +1,6 @@
 from eternal_guesses.model.discord_event import DiscordEvent, DiscordMember
 from eternal_guesses.model.discord_response import DiscordResponse
-from eternal_guesses.repositories import games_repository
+from eternal_guesses.repositories.games_repository import GamesRepository as games_repository
 
 
 def send_message(member: DiscordMember, param: str):
@@ -9,11 +9,12 @@ def send_message(member: DiscordMember, param: str):
 
 
 def call(event: DiscordEvent) -> DiscordResponse:
+    guild_id = event.guild_id
     user_id = event.member.user_id
     game_id = event.command.options['game-id']
     guess = event.command.options['guess']
 
-    game = games_repository.get(game_id)
+    game = games_repository.get(guild_id, game_id)
     if game is None:
         send_message(event.member, f"No game found with id '{game_id}', your guess was not registered.")
         return DiscordResponse.acknowledge()
@@ -24,7 +25,7 @@ def call(event: DiscordEvent) -> DiscordResponse:
 
     game.guesses[user_id] = guess
 
-    games_repository.update(game)
+    games_repository.put(guild_id, game)
 
     send_message(event.member, f"Guess registered! game_id='{game_id}', guess='{guess}'")
 

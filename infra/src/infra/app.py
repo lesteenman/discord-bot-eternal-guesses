@@ -6,6 +6,6 @@ from infra_stack import InfraStack
 
 
 app = core.App()
-InfraStack(app, "infra")
+InfraStack(app, "eternal-guesses")
 
 app.synth()

@@ -5,10 +5,11 @@ from eternal_guesses.model.discord_event import DiscordCommand, DiscordEvent, Di
 from eternal_guesses.routes import guess
 
 
-@patch.object(guess, 'games_repository')
+@patch.object(guess, 'games_repository', autospec=True)
 def test_add_new_guess(mock_games_repository):
     # Given: the games_repository will find a game for the given id
     game_id = 'game-id'
+    guild_id = 'guild-1'
 
     existing_game = Game()
     existing_game.game_id = game_id
@@ -30,25 +31,36 @@ def test_add_new_guess(mock_games_repository):
     event = DiscordEvent()
     event.command = command
     event.member = member
+    event.guild_id = guild_id
 
     # When
     guess.call(event)
 
     # Then
-    mock_games_repository.update.assert_called()
+    mock_games_repository.get.assert_called_with(guild_id, game_id)
 
-    saved_game = mock_games_repository.update.call_args[0][0]
+    mock_games_repository.put.assert_called()
+    call_args = mock_games_repository.put.call_args
+
+    save_guild_id = call_args[0][0]
+    assert save_guild_id == guild_id
+
+    saved_game = call_args[0][1]
     assert saved_game.guesses['other-user'] == '50'
     assert saved_game.guesses['user'] == '42'
 
 
-@patch.object(guess, 'games_repository')
+@patch.object(guess, 'games_repository', autospec=True)
 def test_guess_game_does_not_exist(mock_games_repository):
+    # Given
+    guild_id = 'guild-3'
+    game_id = 'fun-game'
+
     mock_games_repository.get.return_value = None
 
     command = DiscordCommand()
     command.options = {
-        'game-id': 'fun-game',
+        'game-id': game_id,
         'guess': '42'
     }
 
@@ -56,6 +68,7 @@ def test_guess_game_does_not_exist(mock_games_repository):
     member.user_id = 'user'
 
     event = DiscordEvent()
+    event.guild_id = guild_id
     event.command = command
     event.member = member
 
@@ -63,10 +76,11 @@ def test_guess_game_does_not_exist(mock_games_repository):
     guess.call(event)
 
     # Then
-    mock_games_repository.update.assert_not_called()
+    mock_games_repository.get.assert_called_with(guild_id, game_id)
+    mock_games_repository.put.assert_not_called()
 
 
-@patch.object(guess, 'games_repository')
+@patch.object(guess, 'games_repository', autospec=True)
 def test_guess_duplicate_guess(mock_games_repository):
     # Given
     game_id = 'game-id'
@@ -96,4 +110,4 @@ def test_guess_duplicate_guess(mock_games_repository):
     guess.call(event)
 
     # Then
-    mock_games_repository.update.assert_not_called()
+    mock_games_repository.put.assert_not_called()
