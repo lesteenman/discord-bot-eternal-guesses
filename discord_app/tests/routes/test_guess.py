@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordCommand, DiscordEvent, DiscordMember
@@ -50,8 +50,9 @@ def test_add_new_guess(mock_games_repository):
     assert saved_game.guesses['user'] == '42'
 
 
+@patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'games_repository', autospec=True)
-def test_guess_game_does_not_exist(mock_games_repository):
+def test_guess_game_does_not_exist(mock_games_repository: MagicMock, mock_discord_messaging: MagicMock):
     # Given
     guild_id = 'guild-3'
     game_id = 'fun-game'
@@ -79,9 +80,14 @@ def test_guess_game_does_not_exist(mock_games_repository):
     mock_games_repository.get.assert_called_with(guild_id, game_id)
     mock_games_repository.put.assert_not_called()
 
+    mock_discord_messaging.send_dm.assert_called()
+    sent_member = mock_discord_messaging.send_dm.call_args.args[0]
+    assert sent_member.user_id == member.user_id
 
+
+@patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'games_repository', autospec=True)
-def test_guess_duplicate_guess(mock_games_repository):
+def test_guess_duplicate_guess(mock_games_repository, mock_discord_messaging):
     # Given
     game_id = 'game-id'
 
@@ -111,3 +117,7 @@ def test_guess_duplicate_guess(mock_games_repository):
 
     # Then
     mock_games_repository.put.assert_not_called()
+
+    mock_discord_messaging.send_dm.assert_called()
+    sent_member = mock_discord_messaging.send_dm.call_args.args[0]
+    assert sent_member.user_id == member.user_id
