@@ -48,6 +48,38 @@ def create_guild_command(command: Dict, config: Dict, guild_name: str):
         raise Exception(f"unexpected status_code {response.status_code} received: '{response.text}'")
 
 
+def delete_command(command_id: int, config: Dict):
+    print("Deleting application command")
+    url = "https://discord.com/api/v8/applications/{}/commands/{}".format(
+        config['DISCORD_APPLICATION_ID'],
+        command_id
+    )
+
+    headers = {
+        "Authorization": f"Bot {config['DISCORD_BOT_TOKEN']}"
+    }
+
+    response = requests.delete(url, headers=headers)
+    if response.status_code > 201:
+        raise Exception(f"unexpected status_code {response.status_code} received: '{response.text}'")
+
+
+def create_command(command: Dict, config: Dict):
+    print("Creating application command")
+    url = "https://discord.com/api/v8/applications/{}/commands".format(
+        config['DISCORD_APPLICATION_ID'],
+    )
+
+    headers = {
+        "Authorization": f"Bot {config['DISCORD_BOT_TOKEN']}"
+    }
+
+    response = requests.post(url, headers=headers, json=command)
+    print(response.text)
+    if response.status_code > 201:
+        raise Exception(f"unexpected status_code {response.status_code} received: '{response.text}'")
+
+
 def register(config: Dict):
     commands = [
         {
@@ -194,6 +226,28 @@ def register(config: Dict):
 
     for command in commands:
         create_guild_command(command, config, 'personal')
+
+    global_commands = [{
+        "name": "guess",
+        "description": "Submit your guess!",
+        "options": [
+            {
+                "name": "game-id",
+                "description": "The ID of the Eternal Guess game",
+                "type": COMMAND_OPTION_TYPE_STRING,
+                "required": True,
+            },
+            {
+                "name": "guess",
+                "description": "Your guess",
+                "type": COMMAND_OPTION_TYPE_STRING,
+                "required": True,
+            }
+        ]
+    }]
+
+    for command in global_commands:
+        create_command(command, config)
 
 
 def get_config():
