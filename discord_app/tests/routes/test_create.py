@@ -1,14 +1,16 @@
 from unittest.mock import patch
 
+import pytest
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.routes import create
 
 
+@pytest.mark.asyncio
 @patch.object(create, 'games_repository', autospec=True)
 @patch.object(create, 'id_generator', autospec=True)
-def test_create_generated_id(mock_id_generator, mock_games_repository):
+async def test_create_generated_id(mock_id_generator, mock_games_repository):
     # Given
     guild_id = 'guild-1'
 
@@ -23,12 +25,12 @@ def test_create_generated_id(mock_id_generator, mock_games_repository):
     event.guild_id = guild_id
 
     # When
-    create.call(event)
+    await create.call(event)
 
     # Then
-    mock_games_repository.put.assert_called()
+    mock_games_repository.save.assert_called()
 
-    args = mock_games_repository.put.call_args
+    args = mock_games_repository.save.call_args
 
     insert_guild_id = args[0][0]
     assert insert_guild_id == guild_id
@@ -38,8 +40,9 @@ def test_create_generated_id(mock_id_generator, mock_games_repository):
     assert game.game_id == "potatoific-tomatopuss"
 
 
+@pytest.mark.asyncio
 @patch.object(create, 'games_repository', autospec=True)
-def test_create_given_id(mock_games_repository):
+async def test_create_given_id(mock_games_repository):
     # Given
     guild_id = 'guild-2'
     game_id = 'prolific-platypus'
@@ -56,13 +59,13 @@ def test_create_given_id(mock_games_repository):
     event.guild_id = guild_id
 
     # When
-    create.call(event)
+    await create.call(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
 
-    mock_games_repository.put.assert_called()
-    args = mock_games_repository.put.call_args
+    mock_games_repository.save.assert_called()
+    args = mock_games_repository.save.call_args
 
     insert_guild_id = args[0][0]
     assert insert_guild_id == guild_id
@@ -72,8 +75,9 @@ def test_create_given_id(mock_games_repository):
     assert game.game_id == game_id
 
 
+@pytest.mark.asyncio
 @patch.object(create, 'games_repository', autospec=True)
-def test_create_duplicate_given_id(mock_games_repository):
+async def test_create_duplicate_given_id(mock_games_repository):
     # Given: the games_repository will find a game for the given id
     guild_id = 'guild-3'
     game_id = 'boonful-boonanza'
@@ -92,11 +96,11 @@ def test_create_duplicate_given_id(mock_games_repository):
     event.guild_id = guild_id
 
     # When
-    response = create.call(event)
+    response = await create.call(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
-    mock_games_repository.put.assert_not_called()
+    mock_games_repository.save.assert_not_called()
 
     # And we should give a response where we keep the original message
     assert response.type.value == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value

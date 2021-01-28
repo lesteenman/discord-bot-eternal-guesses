@@ -18,7 +18,7 @@ def generate_game_id(guild_id: str, attempt: int = 0):
         return generate_game_id(guild_id, attempt + 1)
 
 
-def call(event: DiscordEvent) -> DiscordResponse:
+async def call(event: DiscordEvent) -> DiscordResponse:
     guild_id = event.guild_id
     game_id = event.command.options.get('game-id')
 
@@ -32,7 +32,7 @@ def call(event: DiscordEvent) -> DiscordResponse:
     game = Game()
     game.guild_id = guild_id
     game.game_id = game_id
-    games_repository.put(guild_id, game)
+    games_repository.save(guild_id, game)
 
     return DiscordResponse.channel_message(f"Game created with id '{game_id}'.")
 

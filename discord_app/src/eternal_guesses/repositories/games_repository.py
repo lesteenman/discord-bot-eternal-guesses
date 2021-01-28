@@ -34,7 +34,7 @@ class GamesRepository:
         return make_game(guild_id, game_id, item)
 
     @staticmethod
-    def put(guild_id: str, game: Game):
+    def save(guild_id: str, game: Game):
         assert game.game_id is not None
 
         table = GamesRepository._get_table()
