@@ -36,7 +36,7 @@ async def update_channel_message(channel_id: int, message_id: int, text: str):
 
 async def send_dm(member: DiscordMember, message: str):
     async with discord_client() as client:
-        print("Fetching user")
+        log.info("Fetching user")
         user = await client.fetch_user(member.user_id)
 
         await user.send(message)

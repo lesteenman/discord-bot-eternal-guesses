@@ -1,8 +1,12 @@
+import logging
+
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository as games_repository
 from eternal_guesses.util import id_generator
+
+log = logging.getLogger(__name__)
 
 
 def generate_game_id(guild_id: str, attempt: int = 0):
@@ -11,7 +15,7 @@ def generate_game_id(guild_id: str, attempt: int = 0):
 
     game_id = id_generator.game_id()
     existing_game = games_repository.get(guild_id, game_id)
-    print(f"existing game for game_id {game_id} = {existing_game}")
+    log.info(f"existing game for game_id {game_id} = {existing_game}")
     if existing_game is None:
         return game_id
     else:
