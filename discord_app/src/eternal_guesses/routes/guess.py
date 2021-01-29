@@ -2,14 +2,14 @@ from eternal_guesses import discord_messaging, message_formatter
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository as games_repository
-from model.data.game import Game
+from eternal_guesses.model.data.game import Game
 
 
 async def update_channel_messages(game: Game):
     if game.channel_messages is not None:
         new_channel_message = message_formatter.channel_list_game_guesses(game)
-        for channel_message_id in game.channel_messages:
-            await discord_messaging.update_channel_message(channel_message_id, new_channel_message)
+        for channel_message in game.channel_messages:
+            await discord_messaging.update_channel_message(channel_message['channel_id'], channel_message['message_id'], new_channel_message)
 
 
 async def call(event: DiscordEvent) -> DiscordResponse:

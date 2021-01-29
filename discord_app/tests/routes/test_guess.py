@@ -5,8 +5,9 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordCommand, DiscordEvent, DiscordMember
 from eternal_guesses.routes import guess
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 @patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'games_repository', autospec=True)
 async def test_guess_updates_game_guesses(mock_games_repository, mock_discord_messaging):
@@ -40,7 +41,6 @@ async def test_guess_updates_game_guesses(mock_games_repository, mock_discord_me
     assert saved_game.guesses[user_id] == '42'
 
 
-@pytest.mark.asyncio
 @patch.object(guess, 'message_formatter', autospec=True)
 @patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'games_repository', autospec=True)
@@ -72,7 +72,6 @@ async def test_guess_updates_channel_messages(mock_games_repository, mock_discor
     assert user_id in mock_message_formatter.channel_list_game_guesses.call_args.args[0].guesses.keys()
 
 
-@pytest.mark.asyncio
 @patch.object(guess, 'message_formatter', autospec=True)
 @patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'games_repository', autospec=True)
@@ -95,22 +94,6 @@ async def test_guess_updates_channel_messages(mock_games_repository, mock_discor
     mock_discord_messaging.send_dm.assert_called_with(event.member, dm_message)
 
 
-def create_guess_event(guild_id, game_id, user_id):
-    command = DiscordCommand()
-    command.options = {
-        'game-id': game_id,
-        'guess': '42'
-    }
-    member = DiscordMember()
-    member.user_id = user_id
-    event = DiscordEvent()
-    event.command = command
-    event.member = member
-    event.guild_id = guild_id
-    return event
-
-
-@pytest.mark.asyncio
 @patch.object(guess, 'message_formatter', autospec=True)
 @patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'games_repository', autospec=True)
@@ -137,7 +120,6 @@ async def test_guess_game_does_not_exist(mock_games_repository: MagicMock, mock_
     mock_discord_messaging.send_dm.assert_called_with(event.member, dm_error)
 
 
-@pytest.mark.asyncio
 @patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'games_repository', autospec=True)
 async def test_guess_duplicate_guess(mock_games_repository, mock_discord_messaging):
@@ -174,3 +156,18 @@ async def test_guess_duplicate_guess(mock_games_repository, mock_discord_messagi
     mock_discord_messaging.send_dm.assert_called()
     sent_member = mock_discord_messaging.send_dm.call_args.args[0]
     assert sent_member.user_id == member.user_id
+
+
+def create_guess_event(guild_id, game_id, user_id):
+    command = DiscordCommand()
+    command.options = {
+        'game-id': game_id,
+        'guess': '42'
+    }
+    member = DiscordMember()
+    member.user_id = user_id
+    event = DiscordEvent()
+    event.command = command
+    event.member = member
+    event.guild_id = guild_id
+    return event

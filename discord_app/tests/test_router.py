@@ -1,13 +1,16 @@
 import json
 from unittest.mock import patch
 
+import pytest
 from eternal_guesses import router
 from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType
 from eternal_guesses.model.discord_response import DiscordResponse
 
+pytestmark = pytest.mark.asyncio
+
 
 @patch.object(router.routes.ping, 'call', autospec=True)
-def test_handle_ping(mock_route):
+async def test_handle_ping(mock_route):
     # Given
     event = DiscordEvent()
     event.type = CommandType.PING
@@ -16,7 +19,7 @@ def test_handle_ping(mock_route):
     mock_route.return_value = pong_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     assert response.status_code == 200
@@ -24,7 +27,7 @@ def test_handle_ping(mock_route):
 
 
 @patch.object(router.routes.guess, 'call', autospec=True)
-def test_handle_guess(mock_route):
+async def test_handle_guess(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "guess"
@@ -37,7 +40,7 @@ def test_handle_guess(mock_route):
     mock_route.return_value = guess_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -47,7 +50,7 @@ def test_handle_guess(mock_route):
 
 
 @patch.object(router.routes.manage, 'post', autospec=True)
-def test_handle_manage_post(mock_route):
+async def test_handle_manage_post(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "manage"
@@ -61,7 +64,7 @@ def test_handle_manage_post(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -71,7 +74,7 @@ def test_handle_manage_post(mock_route):
 
 
 @patch.object(router.routes.manage, 'close', autospec=True)
-def test_handle_manage_close(mock_route):
+async def test_handle_manage_close(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "manage"
@@ -85,7 +88,7 @@ def test_handle_manage_close(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -95,7 +98,7 @@ def test_handle_manage_close(mock_route):
 
 
 @patch.object(router.routes.create, 'call', autospec=True)
-def test_handle_create(mock_route):
+async def test_handle_create(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "create"
@@ -108,7 +111,7 @@ def test_handle_create(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -118,7 +121,7 @@ def test_handle_create(mock_route):
 
 
 @patch.object(router.routes.admin, 'info', autospec=True)
-def test_handle_admin_info(mock_route):
+async def test_handle_admin_info(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -132,7 +135,7 @@ def test_handle_admin_info(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -142,7 +145,7 @@ def test_handle_admin_info(mock_route):
 
 
 @patch.object(router.routes.admin, 'add_management_channel', autospec=True)
-def test_handle_admin_add_management_channel(mock_route):
+async def test_handle_admin_add_management_channel(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -156,7 +159,7 @@ def test_handle_admin_add_management_channel(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -166,7 +169,7 @@ def test_handle_admin_add_management_channel(mock_route):
 
 
 @patch.object(router.routes.admin, 'remove_management_channel', autospec=True)
-def test_handle_admin_remove_management_channel(mock_route):
+async def test_handle_admin_remove_management_channel(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -180,7 +183,7 @@ def test_handle_admin_remove_management_channel(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -190,7 +193,7 @@ def test_handle_admin_remove_management_channel(mock_route):
 
 
 @patch.object(router.routes.admin, 'add_management_role', autospec=True)
-def test_handle_admin_add_management_role(mock_route):
+async def test_handle_admin_add_management_role(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -204,7 +207,7 @@ def test_handle_admin_add_management_role(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)
@@ -214,7 +217,7 @@ def test_handle_admin_add_management_role(mock_route):
 
 
 @patch.object(router.routes.admin, 'remove_management_role', autospec=True)
-def test_handle_admin_remove_management_role(mock_route):
+async def test_handle_admin_remove_management_role(mock_route):
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -228,7 +231,7 @@ def test_handle_admin_remove_management_role(mock_route):
     mock_route.return_value = mock_response
 
     # When
-    response = router.route(event)
+    response = await router.route(event)
 
     # Then
     mock_route.assert_called_with(event)

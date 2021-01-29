@@ -1,12 +1,13 @@
 from unittest.mock import patch
 
 import pytest
-from model.data.game import Game
-from model.discord_event import DiscordEvent, DiscordCommand, DiscordMember
-from routes import manage
+from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, DiscordMember
+from eternal_guesses.routes import manage
+
+pytestmark = pytest.mark.asyncio
 
 
-@pytest.mark.asyncio
 @patch.object(manage, 'message_formatter', autospec=True)
 @patch.object(manage, 'GamesRepository', autospec=True)
 @patch.object(manage, 'discord_messaging', autospec=True)
@@ -41,7 +42,6 @@ async def test_post_creates_channel_message(mock_discord_messaging, mock_games_r
     mock_discord_messaging.create_channel_message.assert_called_with(channel_id, formatted_message)
 
 
-@pytest.mark.asyncio
 @patch.object(manage, 'GamesRepository', autospec=True)
 @patch.object(manage, 'discord_messaging', autospec=True)
 async def test_post_saves_message_id_to_game(mock_discord_messaging, mock_games_repository):
@@ -82,7 +82,6 @@ async def test_post_saves_message_id_to_game(mock_discord_messaging, mock_games_
     assert channel_message_id in updated_game.channel_messages
 
 
-@pytest.mark.asyncio
 @patch.object(manage, 'message_formatter', autospec=True)
 @patch.object(manage, 'GamesRepository', autospec=True)
 @patch.object(manage, 'discord_messaging', autospec=True)

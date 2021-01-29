@@ -1,4 +1,4 @@
-from model.data.game import Game
+from eternal_guesses.model.data.game import Game
 
 
 def channel_list_game_guesses(game: Game) -> str:

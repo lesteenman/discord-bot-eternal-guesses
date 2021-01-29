@@ -6,8 +6,9 @@ from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.routes import create
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
+
 @patch.object(create, 'games_repository', autospec=True)
 @patch.object(create, 'id_generator', autospec=True)
 async def test_create_generated_id(mock_id_generator, mock_games_repository):
@@ -40,7 +41,6 @@ async def test_create_generated_id(mock_id_generator, mock_games_repository):
     assert game.game_id == "potatoific-tomatopuss"
 
 
-@pytest.mark.asyncio
 @patch.object(create, 'games_repository', autospec=True)
 async def test_create_given_id(mock_games_repository):
     # Given
@@ -75,7 +75,6 @@ async def test_create_given_id(mock_games_repository):
     assert game.game_id == game_id
 
 
-@pytest.mark.asyncio
 @patch.object(create, 'games_repository', autospec=True)
 async def test_create_duplicate_given_id(mock_games_repository):
     # Given: the games_repository will find a game for the given id
@@ -104,4 +103,3 @@ async def test_create_duplicate_given_id(mock_games_repository):
 
     # And we should give a response where we keep the original message
     assert response.type.value == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value
-
