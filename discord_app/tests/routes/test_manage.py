@@ -83,7 +83,8 @@ async def test_post_without_channel_uses_event_channel(mock_discord_messaging, m
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
     mock_message_formatter.channel_list_game_guesses.assert_called_with(game)
-    mock_discord_messaging.create_channel_message.assert_called_with(event_channel_id, formatted_message)
+    mock_discord_messaging.create_channel_message.assert_called_with(
+        event_channel_id, formatted_message)
 
 
 @patch.object(manage, 'GamesRepository', autospec=True)

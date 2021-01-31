@@ -1,5 +1,6 @@
 import logging
 import re
+from datetime import datetime
 from pprint import pformat
 from typing import Optional, Dict, List
 
@@ -19,6 +20,13 @@ def make_game(guild_id: int, item: Dict):
     game.guild_id = guild_id
     game.game_id = re.match(SK_REGEX, item['sk']).group(1)
     game.guesses = item.get('guesses', {})
+    game.closed = item.get('closed', False)
+    game.create_datetime = datetime.fromisoformat(item.get('create_datetime'))
+
+    if 'close_datetime' in item:
+        game.close_datetime = datetime.fromisoformat(item.get('close_datetime'))
+    else:
+        game.close_datetime = None
 
     channel_messages = []
     for channel_message in item.get('channel_messages', []):
@@ -60,7 +68,7 @@ class GamesRepository:
         table = GamesRepository._get_table()
 
         key_condition_expression = Key('pk').eq(f"GUILD#{guild_id}") & \
-            Key('sk').begins_with(f"GAME#")
+            Key('sk').begins_with("GAME#")
 
         log.debug(f"getting item, key={key_condition_expression}")
 
@@ -71,7 +79,8 @@ class GamesRepository:
         if log.isEnabledFor(logging.DEBUG):
             log.debug(f"table.get_item response: {pformat(response)}")
 
-        games = list(make_game(guild_id, item) for item in response.get('Items', []))
+        games = list(make_game(guild_id, item)
+                     for item in response.get('Items', []))
 
         return games
 
@@ -84,6 +93,7 @@ class GamesRepository:
         item = {
             "pk": f"GUILD#{guild_id}",
             "sk": f"GAME#{game.game_id}",
+            "closed": game.closed,
             "guesses": game.guesses,
             "channel_messages": list({'message_id': message.message_id, 'channel_id': message.channel_id}
                                      for message in game.channel_messages),

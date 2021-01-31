@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordEvent
@@ -9,7 +10,7 @@ from eternal_guesses.util import id_generator
 log = logging.getLogger(__name__)
 
 
-def generate_game_id(guild_id: str, attempt: int = 0):
+def generate_game_id(guild_id: int, attempt: int = 0):
     if attempt >= 10:
         raise Exception(
             f"Could not generate a unique game_id after {attempt} attempts.")
@@ -38,6 +39,9 @@ async def call(event: DiscordEvent) -> DiscordResponse:
     game = Game()
     game.guild_id = guild_id
     game.game_id = game_id
+    game.create_datetime = datetime.now()
+    game.close_datetime = None
+    game.closed = False
     games_repository.save(guild_id, game)
 
     return DiscordResponse.channel_message(

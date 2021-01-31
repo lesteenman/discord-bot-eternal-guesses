@@ -1,4 +1,5 @@
-from typing import Dict, List
+from datetime import datetime
+from typing import Dict, List, Optional
 
 
 class ChannelMessage:
@@ -13,5 +14,8 @@ class ChannelMessage:
 class Game:
     guild_id: int
     game_id: str
+    create_datetime: datetime
+    close_datetime: Optional[datetime]
+    closed: bool
     guesses: Dict = {}
     channel_messages: List[ChannelMessage] = []

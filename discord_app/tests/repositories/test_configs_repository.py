@@ -28,7 +28,8 @@ async def test_get_unknown_guild_returns_empty_config(mock_boto_3, mocker):
         'ResponseMetadata': {},
     }
 
-    mock_boto_3.resource.return_value = create_mock_dynamodb(mocker, return_value=table_get_return_value)
+    mock_boto_3.resource.return_value = create_mock_dynamodb(
+        mocker, return_value=table_get_return_value)
 
     # When
     config = ConfigsRepository.get(guild_id)
@@ -54,7 +55,8 @@ async def test_get_guild(mock_boto_3, mocker):
             'management_roles': [management_role],
         }
     }
-    mock_boto_3.resource.return_value = create_mock_dynamodb(mocker, return_value=table_get_return_value)
+    mock_boto_3.resource.return_value = create_mock_dynamodb(
+        mocker, return_value=table_get_return_value)
 
     # When
     config = ConfigsRepository.get(guild_id)
@@ -99,7 +101,7 @@ def test_save_config(mock_boto_3, mocker):
     # Then
     mock_table.put_item.assert_called_with(Item={
         'pk': f"GUILD#{guild_id}",
-        'sk': f"CONFIG",
+        'sk': "CONFIG",
         'management_channels': [management_channel],
         'management_roles': [management_role_1, management_role_2, management_role_3],
     })

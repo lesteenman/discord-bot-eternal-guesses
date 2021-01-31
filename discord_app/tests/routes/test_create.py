@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -9,11 +10,15 @@ from eternal_guesses.routes import create
 pytestmark = pytest.mark.asyncio
 
 
+@patch.object(create, 'datetime', autospec=True)
 @patch.object(create, 'games_repository', autospec=True)
 @patch.object(create, 'id_generator', autospec=True)
-async def test_create_generated_id(mock_id_generator, mock_games_repository):
+async def test_create_generated_id(mock_id_generator, mock_games_repository, mock_datetime):
     # Given
     guild_id = 'guild-1'
+
+    create_datetime = datetime.now()
+    mock_datetime.now.return_value = create_datetime
 
     mock_games_repository.get.return_value = None
     mock_id_generator.game_id.return_value = "potatoific-tomatopuss"
@@ -39,13 +44,20 @@ async def test_create_generated_id(mock_id_generator, mock_games_repository):
     game = args[0][1]
     assert game.guild_id == guild_id
     assert game.game_id == "potatoific-tomatopuss"
+    assert game.create_datetime == create_datetime
+    assert game.close_datetime is None
+    assert game.closed is False
 
 
+@patch.object(create, 'datetime', autospec=True)
 @patch.object(create, 'games_repository', autospec=True)
-async def test_create_given_id(mock_games_repository):
+async def test_create_given_id(mock_games_repository, mock_datetime):
     # Given
     guild_id = 'guild-2'
     game_id = 'prolific-platypus'
+
+    create_datetime = datetime.now()
+    mock_datetime.now.return_value = create_datetime
 
     mock_games_repository.get.return_value = None
 
@@ -73,6 +85,9 @@ async def test_create_given_id(mock_games_repository):
     game = args[0][1]
     assert game.guild_id == guild_id
     assert game.game_id == game_id
+    assert game.create_datetime == create_datetime
+    assert game.close_datetime is None
+    assert game.closed is False
 
 
 @patch.object(create, 'games_repository', autospec=True)

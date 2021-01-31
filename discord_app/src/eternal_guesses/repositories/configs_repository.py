@@ -57,7 +57,7 @@ class ConfigsRepository:
 
         item = {
             "pk": f"GUILD#{config.guild_id}",
-            "sk": f"CONFIG",
+            "sk": "CONFIG",
             "management_channels": config.management_channels,
             "management_roles": config.management_roles,
         }
