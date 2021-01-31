@@ -10,7 +10,8 @@ from eternal_guesses.model.lambda_response import LambdaResponse
 @patch.object(handler.api_authorizer, 'authorize', autospec=True)
 def test_unauthorized_request(mock_authorize):
     # Given
-    mock_authorize.return_value = (AuthorizationResult.FAIL, LambdaResponse.unauthorized("key does not check out"))
+    mock_authorize.return_value = (
+        AuthorizationResult.FAIL, LambdaResponse.unauthorized("key does not check out"))
 
     body = {'type': 1}
     event = {
@@ -81,4 +82,3 @@ def test_discord_event(mock_router, mock_from_event, mock_authorize):
 
     # Then
     mock_router.assert_called_with(discord_event)
-

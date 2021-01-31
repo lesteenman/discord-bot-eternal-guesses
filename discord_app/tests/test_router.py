@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from eternal_guesses import router
-from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType
+from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType, DiscordMember
 from eternal_guesses.model.discord_response import DiscordResponse
 
 pytestmark = pytest.mark.asyncio
@@ -35,6 +35,7 @@ async def test_handle_guess(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     guess_response = DiscordResponse.acknowledge()
     mock_route.return_value = guess_response
@@ -59,6 +60,7 @@ async def test_handle_manage_post(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response
@@ -83,6 +85,7 @@ async def test_handle_manage_close(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response
@@ -106,6 +109,7 @@ async def test_handle_create(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response
@@ -130,6 +134,7 @@ async def test_handle_admin_info(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response
@@ -154,6 +159,7 @@ async def test_handle_admin_add_management_channel(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response
@@ -178,6 +184,7 @@ async def test_handle_admin_remove_management_channel(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response
@@ -202,6 +209,7 @@ async def test_handle_admin_add_management_role(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response
@@ -226,6 +234,7 @@ async def test_handle_admin_remove_management_role(mock_route):
     event = DiscordEvent()
     event.type = CommandType.COMMAND
     event.command = command
+    event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
     mock_route.return_value = mock_response

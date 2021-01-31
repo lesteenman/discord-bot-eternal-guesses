@@ -2,7 +2,12 @@ from eternal_guesses.model.data.game import Game
 
 
 def channel_list_game_guesses(game: Game) -> str:
-    return f"Game {game.game_id} guesses: {game.guesses}"
+    guess_list = []
+    for user_id, guess in game.guesses.items():
+        guess_list.append(f"{user_id}: {guess}")
+
+    guesses = "\n".join(guess_list)
+    return f"Actual guesses for {game.game_id}:\n\n{guesses}"
 
 
 def dm_error_game_not_found(game_id: str) -> str:

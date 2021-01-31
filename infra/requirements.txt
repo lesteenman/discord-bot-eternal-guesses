@@ -1,3 +1,4 @@
 aws_cdk.aws_apigateway==1.86.0
 aws_cdk.aws_lambda==1.86.0
 aws_cdk.aws_dynamodb==1.86.0
+aws_cdk.aws_logs_destinations==1.86.0

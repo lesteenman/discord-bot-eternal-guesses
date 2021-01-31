@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import pprint
 from typing import Dict
 
 from eternal_guesses import api_authorizer
@@ -8,13 +9,13 @@ from eternal_guesses import router
 from eternal_guesses.model import discord_event
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
 
 
 def handle_lambda(event, context) -> Dict:
-    log.debug(f"request: {json.dumps(event)}")
-    log.info(f"body:\n{event['body']}'")
-    log.info(f"headers:\n{event['headers']}'")
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(f"body: {pprint.pformat(event['body'])}")
+        log.debug(f"headers:{pprint.pformat(event['headers'])}")
+        log.debug(f"context:{pprint.pformat(context)}")
 
     result, response = api_authorizer.authorize(event)
     if result == api_authorizer.AuthorizationResult.PASS:

@@ -11,7 +11,8 @@ log = logging.getLogger(__name__)
 
 def generate_game_id(guild_id: str, attempt: int = 0):
     if attempt >= 10:
-        raise Exception(f"Could not generate a unique game_id after {attempt} attempts.")
+        raise Exception(
+            f"Could not generate a unique game_id after {attempt} attempts.")
 
     game_id = id_generator.game_id()
     existing_game = games_repository.get(guild_id, game_id)
@@ -31,13 +32,13 @@ async def call(event: DiscordEvent) -> DiscordResponse:
     else:
         existing_game = games_repository.get(guild_id, game_id)
         if existing_game is not None:
-            return DiscordResponse.channel_message_with_source(f"Game id '{game_id}' already exists.")
+            return DiscordResponse.channel_message_with_source(
+                f"Game id '{game_id}' already exists.")
 
     game = Game()
     game.guild_id = guild_id
     game.game_id = game_id
     games_repository.save(guild_id, game)
 
-    return DiscordResponse.channel_message(f"Game created with id '{game_id}'.")
-
-
+    return DiscordResponse.channel_message(
+        f"Game created with id '{game_id}'.")

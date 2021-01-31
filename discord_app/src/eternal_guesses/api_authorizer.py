@@ -17,8 +17,10 @@ def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
     signature = headers['x-signature-ed25519']
     timestamp = headers['x-signature-timestamp']
 
-    result = discord_interactions.verify_key(body, signature, timestamp, os.environ.get('DISCORD_PUBLIC_KEY'))
+    result = discord_interactions.verify_key(
+        body, signature, timestamp, os.environ.get('DISCORD_PUBLIC_KEY'))
     if result:
         return AuthorizationResult.PASS, None
     else:
-        return AuthorizationResult.FAIL, LambdaResponse.unauthorized("could not verify authorization")
+        return AuthorizationResult.FAIL, LambdaResponse.unauthorized(
+            "could not verify authorization")

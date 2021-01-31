@@ -2,3 +2,4 @@ boto3
 aioboto3
 discord-interactions
 discord.py
+flake8

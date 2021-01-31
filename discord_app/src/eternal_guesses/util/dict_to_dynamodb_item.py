@@ -1,30 +1,30 @@
 def dict_to_item(raw):
-    if type(raw) is dict:
+    if isinstance(raw, dict):
         resp = {}
         for k, v in raw:
-            if type(v) is str:
+            if isinstance(v, str):
                 resp[k] = {
                     'S': v
                 }
-            elif type(v) is int:
+            elif isinstance(v, int):
                 resp[k] = {
                     'I': str(v)
                 }
-            elif type(v) is dict:
+            elif isinstance(v, dict):
                 resp[k] = {
                     'M': dict_to_item(v)
                 }
-            elif type(v) is list:
+            elif isinstance(v, list):
                 resp[k] = []
                 for i in v:
                     resp[k].append(dict_to_item(i))
 
         return resp
-    elif type(raw) is str:
+    elif isinstance(raw, str):
         return {
             'S': raw
         }
-    elif type(raw) is int:
+    elif isinstance(raw, int):
         return {
             'I': str(raw)
         }
