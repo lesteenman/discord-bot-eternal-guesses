@@ -39,6 +39,7 @@ async def call(event: DiscordEvent) -> DiscordResponse:
     game = Game()
     game.guild_id = guild_id
     game.game_id = game_id
+    game.created_by = event.member.user_id
     game.create_datetime = datetime.now()
     game.close_datetime = None
     game.closed = False

@@ -30,6 +30,7 @@ def test_get_unknown_game_returns_none(mock_boto_3, mocker):
 def test_get_game(mock_boto_3, mocker):
     # Given
     guild_id = 50
+    created_by = 120
     game_id = 'game-1'
     user_id = 'user-id'
     guess = 'user-guess'
@@ -44,6 +45,7 @@ def test_get_game(mock_boto_3, mocker):
         'Item': {
             'pk': f"GUILD#{guild_id}",
             'sk': f"GAME#{game_id}",
+            'created_by': created_by,
             'create_datetime': create_datetime.isoformat(),
             'close_datetime': close_datetime.isoformat(),
             'closed': True,
@@ -68,6 +70,7 @@ def test_get_game(mock_boto_3, mocker):
     # Then
     assert game.guild_id == guild_id
     assert game.game_id == game_id
+    assert game.created_by == created_by
     assert game.create_datetime == create_datetime
     assert game.close_datetime == close_datetime
     assert game.closed is True
@@ -166,12 +169,13 @@ def test_get_all_games(mock_boto_3, mocker):
 @patch.object(games_repository, 'boto3', autospec=True)
 def test_save_game(mock_boto_3, mocker):
     # Given
-    guild_id = 'guild-1'
+    guild_id = 10101
     game_id = 'game-1'
     user_id = 'user-id'
     guess = 'user-guess'
     message_channel_id = 1000
     message_message_id = 2000
+    created_by = 500
 
     mock_table = mocker.MagicMock()
 
@@ -183,6 +187,7 @@ def test_save_game(mock_boto_3, mocker):
     game = Game()
     game.guild_id = guild_id
     game.game_id = game_id
+    game.created_by = created_by
     game.closed = True
     game.guesses = {
         user_id: guess,
@@ -201,6 +206,7 @@ def test_save_game(mock_boto_3, mocker):
         'pk': f"GUILD#{guild_id}",
         'sk': f"GAME#{game_id}",
         'closed': True,
+        'created_by': created_by,
         'guesses': {
             user_id: guess,
         },

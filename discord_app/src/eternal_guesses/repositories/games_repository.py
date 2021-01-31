@@ -18,7 +18,8 @@ def make_game(guild_id: int, item: Dict):
     game = Game()
 
     game.guild_id = guild_id
-    game.game_id = re.match(SK_REGEX, item['sk']).group(1)
+    game.game_id = re.match(SK_REGEX, item.get('sk')).group(1)
+    game.created_by = item.get('created_by')
     game.guesses = item.get('guesses', {})
     game.closed = item.get('closed', False)
     game.create_datetime = datetime.fromisoformat(item.get('create_datetime'))
@@ -93,6 +94,7 @@ class GamesRepository:
         item = {
             "pk": f"GUILD#{guild_id}",
             "sk": f"GAME#{game.game_id}",
+            "created_by": game.created_by,
             "closed": game.closed,
             "guesses": game.guesses,
             "channel_messages": list({'message_id': message.message_id, 'channel_id': message.channel_id}

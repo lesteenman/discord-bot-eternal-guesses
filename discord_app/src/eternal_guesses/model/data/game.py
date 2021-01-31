@@ -14,6 +14,7 @@ class ChannelMessage:
 class Game:
     guild_id: int
     game_id: str
+    created_by: int
     create_datetime: datetime
     close_datetime: Optional[datetime]
     closed: bool

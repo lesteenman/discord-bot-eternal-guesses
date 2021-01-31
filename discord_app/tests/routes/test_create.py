@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand
+from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, DiscordMember
 from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.routes import create
 
@@ -29,6 +29,7 @@ async def test_create_generated_id(mock_id_generator, mock_games_repository, moc
     event = DiscordEvent()
     event.command = command
     event.guild_id = guild_id
+    event.member = DiscordMember()
 
     # When
     await create.call(event)
@@ -69,6 +70,7 @@ async def test_create_given_id(mock_games_repository, mock_datetime):
     event = DiscordEvent()
     event.command = command
     event.guild_id = guild_id
+    event.member = DiscordMember()
 
     # When
     await create.call(event)
@@ -118,3 +120,33 @@ async def test_create_duplicate_given_id(mock_games_repository):
 
     # And we should give a response where we keep the original message
     assert response.type.value == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value
+
+
+@patch.object(create, 'games_repository', autospec=True)
+async def test_create_sets_created_by_to_calling_user(mock_games_repository):
+    # Given
+    calling_user_id = 500
+
+    mock_games_repository.get.return_value = None
+
+    command = DiscordCommand()
+    command.options = {
+        'game-id': 'game-id'
+    }
+
+    calling_member = DiscordMember()
+    calling_member.user_id = calling_user_id
+
+    event = DiscordEvent()
+    event.command = command
+    event.guild_id = 'guild-id'
+    event.member = calling_member
+
+    # When
+    await create.call(event)
+
+    # Then
+    args = mock_games_repository.save.call_args
+
+    game = args[0][1]
+    assert game.created_by == calling_user_id
