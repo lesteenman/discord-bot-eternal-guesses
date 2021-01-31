@@ -4,6 +4,7 @@ from unittest.mock import patch
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.repositories import games_repository
 from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.model.data.game_guess import GameGuess
 
 
 @patch.object(games_repository, 'boto3', autospec=True)
@@ -32,8 +33,10 @@ def test_get_game(mock_boto_3, mocker):
     guild_id = 50
     created_by = 120
     game_id = 'game-1'
-    user_id = 'user-id'
-    guess = 'user-guess'
+    user_id = 12123
+    user_nickname = 'nickname'
+    guess_answer = 'user-guess'
+    guess_datetime = datetime.now()
     message_channel_id = 1000
     message_message_id = 2000
     create_datetime = datetime(2021, 1, 1, 10, 12, 45)
@@ -50,7 +53,12 @@ def test_get_game(mock_boto_3, mocker):
             'close_datetime': close_datetime.isoformat(),
             'closed': True,
             'guesses': {
-                user_id: guess
+                user_id: {
+                    'user_id': user_id,
+                    'nickname': user_nickname,
+                    'guess': guess_answer,
+                    'datetime': guess_datetime.isoformat(),
+                }
             },
             'channel_messages': [
                 {'channel_id': message_channel_id,
@@ -75,7 +83,12 @@ def test_get_game(mock_boto_3, mocker):
     assert game.close_datetime == close_datetime
     assert game.closed is True
     assert user_id in game.guesses
-    assert game.guesses[user_id] == guess
+
+    game_guess = game.guesses[user_id]
+    assert game_guess.user_id == user_id
+    assert game_guess.nickname == user_nickname
+    assert game_guess.guess == guess_answer
+    assert game_guess.datetime == guess_datetime
 
     assert len(game.channel_messages) == 1
     assert game.channel_messages[0].channel_id == message_channel_id
@@ -94,7 +107,9 @@ def test_get_all_games(mock_boto_3, mocker):
 
     game_2_id = 'game-2'
     game_2_guess_user_id = 3000
-    game_2_guess = 'overninethousand'
+    game_2_guess_user_nick = 'user-nick'
+    game_2_guess_answer = 'guess-answer'
+    game_2_guess_datetime = datetime(2021, 2, 3, 10, 10, 10)
     game_2_create_datetime = datetime(2021, 2, 2)
 
     game_1_item = {
@@ -112,7 +127,12 @@ def test_get_all_games(mock_boto_3, mocker):
         'sk': f"GAME#{game_2_id}",
         'create_datetime': game_2_create_datetime.isoformat(),
         'guesses': {
-            game_2_guess_user_id: game_2_guess
+            game_2_guess_user_id: {
+                'user_id': game_2_guess_user_id,
+                'nickname': game_2_guess_user_nick,
+                'guess': game_2_guess_answer,
+                'datetime': game_2_guess_datetime.isoformat(),
+            },
         },
     }
 
@@ -163,7 +183,11 @@ def test_get_all_games(mock_boto_3, mocker):
     assert game_2.channel_messages == []
 
     assert game_2_guess_user_id in game_2.guesses
-    assert game_2.guesses[game_2_guess_user_id] == game_2_guess
+    game_guess = game_2.guesses[game_2_guess_user_id]
+    assert game_guess.user_id == game_2_guess_user_id
+    assert game_guess.nickname == game_2_guess_user_nick
+    assert game_guess.guess == game_2_guess_answer
+    assert game_guess.datetime == game_2_guess_datetime
 
 
 @patch.object(games_repository, 'boto3', autospec=True)
@@ -172,7 +196,9 @@ def test_save_game(mock_boto_3, mocker):
     guild_id = 10101
     game_id = 'game-1'
     user_id = 'user-id'
-    guess = 'user-guess'
+    user_nickname = 'user-nickname'
+    guess_answer = 'user-guess'
+    guess_datetime = datetime.now()
     message_channel_id = 1000
     message_message_id = 2000
     created_by = 500
@@ -184,13 +210,19 @@ def test_save_game(mock_boto_3, mocker):
 
     mock_boto_3.resource.return_value = mock_dynamodb
 
+    game_guess = GameGuess()
+    game_guess.user_id = user_id
+    game_guess.nickname = user_nickname
+    game_guess.guess = guess_answer
+    game_guess.datetime = guess_datetime
+
     game = Game()
     game.guild_id = guild_id
     game.game_id = game_id
     game.created_by = created_by
     game.closed = True
     game.guesses = {
-        user_id: guess,
+        user_id: game_guess,
     }
     game.channel_messages = [
         ChannelMessage(
@@ -208,7 +240,12 @@ def test_save_game(mock_boto_3, mocker):
         'closed': True,
         'created_by': created_by,
         'guesses': {
-            user_id: guess,
+            user_id: {
+                'user_id': game_guess.user_id,
+                'nickname': game_guess.nickname,
+                'guess': game_guess.guess,
+                'datetime': game_guess.datetime.isoformat(),
+            },
         },
         'channel_messages': [
             {'channel_id': message_channel_id, 'message_id': message_message_id},

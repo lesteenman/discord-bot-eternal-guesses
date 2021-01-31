@@ -1,5 +1,7 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import List, Optional, Mapping
+
+from eternal_guesses.model.data.game_guess import GameGuess
 
 
 class ChannelMessage:
@@ -18,5 +20,5 @@ class Game:
     create_datetime: datetime
     close_datetime: Optional[datetime]
     closed: bool
-    guesses: Dict = {}
+    guesses: Mapping[int, GameGuess] = {}
     channel_messages: List[ChannelMessage] = []

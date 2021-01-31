@@ -1,30 +1,44 @@
+from datetime import datetime
 from unittest.mock import patch, MagicMock, call
 
 import pytest
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.discord_event import DiscordCommand, DiscordEvent, DiscordMember
 from eternal_guesses.routes import guess
+from eternal_guesses.model.data.game_guess import GameGuess
 
 pytestmark = pytest.mark.asyncio
 
 
+@patch.object(guess, 'datetime', autospec=True)
 @patch.object(guess, 'discord_messaging', autospec=True)
 @patch.object(guess, 'GamesRepository', autospec=True)
-async def test_guess_updates_game_guesses(mock_games_repository, mock_discord_messaging):
+async def test_guess_updates_game_guesses(mock_games_repository, mock_discord_messaging, mock_datetime):
     # Given
     game_id = 'game-id'
     guild_id = 'guild-1'
-    user_id = 'user-1'
+    other_user_id = 5000
+
+    user_id = 100
+    user_nickname = 'user-1'
+    guess_answer = '42'
+    guess_datetime = datetime.now()
+
+    mock_datetime.now.return_value = guess_datetime
 
     existing_game = Game()
     existing_game.game_id = game_id
     existing_game.guesses = {
-        'other-user': '50',
+        other_user_id: GameGuess(),
     }
     mock_games_repository.get.return_value = existing_game
 
     # When
-    event = create_guess_event(guild_id, game_id, user_id)
+    event = create_guess_event(
+        guild_id=guild_id,
+        game_id=game_id,
+        user_id=user_id,
+        user_nickname=user_nickname)
     await guess.call(event)
 
     # Then
@@ -37,8 +51,13 @@ async def test_guess_updates_game_guesses(mock_games_repository, mock_discord_me
     assert save_guild_id == guild_id
 
     saved_game = call_args[0][1]
-    assert saved_game.guesses['other-user'] == '50'
-    assert saved_game.guesses[user_id] == '42'
+    assert other_user_id in saved_game.guesses.keys()
+
+    saved_guess = saved_game.guesses[user_id]
+    assert saved_guess.user_id == user_id
+    assert saved_guess.user_nickname == user_nickname
+    assert saved_guess.datetime == guess_datetime
+    assert saved_guess.guess == guess_answer
 
 
 @patch.object(guess, 'message_formatter', autospec=True)
@@ -59,7 +78,7 @@ async def test_guess_updates_channel_messages(mock_games_repository, mock_discor
     mock_games_repository.get.return_value = game
 
     # When
-    event = create_guess_event('guild-id', game.game_id, user_id)
+    event = create_guess_event('guild-id', game.game_id, user_id, 'nickname')
     await guess.call(event)
 
     # Then
@@ -90,7 +109,7 @@ async def test_guess_sends_dm_to_user(mock_games_repository, mock_discord_messag
     mock_games_repository.get.return_value = game
 
     # When
-    event = create_guess_event('guild-id', game.game_id, user_id)
+    event = create_guess_event('guild-id', game.game_id, user_id, 'nickname')
     await guess.call(event)
 
     # Then
@@ -109,7 +128,7 @@ async def test_guess_game_does_not_exist(mock_games_repository: MagicMock, mock_
 
     mock_games_repository.get.return_value = None
 
-    event = create_guess_event(guild_id, game_id, user_id)
+    event = create_guess_event(guild_id, game_id, user_id, 'nickname')
 
     dm_error = "error dm"
     mock_message_formatter.dm_error_game_not_found.return_value = dm_error
@@ -162,16 +181,20 @@ async def test_guess_duplicate_guess(mock_games_repository, mock_discord_messagi
     assert sent_member.user_id == member.user_id
 
 
-def create_guess_event(guild_id, game_id, user_id):
+def create_guess_event(guild_id, game_id, user_id, user_nickname):
     command = DiscordCommand()
     command.options = {
         'game-id': game_id,
         'guess': '42'
     }
+
     member = DiscordMember()
     member.user_id = user_id
+    member.nickname = user_nickname
+
     event = DiscordEvent()
     event.command = command
     event.member = member
     event.guild_id = guild_id
+
     return event

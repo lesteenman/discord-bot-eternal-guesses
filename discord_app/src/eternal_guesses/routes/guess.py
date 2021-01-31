@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime
 
 from eternal_guesses import discord_messaging, message_formatter
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.model.data.game_guess import GameGuess
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ async def update_channel_messages(game: Game):
 async def call(event: DiscordEvent) -> DiscordResponse:
     guild_id = event.guild_id
     user_id = event.member.user_id
+    user_nickname = event.member.nickname
     game_id = event.command.options['game-id']
     guess = event.command.options['guess']
 
@@ -40,7 +43,13 @@ async def call(event: DiscordEvent) -> DiscordResponse:
 
         return DiscordResponse.acknowledge()
 
-    game.guesses[user_id] = guess
+    game_guess = GameGuess()
+    game_guess.user_id = user_id
+    game_guess.user_nickname = user_nickname
+    game_guess.datetime = datetime.now()
+    game_guess.guess = guess
+
+    game.guesses[user_id] = game_guess
     GamesRepository.save(guild_id, game)
 
     guess_added_dm = message_formatter.dm_guess_added(game_id, guess)

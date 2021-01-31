@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from eternal_guesses.repositories import configs_repository
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
-from model.data.guild_config import GuildConfig
+from eternal_guesses.model.data.guild_config import GuildConfig
 
 pytestmark = pytest.mark.asyncio
 

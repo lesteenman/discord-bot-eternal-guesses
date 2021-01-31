@@ -2,8 +2,8 @@ import logging
 from pprint import pformat
 
 import boto3
-from config import load_config
-from model.data.guild_config import GuildConfig
+from eternal_guesses.config import load_config
+from eternal_guesses.model.data.guild_config import GuildConfig
 
 log = logging.getLogger(__name__)
 

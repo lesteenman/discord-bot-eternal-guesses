@@ -33,7 +33,7 @@ async def post(event: DiscordEvent) -> DiscordResponse:
 
 
 async def close(event: DiscordEvent) -> DiscordResponse:
-    pass
+    return DiscordResponse.channel_message_with_source("TODO: Unimplemented manage.close")
 
 
 async def list_games(event: DiscordEvent) -> DiscordResponse:

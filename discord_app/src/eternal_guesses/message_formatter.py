@@ -1,13 +1,13 @@
 from typing import List
 
 from eternal_guesses.model.data.game import Game
-from model.data.guild_config import GuildConfig
+from eternal_guesses.model.data.guild_config import GuildConfig
 
 
 def channel_list_game_guesses(game: Game) -> str:
     guess_list = []
     for user_id, guess in game.guesses.items():
-        guess_list.append(f"{user_id}: {guess}")
+        guess_list.append(f"{user_id}: {guess} (<@{user_id}>)")
 
     guesses = "\n".join(guess_list)
     return f"Actual guesses for {game.game_id}:\n\n{guesses}"
@@ -23,9 +23,12 @@ def dm_guess_added(game_id: str, guess: str) -> str:
 
 # TODO: Format the roles and channels properly with Discord shizzle
 def channel_admin_info(config: GuildConfig) -> str:
+    roles = list(f"<@{role}>" for role in config.management_roles)
+    channels = list(f"<@{channel}>" for channel in config.management_channels)
+
     admin_info = f"Eternal-Guess configuration for this guild:\n" \
-                 f"- management_roles: {config.management_roles}\n" \
-                 f"- management_channels: {config.management_channels}\n" \
+                 f"- management_roles: {roles}\n" \
+                 f"- management_channels: {channels}\n" \
 
     return admin_info
 

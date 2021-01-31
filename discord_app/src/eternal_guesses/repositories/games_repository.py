@@ -8,6 +8,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from eternal_guesses.config import load_config
 from eternal_guesses.model.data.game import Game, ChannelMessage
+from eternal_guesses.model.data.game_guess import GameGuess
 
 log = logging.getLogger(__name__)
 
@@ -20,14 +21,25 @@ def make_game(guild_id: int, item: Dict):
     game.guild_id = guild_id
     game.game_id = re.match(SK_REGEX, item.get('sk')).group(1)
     game.created_by = item.get('created_by')
-    game.guesses = item.get('guesses', {})
     game.closed = item.get('closed', False)
     game.create_datetime = datetime.fromisoformat(item.get('create_datetime'))
 
     if 'close_datetime' in item:
-        game.close_datetime = datetime.fromisoformat(item.get('close_datetime'))
+        game.close_datetime = datetime.fromisoformat(
+            item.get('close_datetime'))
     else:
         game.close_datetime = None
+
+    game_guesses = {}
+    for user_id, guess_dict in item.get('guesses', {}).items():
+        game_guess = GameGuess()
+        game_guess.user_id = user_id
+        game_guess.nickname = guess_dict['nickname']
+        game_guess.guess = guess_dict['guess']
+        game_guess.datetime = datetime.fromisoformat(guess_dict['datetime'])
+        game_guesses[user_id] = game_guess
+
+    game.guesses = game_guesses
 
     channel_messages = []
     for channel_message in item.get('channel_messages', []):
@@ -96,7 +108,12 @@ class GamesRepository:
             "sk": f"GAME#{game.game_id}",
             "created_by": game.created_by,
             "closed": game.closed,
-            "guesses": game.guesses,
+            "guesses": {user_id: {
+                'user_id': game_guess.user_id,
+                'nickname': game_guess.nickname,
+                'guess': game_guess.guess,
+                'datetime': game_guess.datetime.isoformat(),
+            } for (user_id, game_guess) in game.guesses.items()},
             "channel_messages": list({'message_id': message.message_id, 'channel_id': message.channel_id}
                                      for message in game.channel_messages),
         }

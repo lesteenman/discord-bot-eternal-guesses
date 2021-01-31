@@ -17,6 +17,7 @@ class CommandType(Enum):
 class DiscordMember:
     username: str = None
     user_id: str = None
+    nickname: str = None
     roles: List[str] = []
 
 
@@ -102,6 +103,7 @@ def _member_from_data(member_data: Dict) -> DiscordMember:
     member.username = member_data['user']['username']
     member.user_id = member_data['user']['id']
     member.roles = member_data['roles']
+    member.nickname = member_data['nick']
 
     return member
 

@@ -43,7 +43,7 @@ def test_member_from_event():
             "is_pending": False,
             "joined_at": "2021-01-16T20:21:19.053000+00:00",
             "mute": False,
-            "nick": None,
+            "nick": "User-Nickname",
             "pending": False,
             "permissions": "2147483647",
             "premium_since": None,
@@ -68,6 +68,7 @@ def test_member_from_event():
 
     # Then
     assert event.member.username == "User-Name"
+    assert event.member.nickname == "User-Nickname"
     assert event.member.user_id == "9001"
     assert event.member.roles == [
         "9999"
