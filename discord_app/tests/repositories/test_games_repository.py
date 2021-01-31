@@ -71,6 +71,79 @@ def test_get_game(mock_boto_3, mocker):
 
 
 @patch.object(games_repository, 'boto3', autospec=True)
+def test_get_all_games(mock_boto_3, mocker):
+    # Given
+    guild_id = 50000
+
+    game_1_id = 'game-1'
+    game_1_channel_message_channel_id = 1000
+    game_1_channel_message_message_id = 2000
+
+    game_2_id = 'game-2'
+    game_2_guess_user_id = 3000
+    game_2_guess = 'overninethousand'
+
+    game_1_item = {
+        'pk': f"GUILD#{guild_id}",
+        'sk': f"GAME#{game_1_id}",
+        'channel_messages': [
+            {'channel_id': game_1_channel_message_channel_id, 'message_id': game_1_channel_message_message_id}
+        ],
+    }
+
+    game_2_item = {
+        'pk': f"GUILD#{guild_id}",
+        'sk': f"GAME#{game_2_id}",
+        'guesses': {
+            game_2_guess_user_id: game_2_guess
+        },
+    }
+
+    mock_table = mocker.MagicMock()
+    mock_table.query.return_value = {
+        'ResponseMetadata': {},
+        'Items': [game_1_item, game_2_item],
+    }
+
+    mock_dynamodb = mocker.MagicMock()
+    mock_dynamodb.Table.return_value = mock_table
+
+    mock_boto_3.resource.return_value = mock_dynamodb
+
+    # When
+    games = GamesRepository.get_all(guild_id)
+
+    # Then
+    assert len(games) == 2
+
+    game_1 = None
+    game_2 = None
+
+    for game in games:
+        if game.game_id == game_1_id:
+            game_1 = game
+        elif game.game_id == game_2_id:
+            game_2 = game
+
+    assert game_1 is not None
+    assert game_1.guild_id == guild_id
+    assert game_1.game_id == game_1_id
+    assert game_1.guesses == {}
+
+    assert len(game_1.channel_messages) == 1
+    assert game_1.channel_messages[0].channel_id == game_1_channel_message_channel_id
+    assert game_1.channel_messages[0].message_id == game_1_channel_message_message_id
+
+    assert game_2 is not None
+    assert game_2.guild_id == guild_id
+    assert game_2.game_id == game_2_id
+    assert game_2.channel_messages == []
+
+    assert game_2_guess_user_id in game_2.guesses
+    assert game_2.guesses[game_2_guess_user_id] == game_2_guess
+
+
+@patch.object(games_repository, 'boto3', autospec=True)
 def test_save_game(mock_boto_3, mocker):
     # Given
     guild_id = 'guild-1'

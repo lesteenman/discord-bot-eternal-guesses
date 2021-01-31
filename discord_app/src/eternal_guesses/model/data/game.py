@@ -11,7 +11,7 @@ class ChannelMessage:
 
 
 class Game:
-    guild_id: str
+    guild_id: int
     game_id: str
     guesses: Dict = {}
     channel_messages: List[ChannelMessage] = []

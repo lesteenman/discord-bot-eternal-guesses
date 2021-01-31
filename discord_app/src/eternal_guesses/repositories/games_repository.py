@@ -1,20 +1,24 @@
 import logging
+import re
 from pprint import pformat
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 
 import boto3
+from boto3.dynamodb.conditions import Key
 from eternal_guesses.config import load_config
 from eternal_guesses.model.data.game import Game, ChannelMessage
 
 log = logging.getLogger(__name__)
 
+SK_REGEX = r"GAME#(.*)"
 
-def make_game(guild_id: str, game_id: str, item: Dict):
+
+def make_game(guild_id: int, item: Dict):
     game = Game()
 
     game.guild_id = guild_id
-    game.game_id = game_id
-    game.guesses = item['guesses']
+    game.game_id = re.match(SK_REGEX, item['sk']).group(1)
+    game.guesses = item.get('guesses', {})
 
     channel_messages = []
     for channel_message in item.get('channel_messages', []):
@@ -30,7 +34,7 @@ def make_game(guild_id: str, game_id: str, item: Dict):
 
 class GamesRepository:
     @staticmethod
-    def get(guild_id: str, game_id: str) -> Optional[Game]:
+    def get(guild_id: int, game_id: str) -> Optional[Game]:
         table = GamesRepository._get_table()
 
         key = {
@@ -49,7 +53,27 @@ class GamesRepository:
             return None
 
         item = response['Item']
-        return make_game(guild_id, game_id, item)
+        return make_game(guild_id, item)
+
+    @staticmethod
+    def get_all(guild_id: int) -> List[Game]:
+        table = GamesRepository._get_table()
+
+        key_condition_expression = Key('pk').eq(f"GUILD#{guild_id}") & \
+            Key('sk').begins_with(f"GAME#")
+
+        log.debug(f"getting item, key={key_condition_expression}")
+
+        response = table.query(
+            KeyConditionExpression=key_condition_expression
+        )
+
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug(f"table.get_item response: {pformat(response)}")
+
+        games = list(make_game(guild_id, item) for item in response.get('Items', []))
+
+        return games
 
     @staticmethod
     def save(guild_id: str, game: Game):
