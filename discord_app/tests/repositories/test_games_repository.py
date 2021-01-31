@@ -5,12 +5,12 @@ from eternal_guesses.repositories import games_repository
 from eternal_guesses.repositories.games_repository import GamesRepository
 
 
-@patch.object(games_repository, 'boto3')
+@patch.object(games_repository, 'boto3', autospec=True)
 def test_get_unknown_game_returns_none(mock_boto_3, mocker):
     # Given
     mock_table = mocker.MagicMock()
     mock_table.get_item.return_value = {
-        'TableInfo': {}
+        'ResponseMetadata': {}
     }
 
     mock_dynamodb = mocker.MagicMock()
@@ -25,7 +25,7 @@ def test_get_unknown_game_returns_none(mock_boto_3, mocker):
     assert game is None
 
 
-@patch.object(games_repository, 'boto3')
+@patch.object(games_repository, 'boto3', autospec=True)
 def test_get_game(mock_boto_3, mocker):
     # Given
     guild_id = 'guild-1'
@@ -37,7 +37,7 @@ def test_get_game(mock_boto_3, mocker):
 
     mock_table = mocker.MagicMock()
     mock_table.get_item.return_value = {
-        'TableInfo': {},
+        'ResponseMetadata': {},
         'Item': {
             'pk': f"GUILD#{guild_id}",
             'sk': f"GAME#{game_id}",
@@ -70,7 +70,7 @@ def test_get_game(mock_boto_3, mocker):
     assert game.channel_messages[0].message_id == message_message_id
 
 
-@patch.object(games_repository, 'boto3')
+@patch.object(games_repository, 'boto3', autospec=True)
 def test_save_game(mock_boto_3, mocker):
     # Given
     guild_id = 'guild-1'

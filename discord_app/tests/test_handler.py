@@ -30,9 +30,9 @@ def test_unauthorized_request(mock_authorize):
     assert response['statusCode'] == 401
 
 
-@patch.object(handler.api_authorizer, 'authorize')
-@patch.object(handler.discord_event, 'from_event')
-@patch.object(handler.router, 'route')
+@patch.object(handler.api_authorizer, 'authorize', autospec=True)
+@patch.object(handler.discord_event, 'from_event', autospec=True)
+@patch.object(handler.router, 'route', autospec=True)
 def test_authorized_request(mock_router, mock_from_event, mock_authorize):
     # Given
     mock_authorize.return_value = (AuthorizationResult.PASS, None)
@@ -55,9 +55,9 @@ def test_authorized_request(mock_router, mock_from_event, mock_authorize):
     assert json.loads(response['body']) == {'response': 'mocked'}
 
 
-@patch.object(handler.api_authorizer, 'authorize')
-@patch.object(handler.discord_event, 'from_event')
-@patch.object(handler.router, 'route')
+@patch.object(handler.api_authorizer, 'authorize', autospec=True)
+@patch.object(handler.discord_event, 'from_event', autospec=True)
+@patch.object(handler.router, 'route', autospec=True)
 def test_discord_event(mock_router, mock_from_event, mock_authorize):
     # Given
     mock_authorize.return_value = (AuthorizationResult.PASS, None)
