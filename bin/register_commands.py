@@ -135,7 +135,8 @@ def register(config: Dict):
                                 },
                                 {
                                     "name": "channel",
-                                    "description": "Where to post the list. If omitted, will be posted in the current channel.",
+                                    "description": "Where to post the list. If omitted, will be posted in the current "
+                                                   "channel.",
                                     "type": COMMAND_OPTION_TYPE_CHANNEL,
                                     "required": False,
                                 },
@@ -152,6 +153,20 @@ def register(config: Dict):
                                     "type": COMMAND_OPTION_TYPE_STRING,
                                     "required": True,
                                 },
+                            ]
+                        },
+                        {
+                            "name": "list-games",
+                            "description": "Get a list of games.",
+                            "type": COMMAND_OPTION_TYPE_SUB_COMMAND,
+                            "options": [
+                                {
+                                    "name": "closed",
+                                    "description": "Whether to only find open or closed games. If empty, all games are "
+                                                   "returned.",
+                                    "type": COMMAND_OPTION_TYPE_BOOLEAN,
+                                    "required": False,
+                                }
                             ]
                         }
                     ]

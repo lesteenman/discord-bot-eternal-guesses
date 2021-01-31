@@ -100,6 +100,31 @@ async def test_handle_manage_close(mock_route):
     assert json.loads(response.body) == mock_response.json()
 
 
+@patch.object(router.routes.manage, 'list_games', autospec=True)
+async def test_handle_manage_list(mock_route):
+    # Given
+    command = DiscordCommand()
+    command.command_name = "manage"
+    command.subcommand_name = "list-games"
+
+    event = DiscordEvent()
+    event.type = CommandType.COMMAND
+    event.command = command
+    event.member = DiscordMember()
+
+    mock_response = DiscordResponse.acknowledge()
+    mock_route.return_value = mock_response
+
+    # When
+    response = await router.route(event)
+
+    # Then
+    mock_route.assert_called_with(event)
+
+    assert response.status_code == 200
+    assert json.loads(response.body) == mock_response.json()
+
+
 @patch.object(router.routes.create, 'call', autospec=True)
 async def test_handle_create(mock_route):
     # Given

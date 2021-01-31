@@ -76,7 +76,7 @@ class GamesRepository:
         return games
 
     @staticmethod
-    def save(guild_id: str, game: Game):
+    def save(guild_id: int, game: Game):
         assert game.game_id is not None
 
         table = GamesRepository._get_table()

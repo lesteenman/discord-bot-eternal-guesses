@@ -27,6 +27,9 @@ async def handle_manage_command(event: DiscordEvent) -> DiscordResponse:
     if event.command.subcommand_name == "close":
         return await routes.manage.close(event)
 
+    if event.command.subcommand_name == "list-games":
+        return await routes.manage.list_games(event)
+
     raise UnknownCommandException(event.command)
 
 

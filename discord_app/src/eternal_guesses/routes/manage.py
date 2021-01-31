@@ -34,3 +34,21 @@ async def post(event: DiscordEvent) -> DiscordResponse:
 
 async def close(event: DiscordEvent) -> DiscordResponse:
     pass
+
+
+async def list_games(event: DiscordEvent) -> DiscordResponse:
+    guild_id = event.guild_id
+
+    all_games = GamesRepository.get_all(guild_id)
+
+    if 'closed' in event.command.options:
+        if event.command.options['closed']:
+            closed_games = list(filter(lambda g: g.closed, all_games))
+            message = message_formatter.channel_manage_list_closed_games(closed_games)
+        else:
+            open_games = list(filter(lambda g: not g.closed, all_games))
+            message = message_formatter.channel_manage_list_open_games(open_games)
+    else:
+        message = message_formatter.channel_manage_list_all_games(all_games)
+
+    return DiscordResponse.channel_message(message)

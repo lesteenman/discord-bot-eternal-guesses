@@ -31,7 +31,7 @@ class DiscordEvent:
     type: CommandType
     command: DiscordCommand = None
     member: DiscordMember = None
-    guild_id: str = None
+    guild_id: int = None
     channel_id: str = None
 
 
@@ -73,7 +73,7 @@ def _admin_or_manage_command_from_data(event_data: Dict) -> DiscordCommand:
     command.subcommand_name = sub_command['name']
 
     command.options = {}
-    for option in sub_command['options']:
+    for option in sub_command.get('options', {}):
         command.options[option['name']] = option['value']
 
     return command
