@@ -9,7 +9,11 @@ def channel_list_game_guesses(game: Game) -> str:
     for user_id, guess in game.guesses.items():
         guess_list.append(f"{user_id}: {guess} (<@{user_id}>)")
 
-    guesses = "\n".join(guess_list)
+    if len(guess_list) > 0:
+        guesses = "\n".join(guess_list)
+    else:
+        guesses = "None yet!"
+
     return f"Actual guesses for {game.game_id}:\n\n{guesses}"
 
 
@@ -26,7 +30,7 @@ def channel_admin_info(config: GuildConfig) -> str:
     roles = list(f"<@{role}>" for role in config.management_roles)
     channels = list(f"<@{channel}>" for channel in config.management_channels)
 
-    admin_info = f"Eternal-Guess configuration for this guild:\n" \
+    admin_info = f"Eternal-Guess configuration for this server:\n" \
                  f"- management_roles: {roles}\n" \
                  f"- management_channels: {channels}\n" \
 

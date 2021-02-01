@@ -202,6 +202,7 @@ def test_save_game(mock_boto_3, mocker):
     message_channel_id = 1000
     message_message_id = 2000
     created_by = 500
+    create_datetime = datetime(2021, 10, 12, 1, 2, 3)
 
     mock_table = mocker.MagicMock()
 
@@ -219,6 +220,7 @@ def test_save_game(mock_boto_3, mocker):
     game = Game()
     game.guild_id = guild_id
     game.game_id = game_id
+    game.create_datetime = create_datetime
     game.created_by = created_by
     game.closed = True
     game.guesses = {
@@ -239,6 +241,7 @@ def test_save_game(mock_boto_3, mocker):
         'sk': f"GAME#{game_id}",
         'closed': True,
         'created_by': created_by,
+        'create_datetime': create_datetime.isoformat(),
         'guesses': {
             user_id: {
                 'user_id': game_guess.user_id,

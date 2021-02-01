@@ -106,6 +106,7 @@ class GamesRepository:
         item = {
             "pk": f"GUILD#{guild_id}",
             "sk": f"GAME#{game.game_id}",
+            "create_datetime": game.create_datetime.isoformat(),
             "created_by": game.created_by,
             "closed": game.closed,
             "guesses": {user_id: {
