@@ -37,7 +37,7 @@ class InfraStack(core.Stack):
         cloudwatch_logs_parser = aws_lambda.Function(self, "eternal-guess-logs-parser",
                                                      runtime=aws_lambda.Runtime.PYTHON_3_7,
                                                      code=aws_lambda.Code.from_asset(
-                                                         "../error_parser_function/dist/error_parser_function.zip"),
+                                                         "../error_parser_function/.serverless/error-parser.zip"),
                                                      handler="parser.lambda_handler",
                                                      environment={
                                                          'snsARN': sns_topic.topic_arn,
@@ -66,7 +66,7 @@ class InfraStack(core.Stack):
                                                   timeout=core.Duration.seconds(10),
                                                   memory_size=1024,
                                                   code=aws_lambda.Code.from_asset(
-                                                      "../discord_app/dist/eternal_guesses-0.1.0.zip"),
+                                                      "../discord_app/.serverless/discord-app.zip"),
                                                   handler="eternal_guesses.handler.handle_lambda",
                                                   environment={
                                                       'DISCORD_PUBLIC_KEY': config['DISCORD_PUBLIC_KEY'],

@@ -1,0 +1,22 @@
+{
+  "name": "discord-bot-eternal-guesses",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lesteenman/discord-bot-eternal-guesses.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lesteenman/discord-bot-eternal-guesses/issues"
+  },
+  "homepage": "https://github.com/lesteenman/discord-bot-eternal-guesses#readme",
+  "dependencies": {
+    "serverless-python-requirements": "^5.1.0"
+  }
+}

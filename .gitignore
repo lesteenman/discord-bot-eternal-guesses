@@ -1,7 +1,7 @@
 app_config.json
 
+*/.serverless
 infra/cdk.out
-*/.build
 
 # OS and IDE
 .DS_Store
@@ -25,3 +25,6 @@ build/
 *.eggs
 
 */.tox
+
+# Node
+node_modules/

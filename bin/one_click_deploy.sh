@@ -7,8 +7,6 @@ if [ ! -f "$PROJECT_ROOT/bin/deploy.sh" ]; then
     exit 1
 fi
 
-INFRA_DIR="$PROJECT_ROOT/infra"
-
-# Deploy
-cd "$INFRA_DIR"
-cdk deploy
+./bin/test.sh
+./bin/build.sh
+./bin/deploy.sh

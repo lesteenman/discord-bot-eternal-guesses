@@ -8,8 +8,12 @@ if [ ! -f "$PROJECT_ROOT/bin/deploy.sh" ]; then
 fi
 
 DISCORD_APP_DIR="$PROJECT_ROOT/discord_app"
+ERROR_PARSER_DIR="$PROJECT_ROOT/error_parser_function"
 
-# Tox and flake8 checking
+# Package discord-app
 cd $DISCORD_APP_DIR
-poetry run flake8 --config $PROJECT_ROOT/.flake8
-poetry run pytest
+serverless package
+
+# Package error-parser
+cd $ERROR_PARSER_DIR
+serverless package
