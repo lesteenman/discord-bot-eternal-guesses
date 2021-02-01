@@ -12,17 +12,12 @@ DISCORD_APP_DIR="$PROJECT_ROOT/discord_app"
 
 # Tox and flake8 checking
 cd $DISCORD_APP_DIR
-tox
-flake8 --config $PROJECT_ROOT/.flake8 src/ tests/
+poetry run flake8 --config $PROJECT_ROOT/.flake8
+poetry run pytest
 
 # Package using a Python container to be cross-platform
-cd $PROJECT_ROOT
-docker run \
-    --rm \
-    --workdir=/discord_app \
-    -v "$DISCORD_APP_DIR":/discord_app \
-    python:3.8-buster \
-    python setup.py ldist
+cd $DISCORD_APP_DIR
+serverless package
 
 cd "error_parser_function"
 mkdir -p dist/

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-export PYTHONPATH="$PYTHONPATH:./discord_app/eternal_guesses"
-
-pytest discord_app/
-flake8 discord_app/
+cd discord_app/
+poetry run flake8 --config=../.flake8
+poetry run pytest
