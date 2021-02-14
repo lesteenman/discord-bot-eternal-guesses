@@ -16,7 +16,7 @@ def test_ping(mock_authorize):
         'body': json.dumps({
             "id": "00000001",
             "token": "some-token-abcde1234567890",
-            "type": InteractionType.APPLICATION_COMMAND,
+            "type": InteractionType.PING,
             "version": 1
         }),
         'headers': {},

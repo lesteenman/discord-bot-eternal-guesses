@@ -79,7 +79,6 @@ def _range_key(game_id: str):
 
 
 class GamesRepository:
-
     def __init__(self, table_name: str, host: str = None):
         self.table = EternalGuessesTable
         self.table.Meta.table_name = table_name

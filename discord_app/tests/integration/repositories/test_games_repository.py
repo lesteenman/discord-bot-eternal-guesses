@@ -1,42 +1,9 @@
 from datetime import datetime
 
-import opnieuw
-import pytest
-from pynamodb.exceptions import TableError
-
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
 from eternal_guesses.repositories.games_repository import GamesRepository
-
-REGION = "eu-west-1"
-TABLE_NAME = "eternal-guesses-test"
-HOST = "http://127.0.0.1:8000"
-ACCESS_KEY_ID = "LOCAL"
-
-
-@opnieuw.retry(retry_on_exceptions=TableError, max_calls_total=10, retry_window_after_first_call_in_seconds=5)
-def _create_table():
-    EternalGuessesTable.Meta.table_name = TABLE_NAME
-    EternalGuessesTable.Meta.host = HOST
-    EternalGuessesTable.Meta.region = REGION
-    EternalGuessesTable.Meta.aws_access_key_id = ACCESS_KEY_ID
-    EternalGuessesTable.Meta.aws_secret_access_key = "ANY"
-    EternalGuessesTable.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
-
-
-@opnieuw.retry(retry_on_exceptions=TableError, max_calls_total=10, retry_window_after_first_call_in_seconds=5)
-def _delete_table():
-    EternalGuessesTable.delete_table()
-
-
-@pytest.fixture(autouse=True)
-def create_test_database():
-    _create_table()
-
-    yield
-
-    _delete_table()
+from tests.integration.conftest import TABLE_NAME, HOST
 
 
 def test_get_unknown_game_returns_none():

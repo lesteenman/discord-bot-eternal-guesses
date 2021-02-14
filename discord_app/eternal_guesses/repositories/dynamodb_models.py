@@ -7,13 +7,6 @@ class ChannelMessageMap(MapAttribute):
     message_id = NumberAttribute()
 
 
-# class GameGuessesMap(MapAttribute):
-#     user_id = NumberAttribute()
-#     guess = UnicodeAttribute()
-#     nickname = UnicodeAttribute()
-#     timestamp = UnicodeAttribute()
-
-
 class EternalGuessesTable(Model):
     class Meta:
         table_name = "eternal-guesses"
@@ -27,3 +20,7 @@ class EternalGuessesTable(Model):
     closed = BooleanAttribute(null=True)
     channel_messages = ListAttribute(of=ChannelMessageMap, null=True)
     guesses = UnicodeAttribute(null=True)
+
+    # GuildConfig
+    management_roles = ListAttribute(of=NumberAttribute, null=True)
+    management_channels = ListAttribute(of=NumberAttribute, null=True)

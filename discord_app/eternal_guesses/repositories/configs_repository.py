@@ -1,79 +1,57 @@
 import logging
-from pprint import pformat
+import re
 
-import boto3
-from eternal_guesses.config import load_config
+from pynamodb.exceptions import DoesNotExist
+
 from eternal_guesses.model.data.guild_config import GuildConfig
+from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
 
 log = logging.getLogger(__name__)
 
-
-def empty_config(guild_id):
-    config = GuildConfig()
-    config.guild_id = guild_id
-    return config
+PK_REGEX = r"GUILD#(.*)"
 
 
-def make_config(guild_id, item) -> GuildConfig:
-    config = empty_config(guild_id)
+def _hash_key(guild_id: int):
+    return f"GUILD#{guild_id}"
 
-    for channel in item['management_channels']:
+
+def _range_key():
+    return "CONFIG"
+
+
+def _config_from_model(model: EternalGuessesTable) -> GuildConfig:
+    guild_id = int(re.match(PK_REGEX, model.pk).group(1))
+    config = GuildConfig(guild_id)
+
+    for channel in model.management_channels:
         config.management_channels.append(channel)
 
-    for role in item['management_roles']:
+    for role in model.management_roles:
         config.management_roles.append(role)
 
     return config
 
 
 class ConfigsRepository:
-    @staticmethod
-    def get(guild_id: int) -> GuildConfig:
-        table = ConfigsRepository._get_table()
+    def __init__(self, table_name: str, host: str = None):
+        self.table = EternalGuessesTable
+        self.table.Meta.table_name = table_name
+        if host is not None:
+            self.table.Meta.host = host
 
-        key = {
-            "pk": f"GUILD#{guild_id}",
-            "sk": "CONFIG",
-        }
+    def get(self, guild_id: int) -> GuildConfig:
+        try:
+            model = self.table.get(_hash_key(guild_id), _range_key())
+        except DoesNotExist:
+            return GuildConfig(guild_id)
 
-        log.debug(f"getting item, key={key}")
+        return _config_from_model(model)
 
-        response = table.get_item(Key=key)
+    def save(self, guild_config: GuildConfig):
+        model = self.table(_hash_key(guild_config.guild_id), _range_key())
 
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug(f"table.get_item response: {pformat(response)}")
+        model.management_channels = guild_config.management_channels
+        model.management_roles = guild_config.management_roles
 
-        if 'Item' not in response:
-            return empty_config(guild_id)
+        model.save()
 
-        item = response['Item']
-        return make_config(guild_id, item)
-
-    @staticmethod
-    def save(config: GuildConfig):
-        assert config.guild_id is not None
-
-        table = ConfigsRepository._get_table()
-
-        item = {
-            "pk": f"GUILD#{config.guild_id}",
-            "sk": "CONFIG",
-            "management_channels": config.management_channels,
-            "management_roles": config.management_roles,
-        }
-
-        log.debug(f"saving item, item={item}")
-
-        response = table.put_item(
-            Item=item
-        )
-
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug(f"table.put_item response: {pformat(response)}")
-
-    @staticmethod
-    def _get_table():
-        dynamodb = boto3.resource('dynamodb')
-        config = load_config()
-        table = dynamodb.Table(config.dynamodb_table_name)
-        return table
