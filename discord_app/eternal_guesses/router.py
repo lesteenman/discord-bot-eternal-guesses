@@ -1,9 +1,15 @@
 import logging
+from abc import ABC
 
 from eternal_guesses import routes
 from eternal_guesses.model.discord_event import DiscordEvent, CommandType, DiscordCommand
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.model.lambda_response import LambdaResponse
+from eternal_guesses.routes.admin import AdminRoute
+from eternal_guesses.routes.create import CreateRoute
+from eternal_guesses.routes.guess import GuessRoute
+from eternal_guesses.routes.manage import ManageRoute
+from eternal_guesses.routes.ping import PingRoute
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -20,70 +26,81 @@ class UnknownCommandException(Exception):
                          f"subcommand={command.subcommand_name})")
 
 
-async def handle_manage_command(event: DiscordEvent) -> DiscordResponse:
-    if event.command.subcommand_name == "post":
-        return await routes.manage.post(event)
-
-    if event.command.subcommand_name == "close":
-        return await routes.manage.close(event)
-
-    if event.command.subcommand_name == "list-games":
-        return await routes.manage.list_games(event)
-
-    raise UnknownCommandException(event.command)
+class Router(ABC):
+    async def route(self, event: DiscordEvent) -> LambdaResponse:
+        pass
 
 
-async def handle_admin_command(event: DiscordEvent) -> DiscordResponse:
-    if event.command.subcommand_name == "info":
-        return await routes.admin.info(event)
+class RouterImpl(Router):
+    def __init__(self, manage_route: ManageRoute = None, create_route: CreateRoute = None,
+                 guess_route: GuessRoute = None, ping_route: PingRoute = None, admin_route: AdminRoute = None):
+        self.manage_route = manage_route
+        self.create_route = create_route
+        self.guess_route = guess_route
+        self.ping_route = ping_route
+        self.admin_route = admin_route
 
-    if event.command.subcommand_name == "add-management-channel":
-        return await routes.admin.add_management_channel(event)
+    async def _handle_manage_command(self, event: DiscordEvent) -> DiscordResponse:
+        if event.command.subcommand_name == "post":
+            return await self.manage_route.post(event)
 
-    if event.command.subcommand_name == "remove-management-channel":
-        return await routes.admin.remove_management_channel(event)
+        if event.command.subcommand_name == "close":
+            return await self.manage_route.close(event)
 
-    if event.command.subcommand_name == "add-management-role":
-        return await routes.admin.add_management_role(event)
+        if event.command.subcommand_name == "list-games":
+            return await self.manage_route.list_games(event)
 
-    if event.command.subcommand_name == "remove-management-role":
-        return await routes.admin.remove_management_role(event)
+        raise UnknownCommandException(event.command)
 
-    raise UnknownCommandException(event.command)
+    async def _handle_admin_command(self, event: DiscordEvent) -> DiscordResponse:
+        if event.command.subcommand_name == "info":
+            return await self.admin_route.info(event)
 
+        if event.command.subcommand_name == "add-management-channel":
+            return await self.admin_route.add_management_channel(event)
 
-async def handle_application_command(event: DiscordEvent) -> DiscordResponse:
-    if event.command.command_name == "guess":
-        return await routes.guess.call(event)
+        if event.command.subcommand_name == "remove-management-channel":
+            return await self.admin_route.remove_management_channel(event)
 
-    if event.command.command_name == "create":
-        return await routes.create.call(event)
+        if event.command.subcommand_name == "add-management-role":
+            return await self.admin_route.add_management_role(event)
 
-    if event.command.command_name == "manage":
-        return await handle_manage_command(event)
+        if event.command.subcommand_name == "remove-management-role":
+            return await self.admin_route.remove_management_role(event)
 
-    if event.command.command_name == "admin":
-        return await handle_admin_command(event)
+        raise UnknownCommandException(event.command)
 
-    raise UnknownCommandException(event.command)
+    async def _handle_application_command(self, event: DiscordEvent) -> DiscordResponse:
+        if event.command.command_name == "guess":
+            return await self.guess_route.call(event)
 
+        if event.command.command_name == "create":
+            return await self.create_route.call(event)
 
-async def route(event: DiscordEvent) -> LambdaResponse:
-    if event.type is CommandType.PING:
-        log.info("handling 'ping'")
-        discord_response = await routes.ping.call()
+        if event.command.command_name == "manage":
+            return await self._handle_manage_command(event)
 
-        return LambdaResponse.success(discord_response.json())
+        if event.command.command_name == "admin":
+            return await self._handle_admin_command(event)
 
-    if event.type is CommandType.COMMAND:
-        discord_response = await handle_application_command(event)
+        raise UnknownCommandException(event.command)
 
-        log.info(f"handling application command, type='{event.command.command_name}', "
-                 f"subcommand='{event.command.subcommand_name}'")
-        log.debug(
-            f"guild={event.guild_id}, channel={event.channel_id}, user={event.member.user_id}")
-        log.debug(f"options={event.command.options}")
+    async def route(self, event: DiscordEvent) -> LambdaResponse:
+        if event.type is CommandType.PING:
+            log.info("handling 'ping'")
+            discord_response = await self.ping_route.call()
 
-        return LambdaResponse.success(discord_response.json())
+            return LambdaResponse.success(discord_response.json())
 
-    raise UnknownEventException(event)
+        if event.type is CommandType.COMMAND:
+            discord_response = await self._handle_application_command(event)
+
+            log.info(f"handling application command, type='{event.command.command_name}', "
+                     f"subcommand='{event.command.subcommand_name}'")
+            log.debug(
+                f"guild={event.guild_id}, channel={event.channel_id}, user={event.member.user_id}")
+            log.debug(f"options={event.command.options}")
+
+            return LambdaResponse.success(discord_response.json())
+
+        raise UnknownEventException(event)

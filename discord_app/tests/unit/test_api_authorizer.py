@@ -1,11 +1,10 @@
 import json
 from unittest.mock import patch
 
-from eternal_guesses import api_authorizer
-from eternal_guesses.api_authorizer import AuthorizationResult
+from eternal_guesses.api_authorizer import AuthorizationResult, ApiAuthorizerImpl
 
 
-@patch.object(api_authorizer.discord_interactions, 'verify_key', autospec=True)
+@patch('eternal_guesses.api_authorizer.discord_interactions.verify_key', autospec=True)
 def test_pass(mock_verify_key):
     # Given
     mock_verify_key.return_value = True
@@ -19,13 +18,14 @@ def test_pass(mock_verify_key):
     }
 
     # When
+    api_authorizer = ApiAuthorizerImpl()
     result, response = api_authorizer.authorize(event)
 
     # Then
     assert result == AuthorizationResult.PASS
 
 
-@patch.object(api_authorizer.discord_interactions, 'verify_key', autospec=True)
+@patch('eternal_guesses.api_authorizer.discord_interactions.verify_key', autospec=True)
 def test_fail(mock_verify_key):
     # Given
     mock_verify_key.return_value = False
@@ -39,6 +39,7 @@ def test_fail(mock_verify_key):
     }
 
     # When
+    api_authorizer = ApiAuthorizerImpl()
     result, response = api_authorizer.authorize(event)
 
     # Then

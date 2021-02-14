@@ -1,25 +1,28 @@
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
+
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, DiscordMember
 from eternal_guesses.model.discord_response import ResponseType
+from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes import create
+from eternal_guesses.routes.create import CreateRoute
 
 pytestmark = pytest.mark.asyncio
 
 
 @patch.object(create, 'datetime', autospec=True)
-@patch.object(create, 'games_repository', autospec=True)
 @patch.object(create, 'id_generator', autospec=True)
-async def test_create_generated_id(mock_id_generator, mock_games_repository, mock_datetime):
+async def test_create_generated_id(mock_id_generator, mock_datetime):
     # Given
     guild_id = 'guild-1'
 
     create_datetime = datetime.now()
     mock_datetime.now.return_value = create_datetime
 
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = None
     mock_id_generator.game_id.return_value = "potatoific-tomatopuss"
 
@@ -32,17 +35,15 @@ async def test_create_generated_id(mock_id_generator, mock_games_repository, moc
     event.member = DiscordMember()
 
     # When
-    await create.call(event)
+    create_route = CreateRoute(games_repository=mock_games_repository)
+    await create_route.call(event)
 
     # Then
     mock_games_repository.save.assert_called()
 
     args = mock_games_repository.save.call_args
 
-    insert_guild_id = args[0][0]
-    assert insert_guild_id == guild_id
-
-    game = args[0][1]
+    game = args[0][0]
     assert game.guild_id == guild_id
     assert game.game_id == "potatoific-tomatopuss"
     assert game.create_datetime == create_datetime
@@ -51,8 +52,7 @@ async def test_create_generated_id(mock_id_generator, mock_games_repository, moc
 
 
 @patch.object(create, 'datetime', autospec=True)
-@patch.object(create, 'games_repository', autospec=True)
-async def test_create_given_id(mock_games_repository, mock_datetime):
+async def test_create_given_id(mock_datetime):
     # Given
     guild_id = 'guild-2'
     game_id = 'prolific-platypus'
@@ -60,6 +60,7 @@ async def test_create_given_id(mock_games_repository, mock_datetime):
     create_datetime = datetime.now()
     mock_datetime.now.return_value = create_datetime
 
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = None
 
     command = DiscordCommand()
@@ -73,7 +74,8 @@ async def test_create_given_id(mock_games_repository, mock_datetime):
     event.member = DiscordMember()
 
     # When
-    await create.call(event)
+    create_route = CreateRoute(games_repository=mock_games_repository)
+    await create_route.call(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
@@ -81,10 +83,7 @@ async def test_create_given_id(mock_games_repository, mock_datetime):
     mock_games_repository.save.assert_called()
     args = mock_games_repository.save.call_args
 
-    insert_guild_id = args[0][0]
-    assert insert_guild_id == guild_id
-
-    game = args[0][1]
+    game = args[0][0]
     assert game.guild_id == guild_id
     assert game.game_id == game_id
     assert game.create_datetime == create_datetime
@@ -92,14 +91,15 @@ async def test_create_given_id(mock_games_repository, mock_datetime):
     assert game.closed is False
 
 
-@patch.object(create, 'games_repository', autospec=True)
-async def test_create_duplicate_given_id(mock_games_repository):
+async def test_create_duplicate_given_id():
     # Given: the games_repository will find a game for the given id
     guild_id = 'guild-3'
     game_id = 'boonful-boonanza'
 
     existing_game = Game()
     existing_game.game_id = game_id
+
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = existing_game
 
     command = DiscordCommand()
@@ -112,7 +112,8 @@ async def test_create_duplicate_given_id(mock_games_repository):
     event.guild_id = guild_id
 
     # When
-    response = await create.call(event)
+    create_route = CreateRoute(games_repository=mock_games_repository)
+    response = await create_route.call(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
@@ -122,11 +123,11 @@ async def test_create_duplicate_given_id(mock_games_repository):
     assert response.type.value == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value
 
 
-@patch.object(create, 'games_repository', autospec=True)
-async def test_create_sets_created_by_to_calling_user(mock_games_repository):
+async def test_create_sets_created_by_to_calling_user():
     # Given
     calling_user_id = 500
 
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = None
 
     command = DiscordCommand()
@@ -143,10 +144,11 @@ async def test_create_sets_created_by_to_calling_user(mock_games_repository):
     event.member = calling_member
 
     # When
-    await create.call(event)
+    create_route = CreateRoute(games_repository=mock_games_repository)
+    await create_route.call(event)
 
     # Then
     args = mock_games_repository.save.call_args
 
-    game = args[0][1]
+    game = args[0][0]
     assert game.created_by == calling_user_id

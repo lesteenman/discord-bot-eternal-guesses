@@ -1,4 +1,5 @@
 import os
+from abc import ABC
 from enum import Enum
 from typing import Dict
 
@@ -11,16 +12,24 @@ class AuthorizationResult(Enum):
     FAIL = False
 
 
-def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
-    body = event['body'].encode()
-    headers = event['headers']
-    signature = headers['x-signature-ed25519']
-    timestamp = headers['x-signature-timestamp']
+class ApiAuthorizer(ABC):
+    @staticmethod
+    def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
+        pass
 
-    result = discord_interactions.verify_key(
-        body, signature, timestamp, os.environ.get('DISCORD_PUBLIC_KEY'))
-    if result:
-        return AuthorizationResult.PASS, None
-    else:
-        return AuthorizationResult.FAIL, LambdaResponse.unauthorized(
-            "could not verify authorization")
+
+class ApiAuthorizerImpl(ApiAuthorizer):
+    @staticmethod
+    def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
+        body = event['body'].encode()
+        headers = event['headers']
+        signature = headers['x-signature-ed25519']
+        timestamp = headers['x-signature-timestamp']
+
+        result = discord_interactions.verify_key(
+            body, signature, timestamp, os.environ.get('DISCORD_PUBLIC_KEY'))
+        if result:
+            return AuthorizationResult.PASS, None
+        else:
+            return AuthorizationResult.FAIL, LambdaResponse.unauthorized(
+                "could not verify authorization")

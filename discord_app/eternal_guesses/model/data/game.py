@@ -27,7 +27,7 @@ class Game:
         self.channel_messages = channel_messages
 
         if channel_messages is None:
-            channel_messages = []
+            self.channel_messages = []
 
         if guesses is None:
-            guesses = {}
+            self.guesses = {}

@@ -6,5 +6,6 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-async def call() -> DiscordResponse:
-    return DiscordResponse.pong()
+class PingRoute:
+    async def call(self) -> DiscordResponse:
+        return DiscordResponse.pong()

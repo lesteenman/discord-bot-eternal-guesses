@@ -33,9 +33,12 @@ def _config_from_model(model: EternalGuessesTable) -> GuildConfig:
 
 
 class ConfigsRepository:
-    def __init__(self, table_name: str, host: str = None):
+    def __init__(self, table_name: str = None, host: str = None):
         self.table = EternalGuessesTable
-        self.table.Meta.table_name = table_name
+
+        if table_name is not None:
+            self.table.Meta.table_name = table_name
+
         if host is not None:
             self.table.Meta.host = host
 

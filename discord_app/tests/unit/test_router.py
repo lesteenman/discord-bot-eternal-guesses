@@ -1,24 +1,32 @@
 import json
-from unittest.mock import patch
+from unittest.mock import AsyncMock
 
 import pytest
-from eternal_guesses import router
+
 from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType, DiscordMember
 from eternal_guesses.model.discord_response import DiscordResponse
+from eternal_guesses.router import RouterImpl
+from eternal_guesses.routes.admin import AdminRoute
+from eternal_guesses.routes.create import CreateRoute
+from eternal_guesses.routes.guess import GuessRoute
+from eternal_guesses.routes.manage import ManageRoute
+from eternal_guesses.routes.ping import PingRoute
 
 pytestmark = pytest.mark.asyncio
 
 
-@patch.object(router.routes.ping, 'call', autospec=True)
-async def test_handle_ping(mock_route):
+async def test_handle_ping():
     # Given
     event = DiscordEvent()
     event.type = CommandType.PING
 
     pong_response = DiscordResponse.pong()
-    mock_route.return_value = pong_response
+
+    mock_ping_route = AsyncMock(PingRoute, autospec=True)
+    mock_ping_route.call.return_value = pong_response
 
     # When
+    router = RouterImpl(ping_route=mock_ping_route)
     response = await router.route(event)
 
     # Then
@@ -26,8 +34,7 @@ async def test_handle_ping(mock_route):
     assert json.loads(response.body) == pong_response.json()
 
 
-@patch.object(router.routes.guess, 'call', autospec=True)
-async def test_handle_guess(mock_route):
+async def test_handle_guess():
     # Given
     command = DiscordCommand()
     command.command_name = "guess"
@@ -38,20 +45,22 @@ async def test_handle_guess(mock_route):
     event.member = DiscordMember()
 
     guess_response = DiscordResponse.acknowledge()
-    mock_route.return_value = guess_response
+
+    mock_guess_route = AsyncMock(GuessRoute, autospec=True)
+    mock_guess_route.call.return_value = guess_response
 
     # When
+    router = RouterImpl(guess_route=mock_guess_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_guess_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == guess_response.json()
 
 
-@patch.object(router.routes.manage, 'post', autospec=True)
-async def test_handle_manage_post(mock_route):
+async def test_handle_manage_post():
     # Given
     command = DiscordCommand()
     command.command_name = "manage"
@@ -63,20 +72,22 @@ async def test_handle_manage_post(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_manage_route = AsyncMock(ManageRoute, autospec=True)
+    mock_manage_route.post.return_value = mock_response
 
     # When
+    router = RouterImpl(manage_route=mock_manage_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_manage_route.post.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.manage, 'close', autospec=True)
-async def test_handle_manage_close(mock_route):
+async def test_handle_manage_close():
     # Given
     command = DiscordCommand()
     command.command_name = "manage"
@@ -88,20 +99,22 @@ async def test_handle_manage_close(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_manage_route = AsyncMock(ManageRoute, autospec=True)
+    mock_manage_route.close.return_value = mock_response
 
     # When
+    router = RouterImpl(manage_route=mock_manage_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_manage_route.close.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.manage, 'list_games', autospec=True)
-async def test_handle_manage_list(mock_route):
+async def test_handle_manage_list():
     # Given
     command = DiscordCommand()
     command.command_name = "manage"
@@ -113,20 +126,22 @@ async def test_handle_manage_list(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_manage_route = AsyncMock(ManageRoute, autospec=True)
+    mock_manage_route.list_games.return_value = mock_response
 
     # When
+    router = RouterImpl(manage_route=mock_manage_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_manage_route.list_games.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.create, 'call', autospec=True)
-async def test_handle_create(mock_route):
+async def test_handle_create():
     # Given
     command = DiscordCommand()
     command.command_name = "create"
@@ -137,20 +152,22 @@ async def test_handle_create(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_create_route = AsyncMock(CreateRoute, autospec=True)
+    mock_create_route.call.return_value = mock_response
 
     # When
+    router = RouterImpl(create_route=mock_create_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_create_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.admin, 'info', autospec=True)
-async def test_handle_admin_info(mock_route):
+async def test_handle_admin_info():
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -162,20 +179,22 @@ async def test_handle_admin_info(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
+    mock_admin_route.info.return_value = mock_response
 
     # When
+    router = RouterImpl(admin_route=mock_admin_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_admin_route.info.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.admin, 'add_management_channel', autospec=True)
-async def test_handle_admin_add_management_channel(mock_route):
+async def test_handle_admin_add_management_channel():
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -187,20 +206,22 @@ async def test_handle_admin_add_management_channel(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
+    mock_admin_route.add_management_channel.return_value = mock_response
 
     # When
+    router = RouterImpl(admin_route=mock_admin_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_admin_route.add_management_channel.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.admin, 'remove_management_channel', autospec=True)
-async def test_handle_admin_remove_management_channel(mock_route):
+async def test_handle_admin_remove_management_channel():
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -212,20 +233,22 @@ async def test_handle_admin_remove_management_channel(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
+    mock_admin_route.remove_management_channel.return_value = mock_response
 
     # When
+    router = RouterImpl(admin_route=mock_admin_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_admin_route.remove_management_channel.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.admin, 'add_management_role', autospec=True)
-async def test_handle_admin_add_management_role(mock_route):
+async def test_handle_admin_add_management_role():
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -237,20 +260,22 @@ async def test_handle_admin_add_management_role(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
+    mock_admin_route.add_management_role.return_value = mock_response
 
     # When
+    router = RouterImpl(admin_route=mock_admin_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_admin_route.add_management_role.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
 
 
-@patch.object(router.routes.admin, 'remove_management_role', autospec=True)
-async def test_handle_admin_remove_management_role(mock_route):
+async def test_handle_admin_remove_management_role():
     # Given
     command = DiscordCommand()
     command.command_name = "admin"
@@ -262,13 +287,16 @@ async def test_handle_admin_remove_management_role(mock_route):
     event.member = DiscordMember()
 
     mock_response = DiscordResponse.acknowledge()
-    mock_route.return_value = mock_response
+
+    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
+    mock_admin_route.remove_management_role.return_value = mock_response
 
     # When
+    router = RouterImpl(admin_route=mock_admin_route)
     response = await router.route(event)
 
     # Then
-    mock_route.assert_called_with(event)
+    mock_admin_route.remove_management_role.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()

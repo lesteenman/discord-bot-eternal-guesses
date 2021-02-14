@@ -1,17 +1,36 @@
 import json
+from typing import Dict, Optional
 from unittest.mock import patch
 
 from eternal_guesses import handler
-from eternal_guesses.api_authorizer import AuthorizationResult
+from eternal_guesses.api_authorizer import AuthorizationResult, ApiAuthorizer
+from eternal_guesses.handler import DiscordEventHandler
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.lambda_response import LambdaResponse
+from eternal_guesses.router import Router
 
 
-@patch.object(handler.api_authorizer, 'authorize', autospec=True)
-def test_unauthorized_request(mock_authorize):
+class TestAuthorizer(ApiAuthorizer):
+    def __init__(self, result: AuthorizationResult, response: Optional[LambdaResponse]):
+        self.result = result
+        self.response = response
+
+    def authorize(self, event: Dict) -> (AuthorizationResult, LambdaResponse):
+        return self.result, self.response
+
+
+class TestRouter(Router):
+    def __init__(self, response: Optional[LambdaResponse]):
+        self.response = response
+
+    async def route(self, event: DiscordEvent) -> LambdaResponse:
+        return self.response
+
+
+def test_unauthorized_request():
     # Given
-    mock_authorize.return_value = (
-        AuthorizationResult.FAIL, LambdaResponse.unauthorized("key does not check out"))
+    test_authorizer = TestAuthorizer(AuthorizationResult.FAIL,
+                                     LambdaResponse.unauthorized("key does not check out"))
 
     body = {'type': 1}
     event = {
@@ -21,22 +40,22 @@ def test_unauthorized_request(mock_authorize):
             'x-signature-timestamp': '',
         }
     }
-    context = {}
 
     # When
-    response = handler.handle_lambda(event, context)
+    discord_event_handler = DiscordEventHandler(router=TestRouter(None),
+                                                api_authorizer=test_authorizer)
+    response = discord_event_handler.handle(event)
 
     # Then
     assert response['statusCode'] == 401
 
 
-@patch.object(handler.api_authorizer, 'authorize', autospec=True)
 @patch.object(handler.discord_event, 'from_event', autospec=True)
-@patch.object(handler.router, 'route', autospec=True)
-def test_authorized_request(mock_router, mock_from_event, mock_authorize):
+def test_authorized_request(mock_from_event):
     # Given
-    mock_authorize.return_value = (AuthorizationResult.PASS, None)
-    mock_router.return_value = LambdaResponse.success({'response': 'mocked'})
+    test_authorizer = TestAuthorizer(AuthorizationResult.PASS, None)
+    test_router = TestRouter(LambdaResponse.success({'response': 'mocked'}))
+
     mock_from_event.return_value = None
 
     event = {
@@ -48,20 +67,21 @@ def test_authorized_request(mock_router, mock_from_event, mock_authorize):
     }
 
     # When
-    response = handler.handle_lambda(event, {})
+    discord_event_handler = DiscordEventHandler(router=test_router,
+                                                api_authorizer=test_authorizer)
+    response = discord_event_handler.handle(event)
 
     # Then
     assert response['statusCode'] == 200
     assert json.loads(response['body']) == {'response': 'mocked'}
 
 
-@patch.object(handler.api_authorizer, 'authorize', autospec=True)
 @patch.object(handler.discord_event, 'from_event', autospec=True)
-@patch.object(handler.router, 'route', autospec=True)
-def test_discord_event(mock_router, mock_from_event, mock_authorize):
+def test_discord_event(mock_from_event):
     # Given
-    mock_authorize.return_value = (AuthorizationResult.PASS, None)
-    mock_router.return_value = LambdaResponse.success({'response': 'mocked'})
+    test_authorizer = TestAuthorizer(AuthorizationResult.PASS, None)
+
+    test_router = TestRouter(LambdaResponse.success({'response': 'mocked'}))
 
     event_body = {'type': 1}
 
@@ -75,10 +95,12 @@ def test_discord_event(mock_router, mock_from_event, mock_authorize):
             'x-signature-timestamp': '',
         }
     }
-    context = {}
 
     # When
-    handler.handle_lambda(event, context)
+    discord_event_handler = DiscordEventHandler(router=test_router,
+                                                api_authorizer=test_authorizer)
+    response = discord_event_handler.handle(event)
 
     # Then
-    mock_router.assert_called_with(discord_event)
+    assert response['statusCode'] == 200
+    assert json.loads(response['body']) == {'response': 'mocked'}

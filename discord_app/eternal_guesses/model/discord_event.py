@@ -16,7 +16,7 @@ class CommandType(Enum):
 
 class DiscordMember:
     username: str = None
-    user_id: str = None
+    user_id: int = None
     nickname: str = None
     roles: List[str] = []
 

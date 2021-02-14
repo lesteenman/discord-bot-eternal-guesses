@@ -1,19 +1,21 @@
 from pprint import pprint
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
+
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, DiscordMember
-from eternal_guesses.routes import manage
 from eternal_guesses.model.discord_response import ResponseType
+from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.routes import manage
+from eternal_guesses.routes.manage import ManageRoute
 
 pytestmark = pytest.mark.asyncio
 
 
 @patch.object(manage, 'message_formatter', autospec=True)
-@patch.object(manage, 'GamesRepository', autospec=True)
 @patch.object(manage, 'discord_messaging', autospec=True)
-async def test_post_creates_channel_message(mock_discord_messaging, mock_games_repository, mock_message_formatter):
+async def test_post_creates_channel_message(mock_discord_messaging, mock_message_formatter):
     # Given
     guild_id = 'guild-1'
     game_id = 'game-1'
@@ -23,6 +25,7 @@ async def test_post_creates_channel_message(mock_discord_messaging, mock_games_r
     mock_message_formatter.channel_list_game_guesses.return_value = formatted_message
 
     game = Game()
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = game
 
     command = DiscordCommand()
@@ -36,7 +39,8 @@ async def test_post_creates_channel_message(mock_discord_messaging, mock_games_r
     event.command = command
 
     # When
-    await manage.post(event)
+    manage_route = ManageRoute(games_repository=mock_games_repository)
+    await manage_route.post(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
@@ -45,17 +49,13 @@ async def test_post_creates_channel_message(mock_discord_messaging, mock_games_r
         channel_id, formatted_message)
 
     mock_games_repository.save.assert_called()
-    saved_guild_id = mock_games_repository.save.call_args.args[0]
-    saved_game = mock_games_repository.save.call_args.args[1]
-    assert saved_guild_id == guild_id
+    saved_game = mock_games_repository.save.call_args.args[0]
     assert len(saved_game.channel_messages) == 1
 
 
 @patch.object(manage, 'message_formatter', autospec=True)
-@patch.object(manage, 'GamesRepository', autospec=True)
 @patch.object(manage, 'discord_messaging', autospec=True)
-async def test_post_without_channel_uses_event_channel(mock_discord_messaging, mock_games_repository,
-                                                       mock_message_formatter):
+async def test_post_without_channel_uses_event_channel(mock_discord_messaging, mock_message_formatter):
     # Given
     guild_id = 'guild-1'
     game_id = 'game-1'
@@ -65,6 +65,7 @@ async def test_post_without_channel_uses_event_channel(mock_discord_messaging, m
     mock_message_formatter.channel_list_game_guesses.return_value = formatted_message
 
     game = Game()
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = game
 
     command = DiscordCommand()
@@ -78,7 +79,8 @@ async def test_post_without_channel_uses_event_channel(mock_discord_messaging, m
     event.command = command
 
     # When
-    await manage.post(event)
+    manage_route = ManageRoute(games_repository=mock_games_repository)
+    await manage_route.post(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
@@ -87,9 +89,8 @@ async def test_post_without_channel_uses_event_channel(mock_discord_messaging, m
         event_channel_id, formatted_message)
 
 
-@patch.object(manage, 'GamesRepository', autospec=True)
 @patch.object(manage, 'discord_messaging', autospec=True)
-async def test_post_saves_message_id_to_game(mock_discord_messaging, mock_games_repository):
+async def test_post_saves_message_id_to_game(mock_discord_messaging):
     # Given
     guild_id = 'guild-1'
     game_id = 'game-1'
@@ -100,6 +101,8 @@ async def test_post_saves_message_id_to_game(mock_discord_messaging, mock_games_
 
     game = Game()
     game.game_id = game_id
+
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = game
 
     command = DiscordCommand()
@@ -113,16 +116,14 @@ async def test_post_saves_message_id_to_game(mock_discord_messaging, mock_games_
     event.command = command
 
     # When
-    await manage.post(event)
+    manage_route = ManageRoute(games_repository=mock_games_repository)
+    await manage_route.post(event)
 
     # Then
     mock_games_repository.save.assert_called()
 
     args = mock_games_repository.save.call_args.args
-
-    assert args[0] == guild_id
-
-    updated_game = args[1]
+    updated_game = args[0]
     assert updated_game.channel_messages is not None
 
     pprint(updated_game.channel_messages)
@@ -132,10 +133,8 @@ async def test_post_saves_message_id_to_game(mock_discord_messaging, mock_games_
 
 
 @patch.object(manage, 'message_formatter', autospec=True)
-@patch.object(manage, 'GamesRepository', autospec=True)
 @patch.object(manage, 'discord_messaging', autospec=True)
-async def test_post_invalid_game_id_sends_dm_error(mock_discord_messaging, mock_games_repository,
-                                                   mock_message_formatter):
+async def test_post_invalid_game_id_sends_dm_error(mock_discord_messaging, mock_message_formatter):
     # Given
     guild_id = 'guild-1'
     game_id = 'game-1'
@@ -144,6 +143,7 @@ async def test_post_invalid_game_id_sends_dm_error(mock_discord_messaging, mock_
     formatted_error = "mock formatted error"
     mock_message_formatter.dm_error_game_not_found.return_value = formatted_error
 
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get.return_value = None
 
     command = DiscordCommand()
@@ -160,7 +160,8 @@ async def test_post_invalid_game_id_sends_dm_error(mock_discord_messaging, mock_
     event.member = member
 
     # When
-    await manage.post(event)
+    manage_route = ManageRoute(games_repository=mock_games_repository)
+    await manage_route.post(event)
 
     # Then
     mock_message_formatter.dm_error_game_not_found.assert_called_with(game_id)
@@ -170,8 +171,7 @@ async def test_post_invalid_game_id_sends_dm_error(mock_discord_messaging, mock_
 
 
 @patch.object(manage, 'message_formatter', autospec=True)
-@patch.object(manage, 'GamesRepository', autospec=True)
-async def test_list_all_without_closed_option(mock_games_repository, mock_message_formatter):
+async def test_list_all_without_closed_option(mock_message_formatter):
     # Given
     guild_id = 100
 
@@ -195,10 +195,12 @@ async def test_list_all_without_closed_option(mock_games_repository, mock_messag
     closed_game.closed = True
 
     games = [open_game, closed_game]
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get_all.return_value = games
 
     # When
-    discord_response = await manage.list_games(event)
+    manage_route = ManageRoute(games_repository=mock_games_repository)
+    discord_response = await manage_route.list_games(event)
 
     # Then
     mock_message_formatter.channel_manage_list_all_games.assert_called()
@@ -211,8 +213,7 @@ async def test_list_all_without_closed_option(mock_games_repository, mock_messag
 
 
 @patch.object(manage, 'message_formatter', autospec=True)
-@patch.object(manage, 'GamesRepository', autospec=True)
-async def test_list_all_closed_games(mock_games_repository, mock_message_formatter):
+async def test_list_all_closed_games(mock_message_formatter):
     # Given
     guild_id = 100
 
@@ -238,10 +239,12 @@ async def test_list_all_closed_games(mock_games_repository, mock_message_formatt
     closed_game.closed = True
 
     games = [open_game, closed_game]
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get_all.return_value = games
 
     # When
-    discord_response = await manage.list_games(event)
+    manage_route = ManageRoute(games_repository=mock_games_repository)
+    discord_response = await manage_route.list_games(event)
 
     # Then
     mock_message_formatter.channel_manage_list_closed_games.assert_called()
@@ -254,8 +257,7 @@ async def test_list_all_closed_games(mock_games_repository, mock_message_formatt
 
 
 @patch.object(manage, 'message_formatter', autospec=True)
-@patch.object(manage, 'GamesRepository', autospec=True)
-async def test_list_all_open_games(mock_games_repository, mock_message_formatter):
+async def test_list_all_open_games(mock_message_formatter):
     # Given
     guild_id = 100
 
@@ -280,10 +282,12 @@ async def test_list_all_open_games(mock_games_repository, mock_message_formatter
     closed_game = Game()
     closed_game.closed = True
     games = [open_game, closed_game]
+    mock_games_repository = MagicMock(GamesRepository, autospec=True)
     mock_games_repository.get_all.return_value = games
 
     # When
-    discord_response = await manage.list_games(event)
+    manage_route = ManageRoute(games_repository=mock_games_repository)
+    discord_response = await manage_route.list_games(event)
 
     # Then
     mock_message_formatter.channel_manage_list_open_games.assert_called()
