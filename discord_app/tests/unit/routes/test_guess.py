@@ -72,9 +72,7 @@ async def test_guess_updates_channel_messages(mock_games_repository, mock_discor
     list_guesses_message = "message with new gues"
     mock_message_formatter.channel_list_game_guesses.return_value = list_guesses_message
 
-    game = Game()
-    game.game_id = 'game-id'
-    game.channel_messages = [channel_message_1, channel_message_2]
+    game = Game(game_id='game-id', channel_messages=[channel_message_1, channel_message_2])
     mock_games_repository.get.return_value = game
 
     # When

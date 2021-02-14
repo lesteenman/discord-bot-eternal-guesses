@@ -1,6 +1,8 @@
 import json
 from unittest.mock import patch
 
+from discord_interactions import InteractionType
+
 from eternal_guesses import handler
 from eternal_guesses.api_authorizer import AuthorizationResult
 
@@ -14,7 +16,7 @@ def test_ping(mock_authorize):
         'body': json.dumps({
             "id": "00000001",
             "token": "some-token-abcde1234567890",
-            "type": 1,
+            "type": InteractionType.APPLICATION_COMMAND,
             "version": 1
         }),
         'headers': {},
