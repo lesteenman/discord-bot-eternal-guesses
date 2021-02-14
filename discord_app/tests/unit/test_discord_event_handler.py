@@ -2,15 +2,14 @@ import json
 from typing import Dict, Optional
 from unittest.mock import patch
 
-from eternal_guesses import handler
 from eternal_guesses.api_authorizer import AuthorizationResult, ApiAuthorizer
-from eternal_guesses.handler import DiscordEventHandler
+from eternal_guesses.discord_event_handler import DiscordEventHandler
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.router import Router
 
 
-class TestAuthorizer(ApiAuthorizer):
+class _TestAuthorizer(ApiAuthorizer):
     def __init__(self, result: AuthorizationResult, response: Optional[LambdaResponse]):
         self.result = result
         self.response = response
@@ -19,7 +18,7 @@ class TestAuthorizer(ApiAuthorizer):
         return self.result, self.response
 
 
-class TestRouter(Router):
+class _TestRouter(Router):
     def __init__(self, response: Optional[LambdaResponse]):
         self.response = response
 
@@ -29,8 +28,8 @@ class TestRouter(Router):
 
 def test_unauthorized_request():
     # Given
-    test_authorizer = TestAuthorizer(AuthorizationResult.FAIL,
-                                     LambdaResponse.unauthorized("key does not check out"))
+    test_authorizer = _TestAuthorizer(AuthorizationResult.FAIL,
+                                      LambdaResponse.unauthorized("key does not check out"))
 
     body = {'type': 1}
     event = {
@@ -42,7 +41,7 @@ def test_unauthorized_request():
     }
 
     # When
-    discord_event_handler = DiscordEventHandler(router=TestRouter(None),
+    discord_event_handler = DiscordEventHandler(router=_TestRouter(None),
                                                 api_authorizer=test_authorizer)
     response = discord_event_handler.handle(event)
 
@@ -50,11 +49,11 @@ def test_unauthorized_request():
     assert response['statusCode'] == 401
 
 
-@patch.object(handler.discord_event, 'from_event', autospec=True)
+@patch('eternal_guesses.discord_event_handler.discord_event.from_event', autospec=True)
 def test_authorized_request(mock_from_event):
     # Given
-    test_authorizer = TestAuthorizer(AuthorizationResult.PASS, None)
-    test_router = TestRouter(LambdaResponse.success({'response': 'mocked'}))
+    test_authorizer = _TestAuthorizer(AuthorizationResult.PASS, None)
+    test_router = _TestRouter(LambdaResponse.success({'response': 'mocked'}))
 
     mock_from_event.return_value = None
 
@@ -76,12 +75,12 @@ def test_authorized_request(mock_from_event):
     assert json.loads(response['body']) == {'response': 'mocked'}
 
 
-@patch.object(handler.discord_event, 'from_event', autospec=True)
+@patch('eternal_guesses.discord_event_handler.discord_event.from_event', autospec=True)
 def test_discord_event(mock_from_event):
     # Given
-    test_authorizer = TestAuthorizer(AuthorizationResult.PASS, None)
+    test_authorizer = _TestAuthorizer(AuthorizationResult.PASS, None)
 
-    test_router = TestRouter(LambdaResponse.success({'response': 'mocked'}))
+    test_router = _TestRouter(LambdaResponse.success({'response': 'mocked'}))
 
     event_body = {'type': 1}
 

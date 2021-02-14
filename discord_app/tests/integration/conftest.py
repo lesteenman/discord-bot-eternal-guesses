@@ -1,7 +1,12 @@
+from typing import Dict
+
+import docker
 import opnieuw
 import pytest
 from pynamodb.exceptions import TableError
 
+from eternal_guesses.api_authorizer import ApiAuthorizer, AuthorizationResult
+from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
 
 REGION = "eu-west-1"
@@ -10,19 +15,22 @@ HOST = "http://127.0.0.1:8000"
 ACCESS_KEY_ID = "LOCAL"
 
 
-# @pytest.fixture(scope="session", autouse=True)
-# def start_dynamodb_container():
-#     docker_client = docker.from_env()
-#     dynamodb_container = docker_client.containers.run('amazon/dynamodb-local', ports={8000: 8000}, detach=True,
-#                                                       auto_remove=True)
-#
-#     yield
-#
-#     dynamodb_container.stop()
+@pytest.fixture(scope="session", autouse=True)
+def start_dynamodb_container():
+    docker_client = docker.from_env()
+    print("STARTING CONTAINER")
+    dynamodb_container = docker_client.containers.run('amazon/dynamodb-local', ports={8000: 8000}, detach=True,
+                                                      auto_remove=True)
+
+    yield
+
+    print("STOPPING CONTAINER")
+    dynamodb_container.stop()
 
 
-@opnieuw.retry(retry_on_exceptions=TableError, max_calls_total=10, retry_window_after_first_call_in_seconds=5)
+@opnieuw.retry(retry_on_exceptions=TableError, max_calls_total=10, retry_window_after_first_call_in_seconds=10)
 def _create_table():
+    print("CREATING TABLE")
     EternalGuessesTable.Meta.table_name = TABLE_NAME
     EternalGuessesTable.Meta.host = HOST
     EternalGuessesTable.Meta.region = REGION
@@ -33,6 +41,7 @@ def _create_table():
 
 @opnieuw.retry(retry_on_exceptions=TableError, max_calls_total=10, retry_window_after_first_call_in_seconds=5)
 def _delete_table():
+    print("DELETING TABLE")
     EternalGuessesTable.delete_table()
 
 
@@ -43,3 +52,14 @@ def create_test_database():
     yield
 
     _delete_table()
+
+
+@pytest.fixture(autouse=True)
+def fixed_authorization_result(mocker):
+    class PassingTestAuthorizer(ApiAuthorizer):
+        @staticmethod
+        def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
+            return AuthorizationResult.PASS, None
+
+    test_authorizer = PassingTestAuthorizer()
+    mocker.patch('eternal_guesses.injector._api_authorizer', return_value=test_authorizer)
