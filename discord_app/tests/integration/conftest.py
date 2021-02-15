@@ -17,15 +17,15 @@ HOST = "http://127.0.0.1:8000"
 ACCESS_KEY_ID = "LOCAL"
 
 
-# @pytest.fixture(scope="session", autouse=True)
-# def start_dynamodb_container():
-#     docker_client = docker.from_env()
-#     dynamodb_container = docker_client.containers.run('amazon/dynamodb-local', ports={8000: 8000}, detach=True,
-#                                                       auto_remove=True)
-#
-#     yield
-#
-#     dynamodb_container.stop()
+@pytest.fixture(scope="session", autouse=True)
+def start_dynamodb_container():
+    docker_client = docker.from_env()
+    dynamodb_container = docker_client.containers.run('amazon/dynamodb-local', ports={8000: 8000}, detach=True,
+                                                      auto_remove=True)
+
+    yield
+
+    dynamodb_container.stop()
 
 
 @opnieuw.retry(retry_on_exceptions=TableError, max_calls_total=10, retry_window_after_first_call_in_seconds=10)

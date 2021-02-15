@@ -57,4 +57,3 @@ class ConfigsRepository:
         model.management_roles = list(int(role) for role in guild_config.management_roles)
 
         model.save()
-

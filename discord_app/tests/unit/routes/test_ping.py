@@ -1,6 +1,6 @@
 import pytest
 from discord_interactions import InteractionType
-from eternal_guesses.routes import ping
+
 from eternal_guesses.routes.ping import PingRoute
 
 pytestmark = pytest.mark.asyncio

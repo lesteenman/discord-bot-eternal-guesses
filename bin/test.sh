@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eou pipefail
 
 PROJECT_ROOT="$(pwd)"
 if [ ! -f "$PROJECT_ROOT/bin/deploy.sh" ]; then
@@ -9,7 +9,6 @@ fi
 
 DISCORD_APP_DIR="$PROJECT_ROOT/discord_app"
 
-# Tox and flake8 checking
 cd $DISCORD_APP_DIR
-poetry run flake8 --config $PROJECT_ROOT/.flake8
+poetry run flake8 --config $PROJECT_ROOT/.flake8 ./tests ./eternal_guesses ../error_parser_function
 poetry run pytest

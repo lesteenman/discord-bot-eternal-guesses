@@ -45,7 +45,7 @@ class GuessRoute:
 
         if game.guesses.get(user_id) is not None:
             await self.discord_messaging.send_dm(event.member, f"You already placed a guess for game '{game_id}', "
-                                                          f"your guess was not registered.")
+                                                 f"your guess was not registered.")
 
             return DiscordResponse.acknowledge()
 

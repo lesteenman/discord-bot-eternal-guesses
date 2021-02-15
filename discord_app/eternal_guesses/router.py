@@ -1,7 +1,6 @@
 import logging
 from abc import ABC
 
-from eternal_guesses import routes
 from eternal_guesses.model.discord_event import DiscordEvent, CommandType, DiscordCommand
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.model.lambda_response import LambdaResponse
