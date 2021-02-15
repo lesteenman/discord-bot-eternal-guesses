@@ -1,5 +1,6 @@
 from eternal_guesses.api_authorizer import ApiAuthorizerImpl
 from eternal_guesses.discord_event_handler import DiscordEventHandler
+from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.router import Router, RouterImpl
 from eternal_guesses.routes.admin import AdminRoute
@@ -9,16 +10,16 @@ from eternal_guesses.routes.manage import ManageRoute
 from eternal_guesses.routes.ping import PingRoute
 
 
-def _manage_route(games_repository):
-    return ManageRoute(games_repository=games_repository)
+def _manage_route(games_repository: GamesRepository, discord_messaging: DiscordMessaging):
+    return ManageRoute(games_repository=games_repository, discord_messaging=discord_messaging)
 
 
-def _create_route(games_repository):
+def _create_route(games_repository: GamesRepository):
     return CreateRoute(games_repository=games_repository)
 
 
-def _guess_route(games_repository):
-    return GuessRoute(games_repository=games_repository)
+def _guess_route(games_repository: GamesRepository, discord_messaging: DiscordMessaging):
+    return GuessRoute(games_repository=games_repository, discord_messaging=discord_messaging)
 
 
 def _ping_route():
@@ -37,12 +38,17 @@ def _games_repository():
     return GamesRepository()
 
 
+def _discord_messaging():
+    return DiscordMessaging()
+
+
 def _router() -> Router:
     games_repository = _games_repository()
+    discord_messaging = _discord_messaging()
 
-    manage_route = _manage_route(games_repository=games_repository)
+    manage_route = _manage_route(games_repository=games_repository, discord_messaging=discord_messaging)
     create_route = _create_route(games_repository=games_repository)
-    guess_route = _guess_route(games_repository=games_repository)
+    guess_route = _guess_route(games_repository=games_repository, discord_messaging=discord_messaging)
     ping_route = _ping_route()
     admin_route = _admin_route()
 

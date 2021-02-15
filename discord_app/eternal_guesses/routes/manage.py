@@ -1,5 +1,5 @@
-from eternal_guesses import discord_messaging
 from eternal_guesses import message_formatter
+from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.model.data.game import ChannelMessage
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
@@ -7,11 +7,9 @@ from eternal_guesses.repositories.games_repository import GamesRepository
 
 
 class ManageRoute:
-    def __init__(self, games_repository: GamesRepository = None):
-        if games_repository is None:
-            games_repository = GamesRepository()
-
+    def __init__(self, games_repository: GamesRepository, discord_messaging: DiscordMessaging):
         self.games_repository = games_repository
+        self.discord_messaging = discord_messaging
 
     async def post(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
@@ -25,10 +23,10 @@ class ManageRoute:
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
             message = message_formatter.dm_error_game_not_found(game_id)
-            await discord_messaging.send_dm(event.member, message)
+            await self.discord_messaging.send_dm(event.member, message)
         else:
             message = message_formatter.channel_list_game_guesses(game)
-            message_id = await discord_messaging.create_channel_message(channel_id, message)
+            message_id = await self.discord_messaging.create_channel_message(channel_id, message)
 
             if game.channel_messages is None:
                 game.channel_messages = []

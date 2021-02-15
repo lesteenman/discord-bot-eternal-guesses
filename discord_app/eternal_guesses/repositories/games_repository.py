@@ -33,7 +33,6 @@ def _guess_from_model(guess_model):
 
 
 def _game_from_model(model: EternalGuessesTable) -> Game:
-    print(f"Model = {model}")
     guild_id = int(re.match(PK_REGEX, model.pk).group(1))
     game_id = re.match(SK_REGEX, model.sk).group(1)
 
@@ -109,7 +108,7 @@ class GamesRepository:
 
         model = self.table(_hash_key(game.guild_id), _range_key(game.game_id))
 
-        model.created_by = game.created_by
+        model.created_by = int(game.created_by)
         model.closed = game.closed
 
         if game.create_datetime is not None:
@@ -136,31 +135,3 @@ class GamesRepository:
             model.channel_messages = channel_messages
 
         model.save()
-
-        # table = GamesRepository._get_table()
-        #
-        # item = {
-        #     "pk": f"GUILD#{guild_id}",
-        #     "sk": f"GAME#{game.game_id}",
-        #     "create_datetime": game.create_datetime.isoformat(),
-        #     "created_by": game.created_by,
-        #     "closed": game.closed,
-        #     "guesses": {user_id: {
-        #         'user_id': game_guess.user_id,
-        #         'nickname': game_guess.nickname,
-        #         'guess': game_guess.guess,
-        #         'datetime': game_guess.datetime.isoformat(),
-        #     } for (user_id, game_guess) in game.guesses.items()},
-        #     "channel_messages": list({'message_id': message.message_id, 'channel_id': message.channel_id}
-        #                              for message in game.channel_messages),
-        # }
-        #
-        # log.debug(f"saving item, item={item}")
-        #
-        # response = table.put_item(
-        #     Item=item
-        # )
-        #
-        # if log.isEnabledFor(logging.DEBUG):
-        #     log.debug(f"table.put_item response: {pformat(response)}")
-

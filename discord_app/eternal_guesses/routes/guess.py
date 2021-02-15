@@ -1,7 +1,8 @@
 import logging
 from datetime import datetime
 
-from eternal_guesses import discord_messaging, message_formatter
+from eternal_guesses import message_formatter
+from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord_event import DiscordEvent
@@ -12,14 +13,11 @@ log = logging.getLogger(__name__)
 
 
 class GuessRoute:
-    def __init__(self, games_repository=None):
-        if games_repository is None:
-            games_repository = GamesRepository()
-
+    def __init__(self, games_repository: GamesRepository, discord_messaging: DiscordMessaging):
         self.games_repository = games_repository
+        self.discord_messaging = discord_messaging
 
-    @staticmethod
-    async def _update_channel_messages(game: Game):
+    async def _update_channel_messages(self, game: Game):
         log.info(
             f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
         if game.channel_messages is not None:
@@ -27,8 +25,9 @@ class GuessRoute:
             for channel_message in game.channel_messages:
                 log.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
                           f"message_id={channel_message.message_id}, message='{new_channel_message}'")
-                await discord_messaging.update_channel_message(channel_message.channel_id, channel_message.message_id,
-                                                               new_channel_message)
+                await self.discord_messaging.update_channel_message(channel_message.channel_id,
+                                                                    channel_message.message_id,
+                                                                    new_channel_message)
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
@@ -40,12 +39,12 @@ class GuessRoute:
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
             dm_error = message_formatter.dm_error_game_not_found(game_id)
-            await discord_messaging.send_dm(event.member, dm_error)
+            await self.discord_messaging.send_dm(event.member, dm_error)
 
             return DiscordResponse.acknowledge()
 
         if game.guesses.get(user_id) is not None:
-            await discord_messaging.send_dm(event.member, f"You already placed a guess for game '{game_id}', "
+            await self.discord_messaging.send_dm(event.member, f"You already placed a guess for game '{game_id}', "
                                                           f"your guess was not registered.")
 
             return DiscordResponse.acknowledge()
@@ -53,14 +52,14 @@ class GuessRoute:
         game_guess = GameGuess()
         game_guess.user_id = user_id
         game_guess.user_nickname = user_nickname
-        game_guess.datetime = datetime.now()
+        game_guess.timestamp = datetime.now()
         game_guess.guess = guess
 
         game.guesses[int(user_id)] = game_guess
         self.games_repository.save(game)
 
         guess_added_dm = message_formatter.dm_guess_added(game_id, guess)
-        await discord_messaging.send_dm(event.member, guess_added_dm)
+        await self.discord_messaging.send_dm(event.member, guess_added_dm)
 
         await self._update_channel_messages(game)
 

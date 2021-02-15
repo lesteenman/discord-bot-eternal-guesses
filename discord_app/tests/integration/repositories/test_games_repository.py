@@ -9,7 +9,7 @@ from tests.integration.conftest import TABLE_NAME, HOST
 def test_get_unknown_game_returns_none():
     # Given: an empty database
     games_repository = GamesRepository(table_name=TABLE_NAME, host=HOST)
-    other_game = Game(guild_id=1, game_id='game-id-1')
+    other_game = Game(guild_id=1, game_id='game-id-1', created_by=10)
 
     # When
     games_repository.save(other_game)
@@ -25,7 +25,8 @@ def test_get_minimal_game():
 
     game = Game(
         guild_id=1,
-        game_id="game-1"
+        game_id="game-1",
+        created_by=10
     )
 
     # When
@@ -117,11 +118,13 @@ def test_get_all_games():
     guild_id = 50000
 
     game_1_id = 'game-1'
+    game_1_created_by = 10
     game_1_channel_message_channel_id = 1000
     game_1_channel_message_message_id = 2000
     game_1_create_datetime = datetime(2020, 2, 7)
 
     game_2_id = 'game-2'
+    game_2_created_by = 20
     game_2_guess_user_id = 3000
     game_2_guess_user_nick = 'user-nick'
     game_2_guess_answer = 'guess-answer'
@@ -131,6 +134,7 @@ def test_get_all_games():
     game_1 = Game(
         guild_id=guild_id,
         game_id=game_1_id,
+        created_by=game_1_created_by,
         create_datetime=game_1_create_datetime,
         channel_messages=[
             ChannelMessage(channel_id=game_1_channel_message_channel_id, message_id=game_1_channel_message_message_id),
@@ -140,6 +144,7 @@ def test_get_all_games():
     game_2 = Game(
         guild_id=guild_id,
         game_id=game_2_id,
+        created_by=game_2_created_by,
         create_datetime=game_2_create_datetime,
         guesses={
             game_2_guess_user_id: GameGuess(
@@ -171,6 +176,7 @@ def test_get_all_games():
     assert game_1 is not None
     assert game_1.guild_id == guild_id
     assert game_1.game_id == game_1_id
+    assert game_1.created_by == game_1_created_by
     assert game_1.create_datetime == game_1_create_datetime
     assert game_1.close_datetime is None
     assert game_1.closed is False
@@ -183,6 +189,7 @@ def test_get_all_games():
     assert game_2 is not None
     assert game_2.guild_id == guild_id
     assert game_2.game_id == game_2_id
+    assert game_2.created_by == game_2_created_by
     assert game_2.create_datetime == game_2_create_datetime
     assert game_2.close_datetime is None
     assert game_2.closed is False

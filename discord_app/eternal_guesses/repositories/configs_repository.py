@@ -53,8 +53,8 @@ class ConfigsRepository:
     def save(self, guild_config: GuildConfig):
         model = self.table(_hash_key(guild_config.guild_id), _range_key())
 
-        model.management_channels = guild_config.management_channels
-        model.management_roles = guild_config.management_roles
+        model.management_channels = list(int(channel) for channel in guild_config.management_channels)
+        model.management_roles = list(int(role) for role in guild_config.management_roles)
 
         model.save()
 
