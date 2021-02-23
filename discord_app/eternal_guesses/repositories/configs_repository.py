@@ -1,5 +1,6 @@
 import logging
 import re
+from abc import ABC
 
 from pynamodb.exceptions import DoesNotExist
 
@@ -32,7 +33,15 @@ def _config_from_model(model: EternalGuessesTable) -> GuildConfig:
     return config
 
 
-class ConfigsRepository:
+class ConfigsRepository(ABC):
+    def get(self, guild_id: int) -> GuildConfig:
+        pass
+
+    def save(self, guild_config: GuildConfig):
+        pass
+
+
+class ConfigsRepositoryImpl(ConfigsRepository):
     def __init__(self, table_name: str = None, host: str = None):
         self.table = EternalGuessesTable
 

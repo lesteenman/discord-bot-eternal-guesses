@@ -1,6 +1,6 @@
 from eternal_guesses import handler
 from eternal_guesses.config import load_config
-from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from tests.integration.helpers import create_context, make_discord_create_event, \
     make_discord_guess_event, make_discord_manage_post_event
 
@@ -10,7 +10,7 @@ app_config = load_config()
 def test_integration_full_flow():
     # Given
     guild_id = 1
-    games_repository = GamesRepository()
+    games_repository = GamesRepositoryImpl()
 
     # We start without games
     all_games = games_repository.get_all(guild_id)

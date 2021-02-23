@@ -156,7 +156,7 @@ def test_from_manage_list_command_event():
                     "name": "manage",
                     "options": [
                         {
-                            "name": "list",
+                            "name": "list-games",
                             "options": [
                                 {
                                     "name": "closed",
@@ -204,7 +204,7 @@ def test_from_manage_list_command_event():
     command = event.command
     assert command.command_id == "2001"
     assert command.command_name == "manage"
-    assert command.subcommand_name == "list"
+    assert command.subcommand_name == "list-games"
     assert command.options['closed']
 
 

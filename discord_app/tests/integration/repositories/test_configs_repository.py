@@ -1,7 +1,7 @@
 import pytest
 
 from eternal_guesses.model.data.guild_config import GuildConfig
-from eternal_guesses.repositories.configs_repository import ConfigsRepository
+from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
 from tests.integration.conftest import TABLE_NAME, HOST
 
 pytestmark = pytest.mark.asyncio
@@ -9,7 +9,7 @@ pytestmark = pytest.mark.asyncio
 
 async def test_get_unknown_guild_returns_empty_config():
     # Given
-    configs_repository = ConfigsRepository(table_name=TABLE_NAME, host=HOST)
+    configs_repository = ConfigsRepositoryImpl(table_name=TABLE_NAME, host=HOST)
     guild_id = 12000
 
     # When
@@ -23,7 +23,7 @@ async def test_get_unknown_guild_returns_empty_config():
 
 async def test_get_guild():
     # Given
-    configs_repository = ConfigsRepository(table_name=TABLE_NAME, host=HOST)
+    configs_repository = ConfigsRepositoryImpl(table_name=TABLE_NAME, host=HOST)
 
     guild_id = 12000
     management_channel_1 = 1000

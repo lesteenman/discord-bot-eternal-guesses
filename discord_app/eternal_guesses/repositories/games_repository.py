@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from abc import ABC
 from datetime import datetime
 from typing import Optional, List
 
@@ -77,7 +78,18 @@ def _range_key(game_id: str):
     return f"GAME#{game_id}"
 
 
-class GamesRepository:
+class GamesRepository(ABC):
+    def get(self, guild_id: int, game_id: str) -> Optional[Game]:
+        pass
+
+    def get_all(self, guild_id: int) -> List[Game]:
+        pass
+
+    def save(self, game: Game):
+        pass
+
+
+class GamesRepositoryImpl(GamesRepository):
     def __init__(self, table_name: str = None, host: str = None):
         self.table = EternalGuessesTable
 

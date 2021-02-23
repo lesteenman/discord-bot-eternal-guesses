@@ -4,7 +4,7 @@ from datetime import datetime
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
-from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from eternal_guesses.util import id_generator
 
 log = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class CreateRoute:
     def __init__(self, games_repository=None):
         if games_repository is None:
-            games_repository = GamesRepository()
+            games_repository = GamesRepositoryImpl()
 
         self.games_repository = games_repository
 

@@ -17,8 +17,7 @@ pytestmark = pytest.mark.asyncio
 
 async def test_handle_ping():
     # Given
-    event = DiscordEvent()
-    event.type = CommandType.PING
+    event = DiscordEvent(CommandType.PING)
 
     pong_response = DiscordResponse.pong()
 
@@ -36,13 +35,14 @@ async def test_handle_ping():
 
 async def test_handle_guess():
     # Given
-    command = DiscordCommand()
-    command.command_name = "guess"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="guess"
+        ),
+        member=DiscordMember()
+    )
 
     guess_response = DiscordResponse.acknowledge()
 
@@ -62,14 +62,15 @@ async def test_handle_guess():
 
 async def test_handle_manage_post():
     # Given
-    command = DiscordCommand()
-    command.command_name = "manage"
-    command.subcommand_name = "post"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="manage",
+            subcommand_name="post"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -89,14 +90,15 @@ async def test_handle_manage_post():
 
 async def test_handle_manage_close():
     # Given
-    command = DiscordCommand()
-    command.command_name = "manage"
-    command.subcommand_name = "close"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="manage",
+            subcommand_name="close"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -116,14 +118,15 @@ async def test_handle_manage_close():
 
 async def test_handle_manage_list():
     # Given
-    command = DiscordCommand()
-    command.command_name = "manage"
-    command.subcommand_name = "list-games"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="manage",
+            subcommand_name="list-games"
+        ),
+        member=DiscordMember(),
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -143,13 +146,14 @@ async def test_handle_manage_list():
 
 async def test_handle_create():
     # Given
-    command = DiscordCommand()
-    command.command_name = "create"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="create"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -169,14 +173,15 @@ async def test_handle_create():
 
 async def test_handle_admin_info():
     # Given
-    command = DiscordCommand()
-    command.command_name = "admin"
-    command.subcommand_name = "info"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="admin",
+            subcommand_name="info"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -196,14 +201,15 @@ async def test_handle_admin_info():
 
 async def test_handle_admin_add_management_channel():
     # Given
-    command = DiscordCommand()
-    command.command_name = "admin"
-    command.subcommand_name = "add-management-channel"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="admin",
+            subcommand_name="add-management-channel"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -223,14 +229,15 @@ async def test_handle_admin_add_management_channel():
 
 async def test_handle_admin_remove_management_channel():
     # Given
-    command = DiscordCommand()
-    command.command_name = "admin"
-    command.subcommand_name = "remove-management-channel"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="admin",
+            subcommand_name="remove-management-channel"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -250,14 +257,15 @@ async def test_handle_admin_remove_management_channel():
 
 async def test_handle_admin_add_management_role():
     # Given
-    command = DiscordCommand()
-    command.command_name = "admin"
-    command.subcommand_name = "add-management-role"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="admin",
+            subcommand_name="add-management-role"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 
@@ -277,14 +285,15 @@ async def test_handle_admin_add_management_role():
 
 async def test_handle_admin_remove_management_role():
     # Given
-    command = DiscordCommand()
-    command.command_name = "admin"
-    command.subcommand_name = "remove-management-role"
-
-    event = DiscordEvent()
-    event.type = CommandType.COMMAND
-    event.command = command
-    event.member = DiscordMember()
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="admin",
+            subcommand_name="remove-management-role"
+        ),
+        member=DiscordMember()
+    )
 
     mock_response = DiscordResponse.acknowledge()
 

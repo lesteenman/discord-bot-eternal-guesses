@@ -2,13 +2,13 @@ from datetime import datetime
 
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from tests.integration.conftest import TABLE_NAME, HOST
 
 
 def test_get_unknown_game_returns_none():
     # Given: an empty database
-    games_repository = GamesRepository(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
     other_game = Game(guild_id=1, game_id='game-id-1', created_by=10)
 
     # When
@@ -21,7 +21,7 @@ def test_get_unknown_game_returns_none():
 
 def test_get_minimal_game():
     # Given
-    games_repository = GamesRepository(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
 
     game = Game(
         guild_id=1,
@@ -40,7 +40,7 @@ def test_get_minimal_game():
 
 def test_get_game():
     # Given
-    games_repository = GamesRepository(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
 
     guild_id = 50
     created_by = 120
@@ -102,7 +102,7 @@ def test_get_game():
 
 def test_get_all_games_without_games():
     # Given
-    games_repository = GamesRepository(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
 
     # When
     games = games_repository.get_all(1)
@@ -113,7 +113,7 @@ def test_get_all_games_without_games():
 
 def test_get_all_games():
     # Given
-    games_repository = GamesRepository(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
 
     guild_id = 50000
 

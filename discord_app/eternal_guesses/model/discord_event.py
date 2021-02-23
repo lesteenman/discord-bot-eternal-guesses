@@ -15,69 +15,75 @@ class CommandType(Enum):
 
 
 class DiscordMember:
-    username: str = None
-    user_id: int = None
-    nickname: str = None
-    roles: List[str] = []
+    def __init__(self, username: str = None, user_id: int = None, nickname: str = None, roles: List[int] = None):
+        if roles is None:
+            roles = []
+
+        self.username = username
+        self.user_id = user_id
+        self.nickname = nickname
+        self.roles = roles
 
 
 class DiscordCommand:
-    command_id: str
-    command_name: str
-    subcommand_name: str = None
-    options: Dict = {}
+    def __init__(self, command_id: str, command_name: str, subcommand_name: str = None, options: Dict = None):
+        self.command_id = command_id
+        self.command_name = command_name
+        self.subcommand_name = subcommand_name
+
+        if options is None:
+            options = {}
+        self.options = options
 
 
 class DiscordEvent:
-    type: CommandType
-    command: DiscordCommand = None
-    member: DiscordMember = None
-    guild_id: int = None
-    channel_id: str = None
+    def __init__(self, command_type: CommandType, command: DiscordCommand = None, member: DiscordMember = None,
+                 guild_id: int = None, channel_id: int = None):
+        self.type = command_type
+        self.command = command
+        self.member = member
+        self.guild_id = guild_id
+        self.channel_id = channel_id
 
 
 def _guess_command_from_data(event_data: Dict) -> DiscordCommand:
-    command = DiscordCommand()
-
-    command.command_id = event_data['id']
-    command.command_name = event_data['name']
-
-    command.options = {}
+    options = {}
     for option in event_data['options']:
-        command.options[option['name']] = option['value']
+        options[option['name']] = option['value']
 
-    return command
+    return DiscordCommand(command_id=event_data['id'], command_name=event_data['name'], options=options)
 
 
 def _create_command_from_data(event_data: Dict) -> DiscordCommand:
-    command = DiscordCommand()
-
-    command.command_id = event_data['id']
+    command_id = event_data['id']
 
     sub_command = event_data['options'][0]
-    command.command_name = sub_command['name']
+    command_name = sub_command['name']
 
-    command.options = {}
+    options = {}
     for option in sub_command.get('options', {}):
-        command.options[option['name']] = option['value']
+        options[option['name']] = option['value']
 
-    return command
+    return DiscordCommand(command_id=command_id, command_name=command_name, options=options)
 
 
 def _admin_or_manage_command_from_data(event_data: Dict) -> DiscordCommand:
-    command = DiscordCommand()
-
-    command.command_id = event_data['id']
-    command.command_name = event_data['options'][0]['name']
+    command_id = event_data['id']
+    command_name = event_data['options'][0]['name']
 
     sub_command = event_data['options'][0]['options'][0]
-    command.subcommand_name = sub_command['name']
+    subcommand_name = sub_command['name']
 
-    command.options = {}
+    options = {}
     for option in sub_command.get('options', {}):
-        command.options[option['name']] = option['value']
+        options[option['name']] = option['value']
 
-    return command
+    return DiscordCommand(
+        command_id=command_id,
+        command_name=command_name,
+        subcommand_name=subcommand_name,
+        options=options
+    )
 
 
 def _command_from_data(event_data):
@@ -109,15 +115,13 @@ def _member_from_data(member_data: Dict) -> DiscordMember:
 
 
 def from_event(event_source: Dict) -> DiscordEvent:
-    event = DiscordEvent()
-
     if event_source['type'] == InteractionType.PING:
-        event.type = CommandType.PING
+        return DiscordEvent(command_type=CommandType.PING)
     else:
-        event.type = CommandType.COMMAND
-        event.channel_id = event_source['channel_id']
-        event.guild_id = event_source['guild_id']
-        event.command = _command_from_data(event_source['data'])
-        event.member = _member_from_data(event_source['member'])
-
-    return event
+        return DiscordEvent(
+            command_type=CommandType.COMMAND,
+            channel_id=event_source['channel_id'],
+            guild_id=event_source['guild_id'],
+            command=_command_from_data(event_source['data']),
+            member=_member_from_data(event_source['member'])
+        )

@@ -5,8 +5,8 @@ import pytest
 
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.model.discord_event import DiscordCommand, DiscordEvent, DiscordMember
-from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.model.discord_event import DiscordCommand, DiscordEvent, DiscordMember, CommandType
+from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from eternal_guesses.routes import guess
 from eternal_guesses.routes.guess import GuessRoute
 from tests.fakes import FakeDiscordMessaging
@@ -35,7 +35,7 @@ async def test_guess_updates_game_guesses(mock_datetime):
         other_user_id: GameGuess(),
     }
 
-    mock_games_repository = MagicMock(GamesRepository, autospec=True)
+    mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = existing_game
 
     fake_discord_messaging = FakeDiscordMessaging()
@@ -79,7 +79,7 @@ async def test_guess_updates_channel_messages(mock_message_formatter):
 
     game = Game(game_id='game-id', channel_messages=[channel_message_1, channel_message_2])
 
-    mock_games_repository = MagicMock(GamesRepository, autospec=True)
+    mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = game
 
     fake_discord_messaging = FakeDiscordMessaging()
@@ -112,7 +112,7 @@ async def test_guess_sends_dm_to_user(mock_message_formatter):
     game = Game()
     game.game_id = 'game-id'
 
-    mock_games_repository = MagicMock(GamesRepository, autospec=True)
+    mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = game
 
     fake_discord_messaging = FakeDiscordMessaging()
@@ -133,7 +133,7 @@ async def test_guess_game_does_not_exist(mock_message_formatter: MagicMock):
     game_id = 'fun-game'
     user_id = 'user-5'
 
-    mock_games_repository = MagicMock(GamesRepository, autospec=True)
+    mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = None
 
     event = create_guess_event(guild_id, game_id, user_id, 'nickname')
@@ -158,28 +158,32 @@ async def test_guess_duplicate_guess():
     # Given
     game_id = 'game-id'
 
-    existing_game = Game()
-    existing_game.game_id = game_id
-    existing_game.guesses = {
-        'user': '100',
-    }
+    existing_game = Game(
+        game_id=game_id,
+        guesses={
+            1000: GameGuess(),
+        }
+    )
 
-    mock_games_repository = MagicMock(GamesRepository, autospec=True)
+    # TODO: USE FAKE INSTEAD OF MOCKS
+    mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = existing_game
 
     # And: we add our guess '42'
-    command = DiscordCommand()
-    command.options = {
-        'game-id': game_id,
-        'guess': '150'
-    }
-
-    member = DiscordMember()
-    member.user_id = 'user'
-
-    event = DiscordEvent()
-    event.command = command
-    event.member = member
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="guess",
+            options={
+                'game-id': game_id,
+                'guess': '150'
+            }
+        ),
+        member=DiscordMember(
+            user_id=2000
+        )
+    )
 
     fake_discord_messaging = FakeDiscordMessaging()
 
@@ -190,23 +194,27 @@ async def test_guess_duplicate_guess():
     # Then
     mock_games_repository.save.assert_not_called()
 
-    assert fake_discord_messaging.sent_dms[0]['member'].user_id == member.user_id
+    assert fake_discord_messaging.sent_dms[0]['member'].user_id == DiscordMember(
+        user_id=2000
+    ).user_id
 
 
 def create_guess_event(guild_id, game_id, user_id, user_nickname):
-    command = DiscordCommand()
-    command.options = {
-        'game-id': game_id,
-        'guess': '42'
-    }
-
-    member = DiscordMember()
-    member.user_id = user_id
-    member.nickname = user_nickname
-
-    event = DiscordEvent()
-    event.command = command
-    event.member = member
-    event.guild_id = guild_id
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id="-1",
+            command_name="guess",
+            options={
+                'game-id': game_id,
+                'guess': '42'
+            }
+        ),
+        member=DiscordMember(
+            user_id=user_id,
+            nickname=user_nickname
+        ),
+        guild_id=guild_id
+    )
 
     return event

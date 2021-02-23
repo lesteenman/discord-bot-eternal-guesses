@@ -7,13 +7,13 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
-from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 
 log = logging.getLogger(__name__)
 
 
 class GuessRoute:
-    def __init__(self, games_repository: GamesRepository, discord_messaging: DiscordMessaging):
+    def __init__(self, games_repository: GamesRepositoryImpl, discord_messaging: DiscordMessaging):
         self.games_repository = games_repository
         self.discord_messaging = discord_messaging
 

@@ -1,6 +1,7 @@
 import logging
 from abc import ABC
 
+from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.discord_event import DiscordEvent, CommandType, DiscordCommand
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.model.lambda_response import LambdaResponse
@@ -92,7 +93,10 @@ class RouterImpl(Router):
             return LambdaResponse.success(discord_response.json())
 
         if event.type is CommandType.COMMAND:
-            discord_response = await self._handle_application_command(event)
+            try:
+                discord_response = await self._handle_application_command(event)
+            except DiscordEventDisallowedError as e:
+                log.warning(f"disallowed call detected: {e}")
 
             log.info(f"handling application command, type='{event.command.command_name}', "
                      f"subcommand='{event.command.subcommand_name}'")
