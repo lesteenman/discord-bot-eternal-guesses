@@ -110,7 +110,12 @@ class GamesRepositoryImpl(GamesRepository):
     def get_all(self, guild_id: int) -> List[Game]:
         games = []
 
-        for game_model in self.table.query(_hash_key(guild_id)):
+        query_results = self.table.query(
+            hash_key=_hash_key(guild_id),
+            range_key_condition=self.table.sk.startswith('GAME#')
+        )
+
+        for game_model in query_results:
             games.append(_game_from_model(game_model))
 
         return games

@@ -1,7 +1,7 @@
 from eternal_guesses.api_authorizer import ApiAuthorizerImpl
 from eternal_guesses.discord_event_handler import DiscordEventHandler
 from eternal_guesses.discord_messaging import DiscordMessaging
-from eternal_guesses.repositories.configs_repository import ConfigsRepository
+from eternal_guesses.repositories.configs_repository import ConfigsRepository, ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from eternal_guesses.router import Router, RouterImpl
 from eternal_guesses.routes.admin import AdminRoute
@@ -42,7 +42,7 @@ def _games_repository():
 
 
 def _configs_repository():
-    return ConfigsRepository()
+    return ConfigsRepositoryImpl()
 
 
 def _discord_messaging():

@@ -86,4 +86,5 @@ class ManageRoute:
             if role in guild_config.management_roles:
                 return
 
-        raise DiscordEventDisallowedError("the user has no management role and the request was not done from a management channel.")
+        raise DiscordEventDisallowedError("the user has no management role and the request was not done from a "
+                                          "management channel.")

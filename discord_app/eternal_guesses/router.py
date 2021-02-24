@@ -93,17 +93,17 @@ class RouterImpl(Router):
             return LambdaResponse.success(discord_response.json())
 
         if event.type is CommandType.COMMAND:
-            try:
-                discord_response = await self._handle_application_command(event)
-            except DiscordEventDisallowedError as e:
-                log.warning(f"disallowed call detected: {e}")
-
             log.info(f"handling application command, type='{event.command.command_name}', "
                      f"subcommand='{event.command.subcommand_name}'")
             log.debug(
                 f"guild={event.guild_id}, channel={event.channel_id}, user={event.member.user_id}")
             log.debug(f"options={event.command.options}")
 
-            return LambdaResponse.success(discord_response.json())
+            try:
+                discord_response = await self._handle_application_command(event)
+                return LambdaResponse.success(discord_response.json())
+            except DiscordEventDisallowedError as e:
+                log.warning(f"disallowed call detected: {e}")
+                return LambdaResponse.unauthorized(str(e))
 
         raise UnknownEventException(event)
