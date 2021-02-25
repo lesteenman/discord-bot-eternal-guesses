@@ -13,14 +13,12 @@ class AuthorizationResult(Enum):
 
 
 class ApiAuthorizer(ABC):
-    @staticmethod
-    def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
+    def authorize(self, event: Dict) -> (AuthorizationResult, LambdaResponse):
         pass
 
 
 class ApiAuthorizerImpl(ApiAuthorizer):
-    @staticmethod
-    def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
+    def authorize(self, event: Dict) -> (AuthorizationResult, LambdaResponse):
         body = event['body'].encode()
         headers = event['headers']
         signature = headers['x-signature-ed25519']

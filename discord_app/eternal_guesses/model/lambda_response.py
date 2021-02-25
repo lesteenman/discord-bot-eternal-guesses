@@ -2,7 +2,7 @@ import json
 from typing import Dict
 
 
-class LambdaResponse():
+class LambdaResponse:
     body: str
     status_code: int
     content_type: str

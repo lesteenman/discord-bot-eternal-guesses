@@ -4,8 +4,8 @@ from abc import ABC
 
 import discord
 
-from eternal_guesses.config import load_config
-from eternal_guesses.model.discord_event import DiscordMember
+from eternal_guesses.util.config import load_config
+from eternal_guesses.model.discord_member import DiscordMember
 
 log = logging.getLogger(__name__)
 

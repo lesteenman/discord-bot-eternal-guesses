@@ -1,7 +1,9 @@
 from enum import Enum
-from typing import Dict, List
+from typing import Dict
 
 from discord_interactions import InteractionType
+
+from eternal_guesses.model.discord_member import DiscordMember, _member_from_data
 
 
 class UnknownCommandError(Exception):
@@ -12,17 +14,6 @@ class UnknownCommandError(Exception):
 class CommandType(Enum):
     PING = 1
     COMMAND = 2
-
-
-class DiscordMember:
-    def __init__(self, username: str = None, user_id: int = None, nickname: str = None, roles: List[int] = None):
-        if roles is None:
-            roles = []
-
-        self.username = username
-        self.user_id = user_id
-        self.nickname = nickname
-        self.roles = roles
 
 
 class DiscordCommand:
@@ -101,17 +92,6 @@ def _command_from_data(event_data):
             return _admin_or_manage_command_from_data(event_data)
 
     raise UnknownCommandError(event_data)
-
-
-def _member_from_data(member_data: Dict) -> DiscordMember:
-    member = DiscordMember()
-
-    member.username = member_data['user']['username']
-    member.user_id = member_data['user']['id']
-    member.roles = member_data['roles']
-    member.nickname = member_data['nick']
-
-    return member
 
 
 def from_event(event_source: Dict) -> DiscordEvent:

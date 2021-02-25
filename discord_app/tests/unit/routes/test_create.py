@@ -4,7 +4,8 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, DiscordMember, CommandType
+from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType
+from eternal_guesses.model.discord_member import DiscordMember
 from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from eternal_guesses.routes import create
@@ -129,7 +130,7 @@ async def test_create_duplicate_given_id():
     mock_games_repository.save.assert_not_called()
 
     # And we should give a response where we keep the original message
-    assert response.type.value == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value
+    assert response.response_type.value == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value
 
 
 async def test_create_sets_created_by_to_calling_user():

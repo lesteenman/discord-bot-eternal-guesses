@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType, DiscordMember
+from eternal_guesses.model.discord_event import DiscordEvent, DiscordCommand, CommandType
+from eternal_guesses.model.discord_member import DiscordMember
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.router import RouterImpl
 from eternal_guesses.routes.admin import AdminRoute

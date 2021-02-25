@@ -196,7 +196,12 @@ def _base_event_body(guild_id, channel_id, user_id, member_nickname, user_name, 
         "guild_id": guild_id,
         "data": None,
         "id": "9991",
-        "member": _create_member(user_id=user_id, member_nickname=member_nickname, user_name=user_name, role_id=role_id),
+        "member": _create_member(
+            user_id=user_id,
+            member_nickname=member_nickname,
+            user_name=user_name,
+            role_id=role_id
+        ),
         "token": "whfjwhfukwynexfl823yflwf9wauf928fh82e",
         "type": CommandType.COMMAND.value,
         "version": 1

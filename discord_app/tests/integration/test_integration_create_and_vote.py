@@ -1,5 +1,5 @@
 from eternal_guesses import handler
-from eternal_guesses.config import load_config
+from eternal_guesses.util.config import load_config
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl

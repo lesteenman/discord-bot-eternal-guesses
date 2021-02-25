@@ -1,9 +1,32 @@
 from typing import List, Optional
 
+from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.discord_messaging import DiscordMessaging
+from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.model.discord_event import DiscordMember
+from eternal_guesses.model.discord_event import DiscordEvent
+from eternal_guesses.model.discord_member import DiscordMember
 from eternal_guesses.repositories.games_repository import GamesRepository
+
+
+# class FakeApiAuthorizer(ApiAuthorizer):
+#     def __init__(self, passes: bool):
+#         self.passes = passes
+#
+#     def authorize(self, event: Dict) -> (AuthorizationResult, LambdaResponse):
+#         if self.passes:
+#             return AuthorizationResult.PASS, None
+#         else:
+#             return AuthorizationResult.FAIL, LambdaResponse()
+
+
+class FakeCommandAuthorizer(CommandAuthorizer):
+    def __init__(self, passes: bool):
+        self.passes = passes
+
+    async def authorize_management_call(self, event: DiscordEvent):
+        if self.passes is False:
+            raise DiscordEventDisallowedError("Disallowed")
 
 
 class FakeDiscordMessaging(DiscordMessaging):
