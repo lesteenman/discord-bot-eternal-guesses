@@ -46,8 +46,14 @@ class GuessRoute:
             return DiscordResponse.acknowledge()
 
         if game.guesses.get(user_id) is not None:
-            await self.discord_messaging.send_dm(event.member, f"You already placed a guess for game '{game_id}', "
-                                                 f"your guess was not registered.")
+            dm_error = self.message_provider.dm_error_duplicate_guess(game_id)
+            await self.discord_messaging.send_dm(event.member, dm_error)
+
+            return DiscordResponse.acknowledge()
+
+        if game.closed:
+            dm_error = self.message_provider.dm_error_guess_on_closed_game(game_id)
+            await self.discord_messaging.send_dm(event.member, dm_error)
 
             return DiscordResponse.acknowledge()
 

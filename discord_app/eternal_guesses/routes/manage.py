@@ -71,4 +71,11 @@ class ManageRoute:
     async def close(self, event: DiscordEvent) -> DiscordResponse:
         await self.command_authorizer.authorize_management_call(event)
 
-        return DiscordResponse.channel_message_with_source("TODO: Unimplemented manage.close")
+        guild_id = event.guild_id
+        game_id = event.command.options['game-id']
+
+        game = self.games_repository.get(guild_id, game_id)
+        game.closed = True
+        self.games_repository.save(game)
+
+        return DiscordResponse.channel_message(f"Game '{game_id} has now been closed for new guesses.")

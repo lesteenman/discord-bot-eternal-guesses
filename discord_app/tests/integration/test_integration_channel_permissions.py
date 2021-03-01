@@ -12,7 +12,7 @@ def test_integration_channel_permissions():
     management_role = 200
 
     # When we allow one channel and one role as management
-    add_management_channel(guild_id=guild_id, manage_channel=management_channel)
+    add_management_channel(guild_id=guild_id, channel_id=management_channel)
     add_management_role(guild_id=guild_id, management_role=management_role)
 
     # We see it in the config
@@ -28,9 +28,9 @@ def test_integration_channel_permissions():
     # But if we do it from the correct channel, it is allowed
 
 
-def add_management_channel(guild_id, manage_channel):
+def add_management_channel(guild_id, channel_id):
     response = handler.handle_lambda(
-        make_discord_admin_add_channel_event(guild_id=guild_id, new_management_channel_id=manage_channel, is_admin=True),
+        make_discord_admin_add_channel_event(guild_id=guild_id, new_management_channel_id=channel_id, is_admin=True),
         create_context()
     )
 

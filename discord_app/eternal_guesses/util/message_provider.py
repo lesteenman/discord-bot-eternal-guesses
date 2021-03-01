@@ -27,6 +27,12 @@ class MessageProvider(ABC):
     def channel_manage_list_closed_games(self, games: List[Game]) -> str:
         pass
 
+    def dm_error_guess_on_closed_game(self, game_id):
+        pass
+
+    def dm_error_duplicate_guess(self, game_id):
+        pass
+
 
 class MessageProviderImpl(MessageProvider):
 
@@ -49,7 +55,6 @@ class MessageProviderImpl(MessageProvider):
         return f"Your guess '{guess}' for game '{game_id}' has been registered"
 
     def channel_admin_info(self, config: GuildConfig) -> str:
-        # TODO: Format the roles and channels properly with Discord shizzle
         roles = list(f"<@{role}>" for role in config.management_roles)
         channels = list(f"<@{channel}>" for channel in config.management_channels)
 
@@ -66,3 +71,9 @@ class MessageProviderImpl(MessageProvider):
 
     def channel_manage_list_closed_games(self, games: List[Game]) -> str:
         return f"TODO: channel_manage_list_open_games({games})"
+
+    def dm_error_guess_on_closed_game(self, game_id):
+        return f"The game '{game_id}' you placed a guess for has already been closed."
+
+    def dm_error_duplicate_guess(self, game_id):
+        return f"You have already placed a guess for game '{game_id}'"

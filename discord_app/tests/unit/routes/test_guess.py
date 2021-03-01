@@ -40,18 +40,20 @@ async def test_guess_updates_game_guesses(mock_datetime):
     fake_games_repository = FakeGamesRepository([existing_game])
     fake_discord_messaging = FakeDiscordMessaging()
 
-    # When
     guess_route = GuessRoute(
         games_repository=fake_games_repository,
         discord_messaging=fake_discord_messaging,
         message_provider=MessageProvider()
     )
 
-    event = create_guess_event(
+    # When we make a guess
+    event = _create_guess_event(
         guild_id=guild_id,
         game_id=game_id,
         user_id=user_id,
-        user_nickname=user_nickname)
+        user_nickname=user_nickname,
+        guess=guess_answer
+    )
     await guess_route.call(event)
 
     # Then
@@ -87,13 +89,14 @@ async def test_guess_updates_channel_messages():
     games_repository = FakeGamesRepository([game])
     discord_messaging = FakeDiscordMessaging()
 
-    # When
     guess_route = GuessRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider
     )
-    event = create_guess_event(guild_id, game.game_id, user_id, 'nickname')
+
+    # When
+    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
     await guess_route.call(event)
 
     # Then
@@ -120,21 +123,23 @@ async def test_guess_sends_dm_to_user():
     user_id = 13000
     game_id = 'game-id'
 
-    dm_message = "message with new gues"
+    dm_message = "message with new guess"
     message_provider = MagicMock(MessageProvider, autospec=True)
     message_provider.dm_guess_added.return_value = dm_message
 
     game = Game(guild_id=guild_id, game_id=game_id)
-
     fake_games_repository = FakeGamesRepository([game])
+
     fake_discord_messaging = FakeDiscordMessaging()
 
-    # When
     guess_route = GuessRoute(
         games_repository=fake_games_repository,
         discord_messaging=fake_discord_messaging,
-        message_provider=message_provider)
-    event = create_guess_event(guild_id, game.game_id, user_id, 'nickname')
+        message_provider=message_provider
+    )
+
+    # When
+    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
     await guess_route.call(event)
 
     # Then
@@ -148,7 +153,6 @@ async def test_guess_game_does_not_exist():
     user_id = 2001
 
     fake_games_repository = FakeGamesRepository([])
-    event = create_guess_event(guild_id, game_id, user_id, 'nickname')
 
     dm_error = "error dm"
     message_provider = MagicMock(MessageProvider)
@@ -156,11 +160,13 @@ async def test_guess_game_does_not_exist():
 
     fake_discord_messaging = FakeDiscordMessaging()
 
-    # When
     guess_route = GuessRoute(
         games_repository=fake_games_repository,
         discord_messaging=fake_discord_messaging,
         message_provider=message_provider)
+
+    # When
+    event = _create_guess_event(guild_id, game_id, user_id, 'nickname')
     await guess_route.call(event)
 
     # Then
@@ -174,52 +180,92 @@ async def test_guess_duplicate_guess():
     guild_id = 1000
     game_id = 'game-id'
 
+    guessing_user_id = 2000
+    old_guess = '100'
+    new_guess = '100'
+    existing_guesses = {
+        guessing_user_id: GameGuess(
+            user_id=guessing_user_id,
+            guess=old_guess
+        ),
+    }
+
+    # We have a game
     existing_game = Game(
         guild_id=guild_id,
         game_id=game_id,
-        guesses={
-            1000: GameGuess(),
-        }
+        guesses=existing_guesses
     )
-
     games_repository = FakeGamesRepository(games=[existing_game])
 
-    # And: we add our guess '42'
-    event = DiscordEvent(
-        command_type=CommandType.COMMAND,
-        command=DiscordCommand(
-            command_id="-1",
-            command_name="guess",
-            options={
-                'game-id': game_id,
-                'guess': '150'
-            }
-        ),
-        member=DiscordMember(
-            user_id=2000
-        )
-    )
-
     discord_messaging = FakeDiscordMessaging()
-    message_provider = MessageProvider()
-
-    # When
     guess_route = GuessRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        message_provider=message_provider
+        message_provider=MessageProvider()
+    )
+
+    # When we guess '42' as the same user
+    event = _create_guess_event(
+        guild_id=guild_id,
+        user_id=guessing_user_id,
+        game_id=game_id,
+        guess=new_guess,
     )
     await guess_route.call(event)
 
-    # Then
-    assert games_repository.get_all(guild_id) == [existing_game]
+    # Then no new guess is added
+    saved_game = games_repository.get(guild_id, existing_game.game_id)
+    assert saved_game.guesses[guessing_user_id].guess == old_guess
 
-    assert discord_messaging.sent_dms[0]['member'].user_id == DiscordMember(
-        user_id=2000
-    ).user_id
+    # And a DM is sent to the user guessing
+    assert discord_messaging.sent_dms[0]['member'].user_id == guessing_user_id
 
 
-def create_guess_event(guild_id: int, game_id: str, user_id: int, user_nickname: str):
+async def test_guess_closed_game():
+    # Given
+    guild_id = 1515
+    game_id = 'closed-game'
+    guessing_user_id = 3000
+    other_user_id = 3050
+
+    # We have a closed game
+    game = Game(
+        game_id=game_id,
+        guild_id=guild_id,
+        closed=True,
+        guesses={
+            other_user_id: GameGuess(),
+        }
+    )
+    games_repository = FakeGamesRepository([game])
+
+    discord_messaging = FakeDiscordMessaging()
+
+    route = GuessRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+        message_provider=MessageProvider(),
+    )
+
+    # When
+    event = _create_guess_event(
+        guild_id=guild_id,
+        game_id=game_id,
+        user_id=guessing_user_id
+    )
+    await route.call(event)
+
+    # Then: no guess is added
+    saved_game = games_repository.get(guild_id, game_id)
+    assert list(saved_game.guesses.keys()) == [other_user_id]
+
+    # And a DM is sent to the user guessing
+    assert discord_messaging.sent_dms[0]['member'].user_id == guessing_user_id
+
+
+def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nickname: str = 'nickname',
+                        guess: str = 'not-relevant'):
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
@@ -227,7 +273,7 @@ def create_guess_event(guild_id: int, game_id: str, user_id: int, user_nickname:
             command_name="guess",
             options={
                 'game-id': game_id,
-                'guess': '42'
+                'guess': guess,
             }
         ),
         member=DiscordMember(
