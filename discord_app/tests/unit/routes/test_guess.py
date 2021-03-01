@@ -5,8 +5,8 @@ import pytest
 
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.model.discord_event import DiscordCommand, DiscordEvent, CommandType
-from eternal_guesses.model.discord_member import DiscordMember
+from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent, CommandType
+from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.routes import guess
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.util.message_provider import MessageProvider

@@ -3,7 +3,7 @@ import json
 from typing import Dict
 
 from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, AuthorizationResult
-from eternal_guesses.model import discord_event
+from eternal_guesses.model.discord import discord_event
 from eternal_guesses.router import Router
 
 

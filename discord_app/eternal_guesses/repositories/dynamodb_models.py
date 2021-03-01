@@ -1,6 +1,8 @@
 from pynamodb.attributes import UnicodeAttribute, MapAttribute, NumberAttribute, ListAttribute, BooleanAttribute
 from pynamodb.models import Model
 
+from eternal_guesses.util import app_config
+
 
 class ChannelMessageMap(MapAttribute):
     channel_id = NumberAttribute()
@@ -9,7 +11,10 @@ class ChannelMessageMap(MapAttribute):
 
 class EternalGuessesTable(Model):
     class Meta:
-        table_name = "eternal-guesses"
+        table_name = app_config.dynamodb_table_name
+        region = app_config.aws_region
+
+    # Common
     pk = UnicodeAttribute(hash_key=True)
     sk = UnicodeAttribute(range_key=True)
 

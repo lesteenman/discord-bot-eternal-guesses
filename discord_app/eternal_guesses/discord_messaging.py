@@ -4,8 +4,8 @@ from abc import ABC
 
 import discord
 
-from eternal_guesses.util.config import load_config
-from eternal_guesses.model.discord_member import DiscordMember
+from eternal_guesses.model.discord.discord_member import DiscordMember
+from eternal_guesses.util import app_config
 
 log = logging.getLogger(__name__)
 
@@ -60,8 +60,7 @@ class DiscordMessagingImpl(DiscordMessaging):
     @contextlib.asynccontextmanager
     async def _discord_client(self) -> discord.Client:
         client = discord.Client()
-        config = load_config()
-        await client.login(config.discord_bot_token)
+        await client.login(app_config.discord_bot_token)
 
         try:
             yield client

@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List
 
-from eternal_guesses.model.discord_event import CommandType
+from eternal_guesses.model.discord.discord_event import CommandType
 
 # DEFAULT_GUILD_ID = 100
 # DEFAULT_GAME_ID = 200

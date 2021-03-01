@@ -1,4 +1,4 @@
-from eternal_guesses.model import discord_event
+from eternal_guesses.model.discord import discord_event
 
 
 def test_from_ping_event():
@@ -69,9 +69,9 @@ def test_member_from_event():
     # Then
     assert event.member.username == "User-Name"
     assert event.member.nickname == "User-Nickname"
-    assert event.member.user_id == "9001"
+    assert event.member.user_id == 9001
     assert event.member.roles == [
-        "9999"
+        9999
     ]
 
 
@@ -133,11 +133,11 @@ def test_from_manage_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
-    assert event.channel_id == "1001"
-    assert event.guild_id == "4001"
+    assert event.channel_id == 1001
+    assert event.guild_id == 4001
 
     command = event.command
-    assert command.command_id == "2001"
+    assert command.command_id == 2001
     assert command.command_name == "manage"
     assert command.subcommand_name == "post"
     assert command.options['game-id'] == 'test-game'
@@ -198,11 +198,11 @@ def test_from_manage_list_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
-    assert event.channel_id == "1001"
-    assert event.guild_id == "4001"
+    assert event.channel_id == 1001
+    assert event.guild_id == 4001
 
     command = event.command
-    assert command.command_id == "2001"
+    assert command.command_id == 2001
     assert command.command_name == "manage"
     assert command.subcommand_name == "list-games"
     assert command.options['closed']
@@ -256,11 +256,11 @@ def test_from_manage_list_without_options_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
-    assert event.channel_id == "1001"
-    assert event.guild_id == "4001"
+    assert event.channel_id == 1001
+    assert event.guild_id == 4001
 
     command = event.command
-    assert command.command_id == "2001"
+    assert command.command_id == 2001
     assert command.command_name == "manage"
     assert command.subcommand_name == "list"
     assert 'closed' not in command.options
@@ -320,11 +320,11 @@ def test_from_admin_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
-    assert event.channel_id == "1001"
-    assert event.guild_id == "4001"
+    assert event.channel_id == 1001
+    assert event.guild_id == 4001
 
     command = event.command
-    assert command.command_id == "2001"
+    assert command.command_id == 2001
     assert command.command_name == "admin"
     assert command.subcommand_name == "add-management-role"
     assert command.options == {
@@ -380,11 +380,11 @@ def test_from_guess_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
-    assert event.channel_id == "1001"
-    assert event.guild_id == "4001"
+    assert event.channel_id == 1001
+    assert event.guild_id == 4001
 
     command = event.command
-    assert command.command_id == "2001"
+    assert command.command_id == 2001
     assert command.command_name == "guess"
     assert command.subcommand_name is None
     assert command.options == {
@@ -442,11 +442,11 @@ def test_from_create_command_event():
 
     # Then
     assert event.type == discord_event.CommandType.COMMAND
-    assert event.channel_id == "1001"
-    assert event.guild_id == "3001"
+    assert event.channel_id == 1001
+    assert event.guild_id == 3001
 
     command = event.command
-    assert command.command_id == "2001"
+    assert command.command_id == 2001
     assert command.command_name == "create"
     assert command.subcommand_name is None
     assert command.options == {

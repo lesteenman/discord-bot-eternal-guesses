@@ -2,7 +2,8 @@ import contextlib
 import logging
 
 import discord
-from eternal_guesses.config import load_config
+
+from eternal_guesses.util import app_config
 
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
@@ -19,8 +20,7 @@ async def send_dm(user_id: int, message: str):
 @contextlib.asynccontextmanager
 async def discord_client() -> discord.Client:
     client = discord.Client()
-    config = load_config()
-    await client.login(config.discord_bot_token)
+    await client.login(app_config.discord_bot_token)
 
     try:
         yield client

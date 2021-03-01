@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.model.discord_event import DiscordEvent
+from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from eternal_guesses.util import id_generator

@@ -2,7 +2,7 @@ import logging
 from abc import ABC
 
 from eternal_guesses.errors import DiscordEventDisallowedError
-from eternal_guesses.model.discord_event import DiscordEvent
+from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
 
 log = logging.getLogger(__name__)
@@ -29,10 +29,17 @@ class CommandAuthorizerImpl(CommandAuthorizer):
             return
 
         log.debug(f"channel check: checking if {event.channel_id} is in {guild_config.management_channels}")
+        log.debug(f"type of event.channel_id: {type(event.channel_id)}")
+        for channel in guild_config.management_channels:
+            log.debug(f"type of guild_config.management_channels[]: {type(channel)}")
         if event.channel_id in guild_config.management_channels:
             return
 
         log.debug(f"roles check: checking if any of {event.member.roles} is in {guild_config.management_roles}")
+        for role in event.member.roles:
+            log.debug(f"type of event.member.roles[]: {type(role)}")
+        for role in guild_config.management_roles:
+            log.debug(f"type of guild_config.management_roles[]: {type(role)}")
         for role in event.member.roles:
             if role in guild_config.management_roles:
                 return

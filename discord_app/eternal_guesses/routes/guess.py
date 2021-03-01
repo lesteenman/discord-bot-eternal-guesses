@@ -5,7 +5,7 @@ from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.model.discord_event import DiscordEvent
+from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 

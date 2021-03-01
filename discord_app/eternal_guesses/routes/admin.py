@@ -1,7 +1,7 @@
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.util.message_provider import MessageProvider
-from eternal_guesses.model.discord_event import DiscordEvent
+from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 
 
@@ -16,7 +16,7 @@ class AdminRoute:
         await self.command_authorizer.authorize_admin_call(event)
 
         guild_config = self.configs_repository.get(guild_id=event.guild_id)
-        message = self.message_provider.channel_admin_info(config=guild_config)
+        message = self.message_provider.channel_admin_info(guild_config=guild_config)
         return DiscordResponse.channel_message_with_source(message=message)
 
     async def add_management_channel(self, event: DiscordEvent) -> DiscordResponse:

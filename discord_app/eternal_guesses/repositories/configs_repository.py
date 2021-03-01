@@ -22,15 +22,15 @@ def _range_key():
 
 def _config_from_model(model: EternalGuessesTable) -> GuildConfig:
     guild_id = int(re.match(PK_REGEX, model.pk).group(1))
-    config = GuildConfig(guild_id)
+    guild_config = GuildConfig(guild_id)
 
     for channel in model.management_channels:
-        config.management_channels.append(channel)
+        guild_config.management_channels.append(channel)
 
     for role in model.management_roles:
-        config.management_roles.append(role)
+        guild_config.management_roles.append(role)
 
-    return config
+    return guild_config
 
 
 class ConfigsRepository(ABC):

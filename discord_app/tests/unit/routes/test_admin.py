@@ -4,8 +4,8 @@ import pytest
 
 from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.data.guild_config import GuildConfig
-from eternal_guesses.model.discord_event import DiscordEvent, CommandType, DiscordCommand
-from eternal_guesses.model.discord_member import DiscordMember
+from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType, DiscordCommand
+from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.routes.admin import AdminRoute
 from eternal_guesses.util.message_provider import MessageProvider
@@ -23,8 +23,8 @@ class FakeMessageProvider(MessageProvider):
         self.expected_config = expected_config
         self.message = message
 
-    def channel_admin_info(self, config: GuildConfig) -> str:
-        if config == self.expected_config:
+    def channel_admin_info(self, guild_config: GuildConfig) -> str:
+        if guild_config == self.expected_config:
             return self.message
 
 
@@ -81,8 +81,8 @@ async def test_add_management_channel():
     await route.add_management_channel(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert channel in config.management_channels
+    guild_config = configs_repository.get(guild_id)
+    assert channel in guild_config.management_channels
 
 
 async def test_add_duplicate_management_channel():
@@ -111,9 +111,9 @@ async def test_add_duplicate_management_channel():
     await route.add_management_channel(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert channel in config.management_channels
-    assert len(config.management_channels) == 1
+    guild_config = configs_repository.get(guild_id)
+    assert channel in guild_config.management_channels
+    assert len(guild_config.management_channels) == 1
 
 
 async def test_remove_management_channel():
@@ -142,8 +142,8 @@ async def test_remove_management_channel():
     await route.remove_management_channel(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert management_channel not in config.management_channels
+    guild_config = configs_repository.get(guild_id)
+    assert management_channel not in guild_config.management_channels
 
 
 async def test_remove_invalid_management_channel():
@@ -173,9 +173,9 @@ async def test_remove_invalid_management_channel():
     await route.remove_management_channel(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert channel_to_remove not in config.management_channels
-    assert other_channel in config.management_channels
+    guild_config = configs_repository.get(guild_id)
+    assert channel_to_remove not in guild_config.management_channels
+    assert other_channel in guild_config.management_channels
 
 
 async def test_add_management_role():
@@ -202,8 +202,8 @@ async def test_add_management_role():
     await route.add_management_role(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert role in config.management_roles
+    guild_config = configs_repository.get(guild_id)
+    assert role in guild_config.management_roles
 
 
 async def test_add_duplicate_management_role():
@@ -233,9 +233,9 @@ async def test_add_duplicate_management_role():
     await route.add_management_role(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert duplicate_role in config.management_roles
-    assert len(config.management_roles) == 1
+    guild_config = configs_repository.get(guild_id)
+    assert duplicate_role in guild_config.management_roles
+    assert len(guild_config.management_roles) == 1
 
 
 async def test_remove_management_role():
@@ -262,8 +262,8 @@ async def test_remove_management_role():
     await route.remove_management_role(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert role not in config.management_roles
+    guild_config = configs_repository.get(guild_id)
+    assert role not in guild_config.management_roles
 
 
 async def test_remove_invalid_management_role():
@@ -291,9 +291,9 @@ async def test_remove_invalid_management_role():
     await route.remove_management_role(event)
 
     # Then
-    config = configs_repository.get(guild_id)
-    assert role_to_remove not in config.management_roles
-    assert management_role in config.management_roles
+    guild_config = configs_repository.get(guild_id)
+    assert role_to_remove not in guild_config.management_roles
+    assert management_role in guild_config.management_roles
 
 
 async def test_admin_info_unauthorized():

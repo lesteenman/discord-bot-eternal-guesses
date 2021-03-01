@@ -1,12 +1,9 @@
 from eternal_guesses import handler
-from eternal_guesses.util.config import load_config
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from tests.integration.helpers import create_context, make_discord_create_event, \
     make_discord_guess_event, make_discord_manage_post_event
-
-app_config = load_config()
 
 
 def test_integration_full_flow():

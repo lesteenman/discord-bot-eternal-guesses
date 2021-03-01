@@ -15,7 +15,7 @@ class MessageProvider(ABC):
     def dm_guess_added(self, game_id: str, guess: str) -> str:
         pass
 
-    def channel_admin_info(self, config: GuildConfig) -> str:
+    def channel_admin_info(self, guild_config: GuildConfig) -> str:
         pass
 
     def channel_manage_list_all_games(self, games: List[Game]) -> str:
@@ -49,14 +49,14 @@ class MessageProviderImpl(MessageProvider):
         return f"Actual guesses for {game.game_id}:\n\n{guesses}"
 
     def dm_error_game_not_found(self, game_id: str) -> str:
-        return f"No game found with id {game_id}"
+        return f"No game found with id {game_id}."
 
     def dm_guess_added(self, game_id: str, guess: str) -> str:
-        return f"Your guess '{guess}' for game '{game_id}' has been registered"
+        return f"Your guess '{guess}' for game '{game_id}' has been registered."
 
-    def channel_admin_info(self, config: GuildConfig) -> str:
-        roles = list(f"<@{role}>" for role in config.management_roles)
-        channels = list(f"<@{channel}>" for channel in config.management_channels)
+    def channel_admin_info(self, guild_config: GuildConfig) -> str:
+        roles = ", ".join(f"<@{role}>" for role in guild_config.management_roles)
+        channels = ", ".join(f"<@{channel}>" for channel in guild_config.management_channels)
 
         admin_info = f"Eternal-Guess configuration for this server:\n" \
                      f"- management_roles: {roles}\n" \
@@ -64,13 +64,29 @@ class MessageProviderImpl(MessageProvider):
         return admin_info
 
     def channel_manage_list_all_games(self, games: List[Game]) -> str:
-        return f"TODO: channel_manage_list_all_games({games})"
+        lines = []
+        for game in games:
+            line = f"- {game.game_id}"
+            if game.closed:
+                line = f"{line} (closed)"
+
+            lines.append(line)
+
+        return "All games:\n" + "\n".join(sorted(lines))
 
     def channel_manage_list_open_games(self, games: List[Game]) -> str:
-        return f"TODO: channel_manage_list_open_games({games})"
+        lines = []
+        for game in games:
+            lines.append(f"- {game.game_id}")
+
+        return "All open games:\n" + "\n".join(sorted(lines))
 
     def channel_manage_list_closed_games(self, games: List[Game]) -> str:
-        return f"TODO: channel_manage_list_open_games({games})"
+        lines = []
+        for game in games:
+            lines.append(f"- {game.game_id}")
+
+        return "All closed games:\n" + "\n".join(sorted(lines))
 
     def dm_error_guess_on_closed_game(self, game_id):
         return f"The game '{game_id}' you placed a guess for has already been closed."

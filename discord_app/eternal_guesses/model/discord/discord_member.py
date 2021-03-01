@@ -17,8 +17,8 @@ class DiscordMember:
 def _member_from_data(member_data: Dict) -> DiscordMember:
     return DiscordMember(
         username=member_data['user']['username'],
-        user_id=member_data['user']['id'],
-        roles=member_data['roles'],
+        user_id=int(member_data['user']['id']),
+        roles=list(map(int, member_data['roles'])),
         nickname=member_data['nick'],
         is_admin=int(member_data.get('permissions', 0)) & 0x8 == 0x8,
     )

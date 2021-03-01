@@ -5,8 +5,8 @@ from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
-from eternal_guesses.model.discord_event import DiscordEvent
-from eternal_guesses.model.discord_member import DiscordMember
+from eternal_guesses.model.discord.discord_event import DiscordEvent
+from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.repositories.games_repository import GamesRepository
 

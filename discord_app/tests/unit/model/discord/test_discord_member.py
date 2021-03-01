@@ -1,4 +1,4 @@
-from eternal_guesses.model.discord_member import _member_from_data
+from eternal_guesses.model.discord.discord_member import _member_from_data
 
 
 def test_is_admin():

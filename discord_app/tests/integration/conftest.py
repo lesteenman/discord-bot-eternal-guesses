@@ -7,7 +7,7 @@ from pynamodb.exceptions import TableError
 
 from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, AuthorizationResult
 from eternal_guesses.discord_messaging import DiscordMessaging
-from eternal_guesses.model.discord_member import DiscordMember
+from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
 

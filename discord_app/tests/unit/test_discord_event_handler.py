@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from eternal_guesses.authorization.api_authorizer import AuthorizationResult, ApiAuthorizer
 from eternal_guesses.discord_event_handler import DiscordEventHandler
-from eternal_guesses.model.discord_event import DiscordEvent, CommandType
+from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.router import Router
 
