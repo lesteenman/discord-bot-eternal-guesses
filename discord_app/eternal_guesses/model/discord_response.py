@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class ResponseType(Enum):
@@ -10,16 +11,26 @@ class ResponseType(Enum):
 
 
 class DiscordResponse(object):
-    def __init__(self, response_type: ResponseType, content: str = None):
+    def __init__(self, response_type: ResponseType, content: str = None, allow_role_mentions: bool = False,
+                 allow_user_mentions: bool = False):
         self.response_type = response_type
         self.content = content
+
+        self.allowed_mention_types = []
+        if allow_user_mentions:
+            self.allowed_mention_types.append('users')
+        if allow_role_mentions:
+            self.allowed_mention_types.append('roles')
 
     def json(self):
         if self.response_type in [ResponseType.CHANNEL_MESSAGE, ResponseType.CHANNEL_MESSAGE_WITH_SOURCE]:
             return {
                 'type': self.response_type.value,
                 'data': {
-                    'content': self.content
+                    'content': self.content,
+                    'allowed_mentions': {
+                        'parse': self.allowed_mention_types
+                    }
                 }
             }
         else:

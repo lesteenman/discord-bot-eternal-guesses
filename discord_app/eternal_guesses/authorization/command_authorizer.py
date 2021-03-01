@@ -13,6 +13,9 @@ class CommandAuthorizer(ABC):
     async def authorize_management_call(self, event: DiscordEvent):
         pass
 
+    async def authorize_admin_call(self, event: DiscordEvent):
+        pass
+
 
 class CommandAuthorizerImpl(CommandAuthorizer):
     def __init__(self, configs_repository: ConfigsRepository):
@@ -21,6 +24,9 @@ class CommandAuthorizerImpl(CommandAuthorizer):
     async def authorize_management_call(self, event: DiscordEvent):
         guild_id = event.guild_id
         guild_config = self.configs_repository.get(guild_id=guild_id)
+
+        if event.member.is_admin:
+            return
 
         log.debug(f"channel check: checking if {event.channel_id} is in {guild_config.management_channels}")
         if event.channel_id in guild_config.management_channels:
@@ -33,3 +39,9 @@ class CommandAuthorizerImpl(CommandAuthorizer):
 
         raise DiscordEventDisallowedError("the user has no management role and the request was not done from a "
                                           "management channel.")
+
+    async def authorize_admin_call(self, event):
+        if event.member.is_admin:
+            return
+
+        raise DiscordEventDisallowedError("command only allowed by a member with admin permissions.")

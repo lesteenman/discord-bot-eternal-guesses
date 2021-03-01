@@ -1,6 +1,8 @@
 from eternal_guesses import handler
 from eternal_guesses.model.data.guild_config import GuildConfig
-from tests.integration.helpers import create_context, make_discord_manage_list_event
+from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
+from tests.integration.helpers import create_context, make_discord_manage_list_event, \
+    make_discord_admin_add_channel_event, make_discord_admin_add_role_event
 
 
 def test_integration_channel_permissions():
@@ -11,7 +13,7 @@ def test_integration_channel_permissions():
 
     # When we allow one channel and one role as management
     add_management_channel(guild_id=guild_id, manage_channel=management_channel)
-    add_management_role(guild_id=guild_id, manage_role=management_role)
+    add_management_role(guild_id=guild_id, management_role=management_role)
 
     # We see it in the config
     config = get_guild_config(guild_id=guild_id)
@@ -27,15 +29,26 @@ def test_integration_channel_permissions():
 
 
 def add_management_channel(guild_id, manage_channel):
-    assert False # Implement a call to admin.add-channel
+    response = handler.handle_lambda(
+        make_discord_admin_add_channel_event(guild_id=guild_id, new_management_channel_id=manage_channel, is_admin=True),
+        create_context()
+    )
+
+    assert response['statusCode'] == 200
 
 
-def add_management_role(guild_id, manage_role):
-    assert False # Implement a call to admin.add-role
+def add_management_role(guild_id, management_role):
+    response = handler.handle_lambda(
+        make_discord_admin_add_role_event(guild_id=guild_id, new_management_role=management_role, is_admin=True),
+        create_context()
+    )
+
+    assert response['statusCode'] == 200
 
 
 def get_guild_config(guild_id) -> GuildConfig:
-    assert False # get from the repository
+    configs_repository = ConfigsRepositoryImpl()
+    return configs_repository.get(guild_id=guild_id)
 
 
 def manage_list_games(guild_id, channel_id, role_id) -> int:

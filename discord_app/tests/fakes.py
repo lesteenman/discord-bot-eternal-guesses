@@ -4,20 +4,11 @@ from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord_event import DiscordEvent
 from eternal_guesses.model.discord_member import DiscordMember
+from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.repositories.games_repository import GamesRepository
-
-
-# class FakeApiAuthorizer(ApiAuthorizer):
-#     def __init__(self, passes: bool):
-#         self.passes = passes
-#
-#     def authorize(self, event: Dict) -> (AuthorizationResult, LambdaResponse):
-#         if self.passes:
-#             return AuthorizationResult.PASS, None
-#         else:
-#             return AuthorizationResult.FAIL, LambdaResponse()
 
 
 class FakeCommandAuthorizer(CommandAuthorizer):
@@ -25,6 +16,10 @@ class FakeCommandAuthorizer(CommandAuthorizer):
         self.passes = passes
 
     async def authorize_management_call(self, event: DiscordEvent):
+        if self.passes is False:
+            raise DiscordEventDisallowedError("Disallowed")
+
+    async def authorize_admin_call(self, event: DiscordEvent):
         if self.passes is False:
             raise DiscordEventDisallowedError("Disallowed")
 
@@ -70,3 +65,26 @@ class FakeGamesRepository(GamesRepository):
 
     def get_all(self, guild_id: int) -> List[Game]:
         return self.games
+
+
+class FakeConfigsRepository(ConfigsRepository):
+    def __init__(self, guild_id: int, management_channels: List[int] = None, management_roles: List[int] = None):
+        if management_channels is None:
+            management_channels = []
+
+        if management_roles is None:
+            management_roles = []
+
+        self.guild_config = GuildConfig(
+            guild_id=guild_id,
+            management_channels=management_channels,
+            management_roles=management_roles
+        )
+
+    def get(self, guild_id: int) -> GuildConfig:
+        if guild_id == self.guild_config.guild_id:
+            return self.guild_config
+
+    def save(self, guild_config: GuildConfig):
+        if guild_config.guild_id == self.guild_config.guild_id:
+            self.guild_config = guild_config
