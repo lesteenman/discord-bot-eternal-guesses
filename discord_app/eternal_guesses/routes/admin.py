@@ -1,3 +1,5 @@
+from loguru import logger
+
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
@@ -15,6 +17,8 @@ class AdminRoute:
         self.discord_messaging = discord_messaging
 
     async def info(self, event: DiscordEvent) -> DiscordResponse:
+        logger.debug("Getting info")
+
         await self.command_authorizer.authorize_admin_call(event)
 
         guild_config = self.configs_repository.get(guild_id=event.guild_id)

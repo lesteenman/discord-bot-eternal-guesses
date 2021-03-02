@@ -24,7 +24,7 @@ class GuessRoute:
             new_channel_message = self.message_provider.channel_list_game_guesses(game)
             for channel_message in game.channel_messages:
                 logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
-                          f"message_id={channel_message.message_id}, message='{new_channel_message}'")
+                             f"message_id={channel_message.message_id}, message='{new_channel_message}'")
                 await self.discord_messaging.update_channel_message(channel_message.channel_id,
                                                                     channel_message.message_id,
                                                                     new_channel_message)

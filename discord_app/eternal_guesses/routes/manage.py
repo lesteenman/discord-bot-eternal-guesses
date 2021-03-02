@@ -1,3 +1,5 @@
+from loguru import logger
+
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.model.data.game import ChannelMessage
@@ -21,6 +23,8 @@ class ManageRoute:
         guild_id = event.guild_id
         game_id = event.command.options['game-id']
 
+        logger.debug(f"posting a game's info. guild_id={guild_id}, game_id={game_id}")
+
         if 'channel' in event.command.options:
             channel_id = event.command.options['channel']
         else:
@@ -29,7 +33,7 @@ class ManageRoute:
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
             message = self.message_provider.dm_error_game_not_found(game_id)
-            await self.discord_messaging.send_dm(event.member, message)
+            await self.discord_messaging.send_temp_message(channel_id=event.channel_id, text=message)
         else:
             message = self.message_provider.channel_list_game_guesses(game)
             message_id = await self.discord_messaging.send_channel_message(channel_id, message)

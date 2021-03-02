@@ -10,20 +10,25 @@ from eternal_guesses.util import app_config
 
 class DiscordMessaging(ABC):
     async def send_channel_message(self, channel_id: int, text: str) -> int:
+        logger.warning("Using an ABC method!")
         pass
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
+        logger.warning("Using an ABC method!")
         pass
 
     async def send_dm(self, member: DiscordMember, text: str):
+        logger.warning("Using an ABC method!")
         pass
 
     async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
+        logger.warning("Using an ABC method!")
         pass
 
 
 class DiscordMessagingImpl(DiscordMessaging):
     async def send_channel_message(self, channel_id: int, text: str) -> int:
+        logger.debug(f"send_channel_message, channel_id={channel_id}, text='{text}'")
         async with self._discord_client() as client:
             logger.info("Posting a new channel message")
             logger.debug(
@@ -37,6 +42,7 @@ class DiscordMessagingImpl(DiscordMessaging):
             return channel_message.id
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
+        logger.debug(f"update_channel_message, channel_id={channel_id}, message_id={message_id}, text='{text}'")
         async with self._discord_client() as client:
             logger.info("Posting a new channel message")
             logger.debug(
@@ -52,6 +58,7 @@ class DiscordMessagingImpl(DiscordMessaging):
             logger.debug("updated channel message")
 
     async def send_dm(self, member: DiscordMember, text: str):
+        logger.debug(f"send_dm to {member.user_id}, text='{text}'")
         async with self._discord_client() as client:
             logger.info("Fetching user")
             user = await client.fetch_user(member.user_id)
@@ -59,8 +66,10 @@ class DiscordMessagingImpl(DiscordMessaging):
             await user.send(text)
 
     async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
+        logger.debug(f"Sending a temp message to {channel_id}, timeout={timeout}, text='{text}'")
         async with self._discord_client() as client:
             text_channel = await client.fetch_channel(channel_id)
+
             await text_channel.send(content=text, delete_after=timeout)
 
     @contextlib.asynccontextmanager

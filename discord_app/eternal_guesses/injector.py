@@ -1,7 +1,7 @@
 from eternal_guesses.authorization.api_authorizer import ApiAuthorizerImpl, ApiAuthorizer
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer, CommandAuthorizerImpl
 from eternal_guesses.discord_event_handler import DiscordEventHandler
-from eternal_guesses.discord_messaging import DiscordMessaging
+from eternal_guesses.discord_messaging import DiscordMessaging, DiscordMessagingImpl
 from eternal_guesses.repositories.configs_repository import ConfigsRepository, ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl, GamesRepository
 from eternal_guesses.router import Router, RouterImpl
@@ -66,7 +66,7 @@ def _configs_repository() -> ConfigsRepository:
 
 
 def _discord_messaging() -> DiscordMessaging:
-    return DiscordMessaging()
+    return DiscordMessagingImpl()
 
 
 def _message_provider() -> MessageProvider:

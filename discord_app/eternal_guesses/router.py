@@ -91,7 +91,7 @@ class RouterImpl(Router):
 
         if event.type is CommandType.COMMAND:
             logger.info(f"handling application command, type='{event.command.command_name}', "
-                     f"subcommand='{event.command.subcommand_name}'")
+                        f"subcommand='{event.command.subcommand_name}'")
             logger.debug(
                 f"guild={event.guild_id}, channel={event.channel_id}, user={event.member.user_id}")
             logger.debug(f"options={event.command.options}")
