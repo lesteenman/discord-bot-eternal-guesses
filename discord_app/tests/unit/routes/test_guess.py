@@ -151,6 +151,7 @@ async def test_guess_game_does_not_exist():
     guild_id = 1001
     game_id = 'fun-game'
     user_id = 2001
+    event_channel_id = 7002
 
     fake_games_repository = FakeGamesRepository([])
 
@@ -163,22 +164,32 @@ async def test_guess_game_does_not_exist():
     guess_route = GuessRoute(
         games_repository=fake_games_repository,
         discord_messaging=fake_discord_messaging,
-        message_provider=message_provider)
+        message_provider=message_provider
+    )
 
     # When
-    event = _create_guess_event(guild_id, game_id, user_id, 'nickname')
+    event = _create_guess_event(
+        guild_id=guild_id,
+        game_id=game_id,
+        user_id=user_id,
+        event_channel_id=event_channel_id,
+        user_nickname='nickname'
+    )
     await guess_route.call(event)
 
     # Then
     assert len(fake_games_repository.get_all(guild_id=guild_id)) == 0
 
-    assert {'member': event.member, 'text': dm_error} in fake_discord_messaging.sent_dms
+    assert len(fake_discord_messaging.sent_temp_messages) == 1
+    assert fake_discord_messaging.sent_temp_messages[0]['channel_id'] == event_channel_id
+    assert fake_discord_messaging.sent_temp_messages[0]['text'] == dm_error
 
 
 async def test_guess_duplicate_guess():
     # Given
     guild_id = 1000
     game_id = 'game-id'
+    event_channel_id = 7002
 
     guessing_user_id = 2000
     old_guess = '100'
@@ -211,6 +222,7 @@ async def test_guess_duplicate_guess():
         user_id=guessing_user_id,
         game_id=game_id,
         guess=new_guess,
+        event_channel_id=event_channel_id,
     )
     await guess_route.call(event)
 
@@ -219,7 +231,7 @@ async def test_guess_duplicate_guess():
     assert saved_game.guesses[guessing_user_id].guess == old_guess
 
     # And a DM is sent to the user guessing
-    assert discord_messaging.sent_dms[0]['member'].user_id == guessing_user_id
+    assert discord_messaging.sent_temp_messages[0]['channel_id'] == event_channel_id
 
 
 async def test_guess_closed_game():
@@ -228,6 +240,7 @@ async def test_guess_closed_game():
     game_id = 'closed-game'
     guessing_user_id = 3000
     other_user_id = 3050
+    event_channel_id = 7775
 
     # We have a closed game
     game = Game(
@@ -252,7 +265,8 @@ async def test_guess_closed_game():
     event = _create_guess_event(
         guild_id=guild_id,
         game_id=game_id,
-        user_id=guessing_user_id
+        user_id=guessing_user_id,
+        event_channel_id=event_channel_id,
     )
     await route.call(event)
 
@@ -261,15 +275,16 @@ async def test_guess_closed_game():
     assert list(saved_game.guesses.keys()) == [other_user_id]
 
     # And a DM is sent to the user guessing
-    assert discord_messaging.sent_dms[0]['member'].user_id == guessing_user_id
+    assert discord_messaging.sent_temp_messages[0]['channel_id'] == event_channel_id
 
 
 def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nickname: str = 'nickname',
-                        guess: str = 'not-relevant'):
+                        guess: str = 'not-relevant', event_channel_id: int = -1):
     event = DiscordEvent(
+        channel_id=event_channel_id,
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="guess",
             options={
                 'game-id': game_id,

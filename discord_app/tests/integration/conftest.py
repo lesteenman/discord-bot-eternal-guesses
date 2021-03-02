@@ -66,13 +66,13 @@ def fixed_authorization_result(mocker):
 @pytest.fixture(autouse=True)
 def stub_discord_messaging(mocker):
     class SilentDiscordMessaging(DiscordMessaging):
-        async def create_channel_message(self, channel_id: int, text: str) -> int:
+        async def send_channel_message(self, channel_id: int, text: str) -> int:
             return 1
 
         async def update_channel_message(self, channel_id: int, message_id: int, text: str):
             pass
 
-        async def send_dm(self, member: DiscordMember, message: str):
+        async def send_dm(self, member: DiscordMember, text: str):
             pass
 
     silent_discord_messaging = SilentDiscordMessaging()

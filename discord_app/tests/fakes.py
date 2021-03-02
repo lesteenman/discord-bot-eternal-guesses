@@ -29,17 +29,21 @@ class FakeDiscordMessaging(DiscordMessaging):
         self.updated_channel_messages = []
         self.sent_dms = []
         self.sent_channel_messages = []
+        self.sent_temp_messages = []
         self.created_channel_message_id = 0
 
-    async def create_channel_message(self, channel_id: int, text: str) -> int:
+    async def send_channel_message(self, channel_id: int, text: str) -> int:
         self.sent_channel_messages.append({'channel_id': channel_id, 'text': text})
         return self.created_channel_message_id
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
         self.updated_channel_messages.append({'channel_id': channel_id, 'message_id': message_id, 'text': text})
 
-    async def send_dm(self, member: DiscordMember, message: str):
-        self.sent_dms.append({'member': member, 'text': message})
+    async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
+        self.sent_temp_messages.append({'channel_id': channel_id, 'text': text, 'timeout': timeout})
+
+    async def send_dm(self, member: DiscordMember, text: str):
+        self.sent_dms.append({'member': member, 'text': text})
 
 
 class FakeGamesRepository(GamesRepository):

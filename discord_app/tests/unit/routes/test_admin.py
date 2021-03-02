@@ -9,7 +9,7 @@ from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.routes.admin import AdminRoute
 from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeCommandAuthorizer, FakeConfigsRepository
+from tests.fakes import FakeCommandAuthorizer, FakeConfigsRepository, FakeDiscordMessaging
 
 pytestmark = pytest.mark.asyncio
 
@@ -44,7 +44,8 @@ async def test_admin_info():
     route = AdminRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer
+        command_authorizer=command_authorizer,
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     event = _make_event(guild_id=guild_id)
@@ -53,8 +54,7 @@ async def test_admin_info():
     response = await route.info(event)
 
     # Then
-    assert response.content == static_message
-    assert response.response_type == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE
+    assert response.response_type == ResponseType.ACKNOWLEDGE_WITH_SOURCE
 
 
 async def test_add_management_channel():
@@ -74,7 +74,8 @@ async def test_add_management_channel():
     route = AdminRoute(
         message_provider=FakeMessageProvider(),
         configs_repository=configs_repository,
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -104,7 +105,8 @@ async def test_add_duplicate_management_channel():
     route = AdminRoute(
         configs_repository=configs_repository,
         message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -135,7 +137,8 @@ async def test_remove_management_channel():
     route = AdminRoute(
         configs_repository=configs_repository,
         message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -166,7 +169,8 @@ async def test_remove_invalid_management_channel():
     route = AdminRoute(
         message_provider=FakeMessageProvider(),
         configs_repository=configs_repository,
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -195,7 +199,8 @@ async def test_add_management_role():
     route = AdminRoute(
         configs_repository=configs_repository,
         message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -226,7 +231,8 @@ async def test_add_duplicate_management_role():
     route = AdminRoute(
         configs_repository=configs_repository,
         message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -255,7 +261,8 @@ async def test_remove_management_role():
     route = AdminRoute(
         message_provider=FakeMessageProvider(),
         configs_repository=configs_repository,
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -284,7 +291,8 @@ async def test_remove_invalid_management_role():
     route = AdminRoute(
         message_provider=FakeMessageProvider(),
         configs_repository=configs_repository,
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(passes=True),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
@@ -304,7 +312,8 @@ async def test_admin_info_unauthorized():
     route = AdminRoute(
         command_authorizer=authorizer,
         message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1)
+        configs_repository=FakeConfigsRepository(guild_id=-1),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # Then: the call should raise an Exception
@@ -323,7 +332,8 @@ async def test_admin_add_management_channel_unauthorized():
     route = AdminRoute(
         command_authorizer=authorizer,
         message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1)
+        configs_repository=FakeConfigsRepository(guild_id=-1),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # Then: the call should raise an Exception
@@ -342,7 +352,8 @@ async def test_admin_remove_management_channel_unauthorized():
     route = AdminRoute(
         command_authorizer=authorizer,
         message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1)
+        configs_repository=FakeConfigsRepository(guild_id=-1),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # Then: the call should raise an Exception
@@ -361,7 +372,8 @@ async def test_admin_add_management_role_unauthorized():
     route = AdminRoute(
         command_authorizer=authorizer,
         message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1)
+        configs_repository=FakeConfigsRepository(guild_id=-1),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # Then: the call should raise an Exception
@@ -380,7 +392,8 @@ async def test_admin_remove_management_role_unauthorized():
     route = AdminRoute(
         command_authorizer=authorizer,
         message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1)
+        configs_repository=FakeConfigsRepository(guild_id=-1),
+        discord_messaging=FakeDiscordMessaging(),
     )
 
     # Then: the call should raise an Exception
@@ -398,7 +411,7 @@ def _make_event(guild_id: int = -1, options: Dict = None) -> DiscordEvent:
     return DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="admin",
             subcommand_name="does-not-matter",
             options=options

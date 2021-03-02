@@ -11,18 +11,21 @@ log = logging.getLogger(__name__)
 
 
 class DiscordMessaging(ABC):
-    async def create_channel_message(self, channel_id: int, text: str) -> int:
+    async def send_channel_message(self, channel_id: int, text: str) -> int:
         pass
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
         pass
 
-    async def send_dm(self, member: DiscordMember, message: str):
+    async def send_dm(self, member: DiscordMember, text: str):
+        pass
+
+    async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
         pass
 
 
 class DiscordMessagingImpl(DiscordMessaging):
-    async def create_channel_message(self, channel_id: int, text: str) -> int:
+    async def send_channel_message(self, channel_id: int, text: str) -> int:
         async with self._discord_client() as client:
             log.info("Posting a new channel message")
             log.debug(
@@ -50,12 +53,17 @@ class DiscordMessagingImpl(DiscordMessaging):
             await message.edit(content=text)
             log.debug("updated channel message")
 
-    async def send_dm(self, member: DiscordMember, message: str):
+    async def send_dm(self, member: DiscordMember, text: str):
         async with self._discord_client() as client:
             log.info("Fetching user")
             user = await client.fetch_user(member.user_id)
 
-            await user.send(message)
+            await user.send(text)
+
+    async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
+        async with self._discord_client() as client:
+            text_channel = await client.fetch_channel(channel_id)
+            await text_channel.send(content=text, delete_after=timeout)
 
     @contextlib.asynccontextmanager
     async def _discord_client(self) -> discord.Client:

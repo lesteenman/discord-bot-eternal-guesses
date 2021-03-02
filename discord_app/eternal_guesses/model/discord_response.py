@@ -1,4 +1,8 @@
+import logging
 from enum import Enum
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class ResponseType(Enum):
@@ -51,17 +55,21 @@ class DiscordResponse(object):
 
     @classmethod
     def channel_message(cls, message: str):
-        return DiscordResponse(
-            response_type=ResponseType.CHANNEL_MESSAGE,
-            content=message
-        )
+        log.error("DO NOT USE! The timeout of 3 seconds is too short. Send a custom message instead.")
+        assert False
+        # return DiscordResponse(
+        #     response_type=ResponseType.CHANNEL_MESSAGE,
+        #     content=message
+        # )
 
     @classmethod
     def channel_message_with_source(cls, message: str):
-        return DiscordResponse(
-            response_type=ResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-            content=message
-        )
+        log.error("DO NOT USE! The timeout of 3 seconds is too short. Send a custom message instead.")
+        assert False
+        # return DiscordResponse(
+        #     response_type=ResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        #     content=message
+        # )
 
     @classmethod
     def acknowledge_with_source(cls):

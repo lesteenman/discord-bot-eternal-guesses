@@ -33,6 +33,9 @@ class MessageProvider(ABC):
     def dm_error_duplicate_guess(self, game_id):
         pass
 
+    def error_duplicate_management_channel(self, channel):
+        pass
+
 
 class MessageProviderImpl(MessageProvider):
 
@@ -93,3 +96,7 @@ class MessageProviderImpl(MessageProvider):
 
     def dm_error_duplicate_guess(self, game_id):
         return f"You have already placed a guess for game '{game_id}'"
+
+    def error_duplicate_management_channel(self, channel):
+        return f"<#{channel}> is already a management channel."
+

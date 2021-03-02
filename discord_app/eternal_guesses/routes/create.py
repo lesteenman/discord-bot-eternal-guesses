@@ -1,20 +1,19 @@
 import logging
 from datetime import datetime
 
+from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
-from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
+from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.util import id_generator
 
 log = logging.getLogger(__name__)
 
 
 class CreateRoute:
-    def __init__(self, games_repository=None):
-        if games_repository is None:
-            games_repository = GamesRepositoryImpl()
-
+    def __init__(self, games_repository: GamesRepository, discord_messaging: DiscordMessaging):
+        self.discord_messaging = discord_messaging
         self.games_repository = games_repository
 
     def _generate_game_id(self, guild_id: int, attempt: int = 0):
@@ -39,8 +38,12 @@ class CreateRoute:
         else:
             existing_game = self.games_repository.get(guild_id, game_id)
             if existing_game is not None:
-                return DiscordResponse.channel_message_with_source(
-                    f"Game id '{game_id}' already exists.")
+                await self.discord_messaging.send_temp_message(
+                    text=f"Game id '{game_id}' already exists.",
+                    channel_id=event.channel_id,
+                )
+
+                return DiscordResponse.acknowledge()
 
         game = Game(
             guild_id=guild_id,
@@ -52,5 +55,9 @@ class CreateRoute:
         )
         self.games_repository.save(game)
 
-        return DiscordResponse.channel_message(
-            f"Game created with id '{game_id}'.")
+        await self.discord_messaging.send_channel_message(
+            text=f"Game created with id '{game_id}'.",
+            channel_id=event.channel_id,
+        )
+
+        return DiscordResponse.acknowledge()

@@ -40,20 +40,20 @@ class GuessRoute:
 
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
-            dm_error = self.message_provider.dm_error_game_not_found(game_id)
-            await self.discord_messaging.send_dm(event.member, dm_error)
+            error_message = self.message_provider.dm_error_game_not_found(game_id)
+            await self.discord_messaging.send_temp_message(event.channel_id, error_message)
 
             return DiscordResponse.acknowledge()
 
         if game.guesses.get(user_id) is not None:
-            dm_error = self.message_provider.dm_error_duplicate_guess(game_id)
-            await self.discord_messaging.send_dm(event.member, dm_error)
+            error_message = self.message_provider.dm_error_duplicate_guess(game_id)
+            await self.discord_messaging.send_temp_message(event.channel_id, error_message)
 
             return DiscordResponse.acknowledge()
 
         if game.closed:
-            dm_error = self.message_provider.dm_error_guess_on_closed_game(game_id)
-            await self.discord_messaging.send_dm(event.member, dm_error)
+            error_message = self.message_provider.dm_error_guess_on_closed_game(game_id)
+            await self.discord_messaging.send_temp_message(event.channel_id, error_message)
 
             return DiscordResponse.acknowledge()
 

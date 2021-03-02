@@ -6,10 +6,10 @@ import pytest
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand, CommandType
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from eternal_guesses.routes import create
 from eternal_guesses.routes.create import CreateRoute
+from tests.fakes import FakeDiscordMessaging
 
 pytestmark = pytest.mark.asyncio
 
@@ -27,19 +27,22 @@ async def test_create_generated_id(mock_id_generator, mock_datetime):
     mock_games_repository.get.return_value = None
     mock_id_generator.game_id.return_value = "potatoific-tomatopuss"
 
+    create_route = CreateRoute(
+        games_repository=mock_games_repository,
+        discord_messaging=FakeDiscordMessaging(),
+    )
+
+    # When
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="create",
             options={}
         ),
         guild_id=guild_id,
         member=DiscordMember()
     )
-
-    # When
-    create_route = CreateRoute(games_repository=mock_games_repository)
     await create_route.call(event)
 
     # Then
@@ -67,10 +70,16 @@ async def test_create_given_id(mock_datetime):
     mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = None
 
+    create_route = CreateRoute(
+        games_repository=mock_games_repository,
+        discord_messaging=FakeDiscordMessaging(),
+    )
+
+    # When
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="create",
             options={
                 'game-id': game_id
@@ -79,9 +88,6 @@ async def test_create_given_id(mock_datetime):
         guild_id=guild_id,
         member=DiscordMember()
     )
-
-    # When
-    create_route = CreateRoute(games_repository=mock_games_repository)
     await create_route.call(event)
 
     # Then
@@ -109,10 +115,16 @@ async def test_create_duplicate_given_id():
     mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = existing_game
 
+    create_route = CreateRoute(
+        games_repository=mock_games_repository,
+        discord_messaging=FakeDiscordMessaging(),
+    )
+
+    # When
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="create",
             options={
                 'game-id': game_id
@@ -120,17 +132,11 @@ async def test_create_duplicate_given_id():
         ),
         guild_id=guild_id
     )
-
-    # When
-    create_route = CreateRoute(games_repository=mock_games_repository)
-    response = await create_route.call(event)
+    await create_route.call(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
     mock_games_repository.save.assert_not_called()
-
-    # And we should give a response where we keep the original message
-    assert response.response_type.value == ResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value
 
 
 async def test_create_sets_created_by_to_calling_user():
@@ -143,7 +149,7 @@ async def test_create_sets_created_by_to_calling_user():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="create",
             options={
                 'game-id': 'game-id'
@@ -156,7 +162,10 @@ async def test_create_sets_created_by_to_calling_user():
     )
 
     # When
-    create_route = CreateRoute(games_repository=mock_games_repository)
+    create_route = CreateRoute(
+        games_repository=mock_games_repository,
+        discord_messaging=FakeDiscordMessaging(),
+    )
     await create_route.call(event)
 
     # Then

@@ -37,7 +37,7 @@ class ManageRoute:
             await self.discord_messaging.send_dm(event.member, message)
         else:
             message = self.message_provider.channel_list_game_guesses(game)
-            message_id = await self.discord_messaging.create_channel_message(channel_id, message)
+            message_id = await self.discord_messaging.send_channel_message(channel_id, message)
 
             if game.channel_messages is None:
                 game.channel_messages = []
@@ -66,7 +66,9 @@ class ManageRoute:
         else:
             message = self.message_provider.channel_manage_list_all_games(all_games)
 
-        return DiscordResponse.channel_message(message)
+        await self.discord_messaging.send_channel_message(channel_id=event.channel_id, text=message)
+
+        return DiscordResponse.acknowledge()
 
     async def close(self, event: DiscordEvent) -> DiscordResponse:
         await self.command_authorizer.authorize_management_call(event)
@@ -78,4 +80,9 @@ class ManageRoute:
         game.closed = True
         self.games_repository.save(game)
 
-        return DiscordResponse.channel_message(f"Game '{game_id} has now been closed for new guesses.")
+        await self.discord_messaging.send_channel_message(
+            text=f"Game '{game_id} has now been closed for new guesses.",
+            channel_id=event.channel_id,
+        )
+
+        return DiscordResponse.acknowledge()

@@ -87,7 +87,7 @@ async def test_post_without_channel_uses_event_channel():
         guild_id=guild_id,
         channel_id=event_channel_id,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="post",
             options={
@@ -189,29 +189,33 @@ async def test_list_all_without_closed_option():
     message_provider = MagicMock(MessageProvider)
     message_provider.channel_manage_list_all_games.return_value = list_games_message
 
+    open_game = Game(closed=False)
+    closed_game = Game(closed=True)
+    games_repository = FakeGamesRepository([open_game, closed_game])
+
+    discord_messaging = FakeDiscordMessaging()
+    command_authorizer = FakeCommandAuthorizer(passes=True)
+
+    manage_route = ManageRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+        message_provider=message_provider,
+        command_authorizer=command_authorizer,
+    )
+
+    # When
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         guild_id=guild_id,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="list",
             options={}
         ),
         member=DiscordMember(roles=[role_id])
     )
-
-    open_game = Game(closed=False)
-    closed_game = Game(closed=True)
-
-    games_repository = FakeGamesRepository([open_game, closed_game])
-
-    command_authorizer = FakeCommandAuthorizer(passes=True)
-
-    # When
-    manage_route = ManageRoute(games_repository=games_repository, discord_messaging=FakeDiscordMessaging(),
-                               message_provider=message_provider, command_authorizer=command_authorizer)
-    discord_response = await manage_route.list_games(event)
+    await manage_route.list_games(event)
 
     # Then
     message_provider.channel_manage_list_all_games.assert_called()
@@ -219,8 +223,10 @@ async def test_list_all_without_closed_option():
     assert closed_game in used_games
     assert open_game in used_games
 
-    assert discord_response.response_type == ResponseType.CHANNEL_MESSAGE
-    assert discord_response.content == list_games_message
+    assert len(discord_messaging.sent_channel_messages) == 1
+    sent_message = discord_messaging.sent_channel_messages[0]
+
+    assert sent_message['text'] == list_games_message
 
 
 async def test_list_all_closed_games():
@@ -237,9 +243,10 @@ async def test_list_all_closed_games():
     message_provider = MagicMock(MessageProvider)
     message_provider.channel_manage_list_closed_games.return_value = list_games_message
 
+    discord_messaging = FakeDiscordMessaging()
     manage_route = ManageRoute(
         games_repository=games_repository,
-        discord_messaging=FakeDiscordMessaging(),
+        discord_messaging=discord_messaging,
         message_provider=message_provider,
         command_authorizer=FakeCommandAuthorizer(passes=True)
     )
@@ -248,7 +255,7 @@ async def test_list_all_closed_games():
     event = _make_event(guild_id=guild_id, options={
         'closed': True
     })
-    discord_response = await manage_route.list_games(event)
+    await manage_route.list_games(event)
 
     # Then: a message is sent based on only the closed games
     message_provider.channel_manage_list_closed_games.assert_called()
@@ -256,8 +263,9 @@ async def test_list_all_closed_games():
     assert closed_game in used_games
     assert open_game not in used_games
 
-    assert discord_response.response_type == ResponseType.CHANNEL_MESSAGE
-    assert discord_response.content == list_games_message
+    assert len(discord_messaging.sent_channel_messages)
+    sent_game = discord_messaging.sent_channel_messages[0]
+    assert sent_game['text'] == list_games_message
 
 
 async def test_list_all_open_games():
@@ -274,9 +282,10 @@ async def test_list_all_open_games():
     message_provider = MagicMock(MessageProvider)
     message_provider.channel_manage_list_open_games.return_value = list_games_message
 
+    discord_messaging = FakeDiscordMessaging()
     manage_route = ManageRoute(
         games_repository=games_repository,
-        discord_messaging=FakeDiscordMessaging(),
+        discord_messaging=discord_messaging,
         message_provider=message_provider,
         command_authorizer=FakeCommandAuthorizer(passes=True)
     )
@@ -285,7 +294,7 @@ async def test_list_all_open_games():
     event = _make_event(guild_id=guild_id, options={
         'closed': False
     })
-    discord_response = await manage_route.list_games(event)
+    await manage_route.list_games(event)
 
     # Then: a message is sent based on only the open games
     message_provider.channel_manage_list_open_games.assert_called()
@@ -293,8 +302,9 @@ async def test_list_all_open_games():
     assert closed_game not in used_games
     assert open_game in used_games
 
-    assert discord_response.response_type == ResponseType.CHANNEL_MESSAGE
-    assert discord_response.content == list_games_message
+    assert len(discord_messaging.sent_channel_messages) == 1
+    sent_message = discord_messaging.sent_channel_messages[0]
+    assert sent_message['text'] == list_games_message
 
 
 async def test_close():
@@ -317,9 +327,10 @@ async def test_close():
         }
     )
 
+    discord_messaging = FakeDiscordMessaging()
     manage_route = ManageRoute(
         games_repository=games_repository,
-        discord_messaging=FakeDiscordMessaging(),
+        discord_messaging=discord_messaging,
         message_provider=MessageProvider(),
         command_authorizer=FakeCommandAuthorizer(passes=True)
     )
@@ -374,22 +385,23 @@ async def test_post_disallowed():
 
     member = DiscordMember(roles=[event_role])
 
+    command_authorizer = FakeCommandAuthorizer(passes=False)
+
+    manage_route = ManageRoute(games_repository=GamesRepository(), discord_messaging=DiscordMessaging(),
+                               message_provider=MessageProvider(), command_authorizer=command_authorizer)
+
+    # When
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         guild_id=-1,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="post"
         ),
         member=member,
         channel_id=event_channel
     )
-
-    command_authorizer = FakeCommandAuthorizer(passes=False)
-
-    manage_route = ManageRoute(games_repository=GamesRepository(), discord_messaging=DiscordMessaging(),
-                               message_provider=MessageProvider(), command_authorizer=command_authorizer)
 
     # Then
     try:
@@ -403,23 +415,24 @@ async def test_list_disallowed():
     # Given
     command_authorizer = FakeCommandAuthorizer(passes=False)
 
-    event = DiscordEvent(
-        command_type=CommandType.COMMAND,
-        guild_id=-1,
-        command=DiscordCommand(
-            command_id="-1",
-            command_name="manage",
-            subcommand_name="list"
-        ),
-        member=DiscordMember(),
-        channel_id=101
-    )
-
     manage_route = ManageRoute(
         command_authorizer=command_authorizer,
         games_repository=GamesRepository(),
         discord_messaging=DiscordMessaging(),
         message_provider=MessageProvider()
+    )
+
+    # When
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        guild_id=-1,
+        command=DiscordCommand(
+            command_id=-1,
+            command_name="manage",
+            subcommand_name="list"
+        ),
+        member=DiscordMember(),
+        channel_id=101
     )
 
     # Then
@@ -434,11 +447,15 @@ async def test_close_disallowed():
     # Given
     command_authorizer = FakeCommandAuthorizer(passes=False)
 
+    manage_route = ManageRoute(games_repository=GamesRepository(), discord_messaging=DiscordMessaging(),
+                               message_provider=MessageProvider(), command_authorizer=command_authorizer)
+
+    # When
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         guild_id=-1,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="close"
         ),
@@ -446,8 +463,6 @@ async def test_close_disallowed():
         channel_id=101
     )
 
-    manage_route = ManageRoute(games_repository=GamesRepository(), discord_messaging=DiscordMessaging(),
-                               message_provider=MessageProvider(), command_authorizer=command_authorizer)
 
     # Then
     try:
@@ -468,7 +483,7 @@ def _make_event(guild_id: int = -1, options: Dict = None, discord_member: Discor
         command_type=CommandType.COMMAND,
         guild_id=guild_id,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="does-not-matter",
             options=options,

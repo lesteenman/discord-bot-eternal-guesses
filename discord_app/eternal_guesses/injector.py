@@ -15,12 +15,19 @@ from eternal_guesses.util.message_provider import MessageProviderImpl, MessagePr
 
 def _manage_route(games_repository: GamesRepository, discord_messaging: DiscordMessaging,
                   message_provider: MessageProvider, command_authorizer: CommandAuthorizer):
-    return ManageRoute(games_repository=games_repository, discord_messaging=discord_messaging,
-                       message_provider=message_provider, command_authorizer=command_authorizer)
+    return ManageRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+        message_provider=message_provider,
+        command_authorizer=command_authorizer
+    )
 
 
-def _create_route(games_repository: GamesRepository):
-    return CreateRoute(games_repository=games_repository)
+def _create_route(games_repository: GamesRepository, discord_messaging: DiscordMessaging):
+    return CreateRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+    )
 
 
 def _guess_route(games_repository: GamesRepository, discord_messaging: DiscordMessaging,
@@ -37,11 +44,12 @@ def _ping_route():
 
 
 def _admin_route(message_provider: MessageProvider, configs_repository: ConfigsRepository,
-                 command_authorizer: CommandAuthorizer):
+                 command_authorizer: CommandAuthorizer, discord_messaging: DiscordMessaging):
     return AdminRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer
+        command_authorizer=command_authorizer,
+        discord_messaging=discord_messaging
     )
 
 
@@ -77,11 +85,15 @@ def _router() -> Router:
     command_authorizer = _command_authorizer(configs_repository=configs_repository)
 
     ping_route = _ping_route()
-    create_route = _create_route(games_repository=games_repository)
+    create_route = _create_route(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+    )
     admin_route = _admin_route(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer
+        command_authorizer=command_authorizer,
+        discord_messaging=discord_messaging
     )
     guess_route = _guess_route(
         games_repository=games_repository,
