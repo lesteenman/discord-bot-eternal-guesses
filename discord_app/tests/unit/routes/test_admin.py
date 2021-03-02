@@ -54,7 +54,7 @@ async def test_admin_info():
     response = await route.info(event)
 
     # Then
-    assert response.response_type == ResponseType.ACKNOWLEDGE_WITH_SOURCE
+    assert response.response_type == ResponseType.ACKNOWLEDGE
 
 
 async def test_add_management_channel():

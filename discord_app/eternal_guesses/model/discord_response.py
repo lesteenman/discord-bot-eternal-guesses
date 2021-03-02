@@ -4,7 +4,7 @@ from enum import Enum
 class ResponseType(Enum):
     PONG = 1
     ACKNOWLEDGE = 2
-    ACKNOWLEDGE_WITH_SOURCE = 5
+    # ACKNOWLEDGE_WITH_SOURCE = 5
 
 
 class DiscordResponse(object):
@@ -36,8 +36,8 @@ class DiscordResponse(object):
             response_type=ResponseType.ACKNOWLEDGE
         )
 
-    @classmethod
-    def acknowledge_with_source(cls):
-        return DiscordResponse(
-            response_type=ResponseType.ACKNOWLEDGE_WITH_SOURCE
-        )
+    # @classmethod
+    # def acknowledge_with_source(cls):
+    #     return DiscordResponse(
+    #         response_type=ResponseType.ACKNOWLEDGE_WITH_SOURCE
+    #     )

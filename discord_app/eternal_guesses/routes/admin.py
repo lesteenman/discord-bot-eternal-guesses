@@ -27,7 +27,7 @@ class AdminRoute:
         await self.discord_messaging.send_temp_message(text=message,
                                                        channel_id=event.channel_id)
 
-        return DiscordResponse.acknowledge_with_source()
+        return DiscordResponse.acknowledge()
 
     async def add_management_channel(self, event: DiscordEvent) -> DiscordResponse:
         await self.command_authorizer.authorize_admin_call(event)
@@ -39,7 +39,7 @@ class AdminRoute:
             message = self.message_provider.error_duplicate_management_channel(channel)
             await self.discord_messaging.send_temp_message(text=message,
                                                            channel_id=event.channel_id)
-            return DiscordResponse.acknowledge_with_source()
+            return DiscordResponse.acknowledge()
 
         guild_config.management_channels.append(channel)
         self.configs_repository.save(guild_config)
@@ -47,7 +47,7 @@ class AdminRoute:
         # TODO: MessageProvider
         await self.discord_messaging.send_temp_message(text=f"Added new management channel: <#{channel}>",
                                                        channel_id=event.channel_id)
-        return DiscordResponse.acknowledge_with_source()
+        return DiscordResponse.acknowledge()
 
     async def remove_management_channel(self, event: DiscordEvent) -> DiscordResponse:
         await self.command_authorizer.authorize_admin_call(event)
@@ -59,7 +59,7 @@ class AdminRoute:
             # TODO: MessageProvider
             await self.discord_messaging.send_temp_message(text=f"Channel <#{channel}> was not a management channel.",
                                                            channel_id=event.channel_id)
-            return DiscordResponse.acknowledge_with_source()
+            return DiscordResponse.acknowledge()
 
         guild_config.management_channels.remove(channel)
         self.configs_repository.save(guild_config)
@@ -67,7 +67,7 @@ class AdminRoute:
         # TODO: MessageProvider
         await self.discord_messaging.send_temp_message(text=f"Removed management channel: <#{channel}>",
                                                        channel_id=event.channel_id)
-        return DiscordResponse.acknowledge_with_source()
+        return DiscordResponse.acknowledge()
 
     async def add_management_role(self, event: DiscordEvent) -> DiscordResponse:
         await self.command_authorizer.authorize_admin_call(event)
@@ -79,7 +79,7 @@ class AdminRoute:
             # TODO: MessageProvider
             await self.discord_messaging.send_temp_message(text=f"Role <@&{role}> is already a management role.",
                                                            channel_id=event.channel_id)
-            return DiscordResponse.acknowledge_with_source()
+            return DiscordResponse.acknowledge()
 
         guild_config.management_roles.append(role)
         self.configs_repository.save(guild_config)
@@ -87,7 +87,7 @@ class AdminRoute:
         # TODO: MessageProvider
         await self.discord_messaging.send_temp_message(text=f"Added new management role: <@&{role}>",
                                                        channel_id=event.channel_id)
-        return DiscordResponse.acknowledge_with_source()
+        return DiscordResponse.acknowledge()
 
     async def remove_management_role(self, event: DiscordEvent) -> DiscordResponse:
         await self.command_authorizer.authorize_admin_call(event)
@@ -100,7 +100,7 @@ class AdminRoute:
             await self.discord_messaging.send_temp_message(text=f"role <@&{role}> is not a management role.",
                                                            channel_id=event.channel_id)
 
-            return DiscordResponse.acknowledge_with_source()
+            return DiscordResponse.acknowledge()
 
         guild_config.management_roles.remove(role)
         self.configs_repository.save(guild_config)
@@ -109,4 +109,4 @@ class AdminRoute:
         await self.discord_messaging.send_temp_message(text=f"Removed management role: <@&{role}>",
                                                        channel_id=event.channel_id)
 
-        return DiscordResponse.acknowledge_with_source()
+        return DiscordResponse.acknowledge()
