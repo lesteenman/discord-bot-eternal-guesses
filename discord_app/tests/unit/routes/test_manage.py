@@ -144,6 +144,7 @@ async def test_post_invalid_game_id_sends_dm_error():
     guild_id = 1001
     game_id = 'game-1'
     channel_id = 50001
+    event_channel_id = 7733
 
     # We have no games
     games_repository = FakeGamesRepository([])
@@ -166,6 +167,7 @@ async def test_post_invalid_game_id_sends_dm_error():
     event = _make_event(
         guild_id=guild_id,
         discord_member=discord_member,
+        channel_id=event_channel_id,
         options={
             'game-id': game_id,
             'channel': channel_id,
@@ -175,8 +177,13 @@ async def test_post_invalid_game_id_sends_dm_error():
 
     # Then
     message_provider.dm_error_game_not_found.assert_called_with(game_id)
-    assert {'member': discord_member, 'text': formatted_error} in discord_messaging.sent_dms
+
+    assert len(discord_messaging.sent_temp_messages) == 1
     assert len(discord_messaging.sent_channel_messages) == 0
+
+    sent_message = discord_messaging.sent_temp_messages[0]
+    assert sent_message['text'] == formatted_error
+    assert sent_message['channel_id'] == event_channel_id
 
 
 async def test_list_all_without_closed_option():
@@ -470,7 +477,7 @@ async def test_close_disallowed():
         pass
 
 
-def _make_event(guild_id: int = -1, options: Dict = None, discord_member: DiscordMember = None):
+def _make_event(guild_id: int = -1, options: Dict = None, discord_member: DiscordMember = None, channel_id: int = -1):
     if options is None:
         options = {}
 
@@ -480,6 +487,7 @@ def _make_event(guild_id: int = -1, options: Dict = None, discord_member: Discor
     return DiscordEvent(
         command_type=CommandType.COMMAND,
         guild_id=guild_id,
+        channel_id=channel_id,
         command=DiscordCommand(
             command_id=-1,
             command_name="manage",
