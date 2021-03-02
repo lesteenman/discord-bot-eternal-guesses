@@ -1,15 +1,9 @@
-import logging
 from enum import Enum
-
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
 
 
 class ResponseType(Enum):
     PONG = 1
     ACKNOWLEDGE = 2
-    CHANNEL_MESSAGE = 3
-    CHANNEL_MESSAGE_WITH_SOURCE = 4
     ACKNOWLEDGE_WITH_SOURCE = 5
 
 
@@ -26,20 +20,9 @@ class DiscordResponse(object):
             self.allowed_mention_types.append('roles')
 
     def json(self):
-        if self.response_type in [ResponseType.CHANNEL_MESSAGE, ResponseType.CHANNEL_MESSAGE_WITH_SOURCE]:
-            return {
-                'type': self.response_type.value,
-                'data': {
-                    'content': self.content,
-                    'allowed_mentions': {
-                        'parse': self.allowed_mention_types
-                    }
-                }
-            }
-        else:
-            return {
-                'type': self.response_type.value
-            }
+        return {
+            'type': self.response_type.value
+        }
 
     @classmethod
     def pong(cls):
@@ -52,24 +35,6 @@ class DiscordResponse(object):
         return DiscordResponse(
             response_type=ResponseType.ACKNOWLEDGE
         )
-
-    @classmethod
-    def channel_message(cls, message: str):
-        log.error("DO NOT USE! The timeout of 3 seconds is too short. Send a custom message instead.")
-        assert False
-        # return DiscordResponse(
-        #     response_type=ResponseType.CHANNEL_MESSAGE,
-        #     content=message
-        # )
-
-    @classmethod
-    def channel_message_with_source(cls, message: str):
-        log.error("DO NOT USE! The timeout of 3 seconds is too short. Send a custom message instead.")
-        assert False
-        # return DiscordResponse(
-        #     response_type=ResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        #     content=message
-        # )
 
     @classmethod
     def acknowledge_with_source(cls):

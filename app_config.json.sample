@@ -3,5 +3,6 @@
   "DISCORD_APPLICATION_ID": "",
   "DISCORD_BOT_TOKEN": "",
   "PERSONAL_GUILD_ID": "",
-  "NOTIFICATION_EMAIL": "errors@example.com"
+  "NOTIFICATION_EMAIL": "errors@example.com",
+  "APP_LOG_LEVEL": "INFO"
 }

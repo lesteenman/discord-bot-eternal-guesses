@@ -8,7 +8,6 @@ from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand, CommandType
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.manage import ManageRoute
 from eternal_guesses.util.message_provider import MessageProvider
@@ -462,7 +461,6 @@ async def test_close_disallowed():
         member=DiscordMember(),
         channel_id=101
     )
-
 
     # Then
     try:

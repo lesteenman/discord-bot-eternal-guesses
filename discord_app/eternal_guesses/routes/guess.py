@@ -1,5 +1,6 @@
-import logging
 from datetime import datetime
+
+from loguru import logger
 
 from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
@@ -8,8 +9,6 @@ from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
-
-log = logging.getLogger(__name__)
 
 
 class GuessRoute:
@@ -20,12 +19,11 @@ class GuessRoute:
         self.message_provider = message_provider
 
     async def _update_channel_messages(self, game: Game):
-        log.info(
-            f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
+        logger.info(f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
         if game.channel_messages is not None:
             new_channel_message = self.message_provider.channel_list_game_guesses(game)
             for channel_message in game.channel_messages:
-                log.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
+                logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
                           f"message_id={channel_message.message_id}, message='{new_channel_message}'")
                 await self.discord_messaging.update_channel_message(channel_message.channel_id,
                                                                     channel_message.message_id,

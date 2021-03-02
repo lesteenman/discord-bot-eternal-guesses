@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 from datetime import datetime
 
 from eternal_guesses.discord_messaging import DiscordMessaging
@@ -7,8 +7,6 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.util import id_generator
-
-log = logging.getLogger(__name__)
 
 
 class CreateRoute:
@@ -23,7 +21,7 @@ class CreateRoute:
 
         game_id = id_generator.game_id()
         existing_game = self.games_repository.get(guild_id, game_id)
-        log.info(f"existing game for game_id {game_id} = {existing_game}")
+        logger.info(f"existing game for game_id {game_id} = {existing_game}")
         if existing_game is None:
             return game_id
         else:

@@ -45,18 +45,21 @@ class InfraStack(core.Stack):
                                   )
 
     def create_app_handler(self, dynamodb_table_name: str) -> Function:
+        environment = {
+            'DISCORD_PUBLIC_KEY': self.config['DISCORD_PUBLIC_KEY'],
+            'DISCORD_BOT_TOKEN': self.config['DISCORD_BOT_TOKEN'],
+            'DYNAMODB_TABLE_NAME': dynamodb_table_name,
+            'LOGURU_LEVEL': self.config['APP_LOG_LEVEL'],
+        }
+
         return aws_lambda.Function(self, "DiscordAppFunction",
                                    runtime=aws_lambda.Runtime.PYTHON_3_8,
                                    timeout=core.Duration.seconds(10),
                                    memory_size=1024,
-                                   code=aws_lambda.Code.from_asset(
-                                       "../discord_app/.serverless/discord-app.zip"),
+                                   code=aws_lambda.Code.from_asset("../discord_app/.serverless/discord-app.zip"),
                                    handler="eternal_guesses.handler.handle_lambda",
-                                   environment={
-                                       'DISCORD_PUBLIC_KEY': self.config['DISCORD_PUBLIC_KEY'],
-                                       'DISCORD_BOT_TOKEN': self.config['DISCORD_BOT_TOKEN'],
-                                       'DYNAMODB_TABLE_NAME': dynamodb_table_name,
-                                   })
+                                   environment=environment
+                                   )
 
     def grant_table_readwrite_permissions(self, dynamodb_table: ITable, function: Function):
         dynamodb_table.grant_full_access(function)

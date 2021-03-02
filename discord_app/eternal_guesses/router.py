@@ -1,4 +1,4 @@
-import logging
+from loguru import logger
 from abc import ABC
 
 from eternal_guesses.errors import DiscordEventDisallowedError
@@ -10,9 +10,6 @@ from eternal_guesses.routes.create import CreateRoute
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.routes.manage import ManageRoute
 from eternal_guesses.routes.ping import PingRoute
-
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
 
 
 class UnknownEventException(Exception):
@@ -87,23 +84,23 @@ class RouterImpl(Router):
 
     async def route(self, event: DiscordEvent) -> LambdaResponse:
         if event.type is CommandType.PING:
-            log.info("handling 'ping'")
+            logger.info("handling 'ping'")
             discord_response = await self.ping_route.call()
 
             return LambdaResponse.success(discord_response.json())
 
         if event.type is CommandType.COMMAND:
-            log.info(f"handling application command, type='{event.command.command_name}', "
+            logger.info(f"handling application command, type='{event.command.command_name}', "
                      f"subcommand='{event.command.subcommand_name}'")
-            log.debug(
+            logger.debug(
                 f"guild={event.guild_id}, channel={event.channel_id}, user={event.member.user_id}")
-            log.debug(f"options={event.command.options}")
+            logger.debug(f"options={event.command.options}")
 
             try:
                 discord_response = await self._handle_application_command(event)
                 return LambdaResponse.success(discord_response.json())
             except DiscordEventDisallowedError as e:
-                log.warning(f"disallowed call detected: {e}")
+                logger.warning(f"disallowed call detected: {e}")
                 return LambdaResponse.unauthorized(str(e))
 
         raise UnknownEventException(event)

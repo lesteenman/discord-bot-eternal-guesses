@@ -1,4 +1,3 @@
-import logging
 import re
 from abc import ABC
 
@@ -6,8 +5,6 @@ from pynamodb.exceptions import DoesNotExist
 
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
-
-log = logging.getLogger(__name__)
 
 PK_REGEX = r"GUILD#(.*)"
 

@@ -99,4 +99,3 @@ class MessageProviderImpl(MessageProvider):
 
     def error_duplicate_management_channel(self, channel):
         return f"<#{channel}> is already a management channel."
-

@@ -1,13 +1,11 @@
 import contextlib
-import logging
 from abc import ABC
 
 import discord
+from loguru import logger
 
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.util import app_config
-
-log = logging.getLogger(__name__)
 
 
 class DiscordMessaging(ABC):
@@ -27,35 +25,35 @@ class DiscordMessaging(ABC):
 class DiscordMessagingImpl(DiscordMessaging):
     async def send_channel_message(self, channel_id: int, text: str) -> int:
         async with self._discord_client() as client:
-            log.info("Posting a new channel message")
-            log.debug(
+            logger.info("Posting a new channel message")
+            logger.debug(
                 f"Creating a new channel message, channel_id={channel_id}, text={text}")
 
             text_channel = await client.fetch_channel(channel_id)
 
             channel_message = await text_channel.send(content=text)
-            log.debug(f"channel message id = {channel_message.id}")
+            logger.debug(f"channel message id = {channel_message.id}")
 
             return channel_message.id
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
         async with self._discord_client() as client:
-            log.info("Posting a new channel message")
-            log.debug(
+            logger.info("Posting a new channel message")
+            logger.debug(
                 f"Creating a new channel message, channel_id={channel_id}, message_id={message_id}, text={text}")
 
             text_channel = await client.fetch_channel(channel_id)
 
             real_message_id = 804804560538304583
-            log.info(f"Is this the message? {message_id == real_message_id}")
+            logger.info(f"Is this the message? {message_id == real_message_id}")
             message = await text_channel.fetch_message(message_id)
 
             await message.edit(content=text)
-            log.debug("updated channel message")
+            logger.debug("updated channel message")
 
     async def send_dm(self, member: DiscordMember, text: str):
         async with self._discord_client() as client:
-            log.info("Fetching user")
+            logger.info("Fetching user")
             user = await client.fetch_user(member.user_id)
 
             await user.send(text)

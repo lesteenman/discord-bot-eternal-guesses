@@ -1,5 +1,4 @@
 import json
-import logging
 import re
 from abc import ABC
 from datetime import datetime
@@ -10,8 +9,6 @@ from pynamodb.exceptions import DoesNotExist
 from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable, ChannelMessageMap
-
-log = logging.getLogger(__name__)
 
 PK_REGEX = r"GUILD#(.*)"
 SK_REGEX = r"GAME#(.*)"
