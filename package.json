@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/lesteenman/discord-bot-eternal-guesses#readme",
   "dependencies": {
+    "aws-cdk": "^1.91.0",
     "serverless-python-requirements": "^5.1.0"
   }
 }
