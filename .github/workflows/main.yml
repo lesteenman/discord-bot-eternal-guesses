@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -93,10 +93,11 @@ jobs:
         run: cd discord_app && poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Package apps
-        run: |
-          cd discord_app/ && serverless package && cd ../
-          cd error_parser_function/ && serverless package && cd ../
+      - name: Package discord_app
+        run: cd discord_app/ && npx serverless package && cd ../
+
+      - name: Package error_parser_function
+        run: cd error_parser_function/ && npx serverless package && cd ../
 
       - name: Synthesize CDK
         run: cd infra && cdk synth --output build/cdk.out
