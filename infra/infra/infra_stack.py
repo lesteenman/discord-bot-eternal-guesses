@@ -1,15 +1,9 @@
-import json
-from typing import Dict
-
 from aws_cdk import (core, aws_lambda, aws_apigateway, aws_dynamodb, aws_sns, aws_logs, aws_logs_destinations)
 from aws_cdk.aws_dynamodb import ITable
 from aws_cdk.aws_lambda import Function
 from aws_cdk.aws_sns import Topic
 
-
-def read_config() -> Dict:
-    with open('../app_config.json', 'r') as env_file:
-        return json.loads(env_file.read())
+from infra import config
 
 
 class InfraStack(core.Stack):
@@ -17,7 +11,7 @@ class InfraStack(core.Stack):
     def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        self.config = read_config()
+        self.config = config.config
 
         dynamodb_table = self.create_table()
         discord_app_handler = self.create_app_handler(dynamodb_table.table_name)

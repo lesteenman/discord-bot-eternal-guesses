@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "discord-bot-eternal-guesses"
+version = "0.1.0"
+description = ""
+authors = ["lesteenman <lesteenman@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+"aws-cdk.core" = "^1.91.0"
+"aws-cdk.aws-apigateway" = "^1.91.0"
+"aws-cdk.aws-lambda" = "^1.91.0"
+"aws-cdk.aws-dynamodb" = "^1.91.0"
+"aws-cdk.aws-logs-destinations" = "^1.91.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -29,9 +29,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Install Dependencies
+      - name: Install discord_app Poetry
         run: cd discord_app && poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
@@ -89,7 +89,7 @@ jobs:
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
 
-      - name: Run Poetry install
+      - name: Install discord_app Poetry
         run: cd discord_app && poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
@@ -99,6 +99,10 @@ jobs:
       - name: Package error_parser_function
         run: cd error_parser_function/ && npx serverless package && cd ../
 
+      - name: Install infra Poetry
+        run: cd infra && poetry install
+        if: steps.cache.outputs.cache-hit != 'true'
+
       - name: Synthesize CDK
         run: cd infra && npx cdk synth --output build/cdk.out
         env:
@@ -106,6 +110,10 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
+          DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+          DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
 
       - name: Deploy CDK
         run: cd infra && npx cdk synth --app ./build/cdk.out --require-approval never
