@@ -36,7 +36,7 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             text_channel = await client.fetch_channel(channel_id)
 
-            channel_message = await text_channel.send(content=text)
+            channel_message = await text_channel.send(content=text, allowed_mentions={'parse': []})
             logger.debug(f"channel message id = {channel_message.id}")
 
             return channel_message.id
@@ -54,7 +54,7 @@ class DiscordMessagingImpl(DiscordMessaging):
             logger.info(f"Is this the message? {message_id == real_message_id}")
             message = await text_channel.fetch_message(message_id)
 
-            await message.edit(content=text)
+            await message.edit(content=text, allowed_mentions={'parse': []})
             logger.debug("updated channel message")
 
     async def send_dm(self, member: DiscordMember, text: str):

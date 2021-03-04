@@ -42,14 +42,17 @@ class MessageProviderImpl(MessageProvider):
     def channel_list_game_guesses(self, game: Game) -> str:
         guess_list = []
         for user_id, guess in game.guesses.items():
-            guess_list.append(f"{user_id}: {guess} (<@{user_id}>)")
+            guess_list.append(f"{user_id}: {guess.guess} (<@{user_id}>)")
 
         if len(guess_list) > 0:
             guesses = "\n".join(guess_list)
         else:
             guesses = "None yet!"
 
-        return f"Actual guesses for {game.game_id}:\n\n{guesses}"
+        add_guess = f"To add your own guess, copy this template and post it in the chat:" \
+                    f"`/guess game-id: {game.game_id} guess:`"
+
+        return f"Actual guesses for {game.game_id}:\n\n{guesses}\n\n{add_guess}"
 
     def dm_error_game_not_found(self, game_id: str) -> str:
         return f"No game found with id {game_id}."
