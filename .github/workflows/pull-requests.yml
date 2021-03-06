@@ -12,18 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: NPM install for Serverless
-        run: npm install
-
-      - name: Set up Python 3.8
+      - name: Install Python 3.8
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
@@ -34,6 +25,11 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
       - name: Load cached venv for discord-app
         id: cached-discord-app-poetry
         uses: actions/cache@v2
@@ -41,7 +37,7 @@ jobs:
           path: discord_app/.venv
           key: venv-${{ runner.os }}-${{ hashFiles('discord_app/poetry.lock') }}
 
-      - name: Install discord-app dependencies
+      - name: Poetry install for discord_app/
         run: cd discord_app && poetry install
         if: steps.cached-discord-app-poetry.outputs.cache-hit != 'true'
 
@@ -52,20 +48,31 @@ jobs:
           path: infra/.venv
           key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
 
-      - name: Install infra Poetry
+      - name: Poetry install for infra/
         run: cd infra && poetry install
         if: steps.cached-infra-poetry.outputs.cache-hit != 'true'
 
-      - name: Verify code quality
+      - name: Load cached node modules
+        id: cached-node-modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules/
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Npm install
+        run: npm install
+        if: steps.cached-node-modules.outputs.cache-hit != 'true'
+
+      - name: Flake8
         run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
 
-      - name: Test with pytest
+      - name: Pytest
         run: cd discord_app && poetry run pytest --cov=eternal_guesses --cov-report=xml
 
-      - name: Package discord_app
+      - name: Package discord-app
         run: cd discord_app/ && npx serverless package && cd ../
 
-      - name: Package error_parser_function
+      - name: Package error-parser
         run: cd error_parser_function/ && npx serverless package && cd ../
 
       - name: Synthesize CDK
