@@ -106,7 +106,7 @@ jobs:
           name: infra
           path: infra/
 
-  release:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -127,26 +127,33 @@ jobs:
         with:
           name: error-parser-package
 
-      - name: Build Changelog
-        id: changes
-        run: echo "::set-output name=changeLog::$(git show --format=%B | tail +3)"
-
-      - name: Get the date of the release
-        id: release_date
-        run: echo "::set-output name=date::$(date +"%Y-%m-%d")"
-
-      - name: Get the shorthash of the commit
-        id: release_hash
-        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-
-      - name: Check outputs
-        run: echo ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
-
-      - name: Create Release
-        uses: actions/create-release@v1
+      - name: Load cached venv for infra
+        id: cached-infra-poetry
+        uses: actions/cache@v2
         with:
-          tag_name: ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
-          release_name: ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
-          body: ${{steps.changes.outputs.changelog}}
+          path: infra/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
+
+      - name: Poetry install for infra/
+        run: cd infra && poetry install
+        if: steps.cached-infra-poetry.outputs.cache-hit != 'true'
+
+      - name: Synthesize CDK
+        run: cd infra && poetry run npx cdk synth --output build/cdk.out
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
+          DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+          DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+
+      - name: Deploy CDK
+        run: cd infra && npx cdk synth --app ./build/cdk.out --require-approval never
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
