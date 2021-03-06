@@ -63,7 +63,7 @@ jobs:
       - name: Package discord_app
         run: cd discord_app/ && npx serverless package && cd ../
 
-      - name: Upload the discord_app package
+      - name: Create artifact for the discord-app bot
         uses: actions/upload-artifact@v2
         with:
           name: discord-app-package
@@ -72,24 +72,34 @@ jobs:
       - name: Package error_parser_function
         run: cd error_parser_function/ && npx serverless package && cd ../
 
-      - name: Upload the error_parser package
+      - name: Create artifact for the error-parser
         uses: actions/upload-artifact@v2
         with:
           name: error-parser-package
           path: error_parser_function/.serverless/error-parser.zip
 
+      - name: Create artifact for the infra module
+        uses: actions/upload-artifact@v2
+        with:
+          name: infra
+          path: infra/
+
   # Zip the packages and infra
   release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-
-      - name: Download the discord_app package
+      - name: Restore the artifact for the discord-app
         uses: actions/download-artifact@v2
         with:
           name: discord-app-package
 
-      - name: Download the error_parser package
+      - name: Restore the artifact for the error-parser
+        uses: actions/download-artifact@v2
+        with:
+          name: error-parser-package
+
+      - name: Restore the artifact for the error-parser
         uses: actions/download-artifact@v2
         with:
           name: error-parser-package
