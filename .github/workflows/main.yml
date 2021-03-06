@@ -177,6 +177,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install poetry
+        uses: snok/install-poetry@v1.0.0
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
       - name: Build Changelog
         id: changes
         run: echo "::set-output name=changelog::$(git log --format=%B -1 | tail +3)"
@@ -197,13 +208,13 @@ jobs:
         run: echo ${{ steps.changes.outputs.changelog }}
 
       - name: Check release name
-        run: "v${{ steps.release_version.outputs.version }}.${{ steps.release_name.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
+        run: echo "v${{ steps.release_version.outputs.version }}.${{ steps.release_date.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
 
       - name: Create Release
         uses: actions/create-release@v1
         with:
-          tag_name: "v${{ steps.release_version.outputs.version }}.${{ steps.release_name.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
-          release_name: "v${{ steps.release_version.outputs.version }}.${{ steps.release_name.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
+          tag_name: "v${{ steps.release_version.outputs.version }}.${{ steps.release_date.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
+          release_name: "v${{ steps.release_version.outputs.version }}.${{ steps.release_date.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
           body: ${{ steps.changes.outputs.changelog }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
