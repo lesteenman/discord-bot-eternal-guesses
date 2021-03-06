@@ -38,7 +38,9 @@ jobs:
         id: cached-discord-app-poetry
         uses: actions/cache@v2
         with:
-          path: discord_app/.venv
+          path: |
+            discord_app/.venv
+            discord_app/.serverless/cache
           key: venv-${{ runner.os }}-${{ hashFiles('discord_app/poetry.lock') }}
 
       - name: Poetry install for discord_app/
@@ -126,6 +128,17 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: error-parser-package
+
+      - name: Install Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install poetry
+        uses: snok/install-poetry@v1.0.0
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
       - name: Load cached venv for infra
         id: cached-infra-poetry
