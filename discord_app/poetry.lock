@@ -14,6 +14,7 @@ multidict = ">=4.5,<7.0"
 typing-extensions = ">=3.6.5"
 yarl = ">=1.0,<2.0"
 
+
 [package.extras]
 speedups = ["aiodns", "brotlipy", "cchardet"]
 
