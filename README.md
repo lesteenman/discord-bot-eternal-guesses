@@ -1,5 +1,5 @@
-![Build](https://github.com/lesteenman/discord-bot-eternal-guesses/actions/workflows/main.yml/badge.svg)
-![CodeQL](https://github.com/lesteenman/discord-bot-eternal-guesses/actions/workflows/codeql-analysis.yml/badge.svg)
+[![main](https://github.com/lesteenman/discord-bot-eternal-guesses/actions/workflows/main.yml/badge.svg)](https://github.com/lesteenman/discord-bot-eternal-guesses/actions/workflows/main.yml)
+[![codeql](https://github.com/lesteenman/discord-bot-eternal-guesses/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/lesteenman/discord-bot-eternal-guesses/actions/workflows/codeql-analysis.yml)
 [![codecov](https://codecov.io/gh/lesteenman/discord-bot-eternal-guesses/branch/main/graph/badge.svg?token=BWMVENG40H)](https://codecov.io/gh/lesteenman/discord-bot-eternal-guesses)
 
 Readme to be written. Keywords to focus on below.

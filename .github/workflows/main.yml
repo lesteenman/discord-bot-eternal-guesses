@@ -12,43 +12,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: NPM install for Serverless
-        run: npm install
-
-      - name: Set up Python 3.8
+      - name: Install Python 3.8
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
 
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v4
+      - name: Install poetry
+        uses: snok/install-poetry@v1.0.0
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
-      - name: Cache Poetry virtualenv
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Load cached venv for discord-app
+        id: cached-discord-app-poetry
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          path: discord_app/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('discord_app/poetry.lock') }}
 
-      - name: Install discord_app Poetry
+      - name: Poetry install for discord_app/
         run: cd discord_app && poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cached-discord-app-poetry.outputs.cache-hit != 'true'
 
-      - name: Install infra Poetry
+      - name: Load cached venv for infra
+        id: cached-infra-poetry
+        uses: actions/cache@v2
+        with:
+          path: infra/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
+
+      - name: Poetry install for infra/
         run: cd infra && poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cached-infra-poetry.outputs.cache-hit != 'true'
 
-      - name: Verify code quality
+      - name: Load cached node modules
+        id: cached-node-modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules/
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Npm install
+        run: npm install
+        if: steps.cached-node-modules.outputs.cache-hit != 'true'
+
+      - name: Flake8
         run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
 
-      - name: Test with pytest
+      - name: Pytest
         run: cd discord_app && poetry run pytest --cov=eternal_guesses --cov-report=xml
 
       - name: Upload coverage to Codecov
@@ -60,7 +78,7 @@ jobs:
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
 
-      - name: Package discord_app
+      - name: Package discord-app
         run: cd discord_app/ && npx serverless package && cd ../
 
       - name: Create artifact for the discord-app bot
@@ -69,7 +87,7 @@ jobs:
           name: discord-app-package
           path: discord_app/.serverless/discord-app.zip
 
-      - name: Package error_parser_function
+      - name: Package error-parser
         run: cd error_parser_function/ && npx serverless package && cd ../
 
       - name: Create artifact for the error-parser
@@ -84,11 +102,12 @@ jobs:
           name: infra
           path: infra/
 
-  # Zip the packages and infra
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+
       - name: Restore the artifact for the discord-app
         uses: actions/download-artifact@v2
         with:
