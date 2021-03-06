@@ -135,11 +135,18 @@ jobs:
         id: release_date
         run: echo "::set-output name=date::$(date +"%Y-%m-%d")"
 
+      - name: Get the shorthash of the commit
+        id: release_hash
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Check outputs
+        run: echo ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
+
       - name: Create Release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ steps.release_name.outputs.date }} ${{ GITHUB_SHA::7 }}
-          release_name: ${{ steps.release_name.outputs.date }} ${{ GITHUB_SHA::7 }}
+          tag_name: ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
+          release_name: ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
           body: ${{steps.changes.outputs.changelog}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
