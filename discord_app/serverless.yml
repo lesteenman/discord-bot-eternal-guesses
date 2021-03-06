@@ -18,3 +18,6 @@ custom:
     dockerizePip: non-linux
     usePoetry: true
     slim: true
+    useStaticCache: true
+    useDownloadCache: true
+    cacheLocation: .serverless/cache

@@ -34,7 +34,9 @@ jobs:
         id: cached-discord-app-poetry
         uses: actions/cache@v2
         with:
-          path: discord_app/.venv
+          path: |
+            discord_app/.venv
+            discord_app/.serverless/cache
           key: venv-${{ runner.os }}-${{ hashFiles('discord_app/poetry.lock') }}
 
       - name: Poetry install for discord_app/
