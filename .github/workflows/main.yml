@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
 
+  # TODO: REMOVE THIS AGAIN
+  pull_request:
+    branches: [ main ]
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -34,7 +38,9 @@ jobs:
         id: cached-discord-app-poetry
         uses: actions/cache@v2
         with:
-          path: discord_app/.venv
+          path: |
+            discord_app/.venv
+            discord_app/.serverless/cache
           key: venv-${{ runner.os }}-${{ hashFiles('discord_app/poetry.lock') }}
 
       - name: Poetry install for discord_app/
@@ -102,7 +108,7 @@ jobs:
           name: infra
           path: infra/
 
-  release:
+  deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -112,30 +118,100 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: discord-app-package
+          path: discord_app/.serverless/
 
       - name: Restore the artifact for the error-parser
         uses: actions/download-artifact@v2
         with:
           name: error-parser-package
+          path: error_parser_function/.serverless/
 
-      - name: Restore the artifact for the error-parser
-        uses: actions/download-artifact@v2
+      - name: Install Python 3.8
+        uses: actions/setup-python@v1
         with:
-          name: error-parser-package
+          python-version: 3.8
+
+      - name: Install poetry
+        uses: snok/install-poetry@v1.0.0
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv for infra
+        id: cached-infra-poetry
+        uses: actions/cache@v2
+        with:
+          path: infra/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
+
+      - name: Poetry install for infra/
+        run: cd infra && poetry install
+        if: steps.cached-infra-poetry.outputs.cache-hit != 'true'
+
+      - name: Synthesize CDK
+        run: cd infra && poetry run npx cdk synth --output build/cdk.out
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
+          DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+          DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+
+      - name: Deploy CDK
+        run: cd infra && npx cdk synth --app ./build/cdk.out --require-approval never
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
+
+  release:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install poetry
+        uses: snok/install-poetry@v1.0.0
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
       - name: Build Changelog
         id: changes
-        run: echo "::set-output name=changeLog::$(git show --format=%B | tail +3)"
+        run: echo "::set-output name=changelog::$(git log --format=%B -1)"
+
+      - name: Get the base version
+        id: release_version
+        run: echo "::set-output name=version::$(cd discord_app && poetry version -s)"
 
       - name: Get the date of the release
         id: release_date
         run: echo "::set-output name=date::$(date +"%Y-%m-%d")"
 
+      - name: Get the shorthash of the commit
+        id: release_hash
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Check changelog
+        run: echo ${{ steps.changes.outputs.changelog }}
+
+      - name: Check release name
+        run: echo "v${{ steps.release_version.outputs.version }}.${{ steps.release_date.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
+
       - name: Create Release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ steps.release_name.outputs.date }} ${GITHUB_SHA::7}
-          release_name: ${{ steps.release_name.outputs.date }} ${GITHUB_SHA::7}
-          body: ${{steps.changes.outputs.changelog}}
+          tag_name: "v${{ steps.release_version.outputs.version }}.${{ steps.release_date.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
+          release_name: "v${{ steps.release_version.outputs.version }}.${{ steps.release_date.outputs.date }}.${{ steps.release_hash.outputs.sha_short }}"
+          body: ${{ steps.changes.outputs.changelog }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
