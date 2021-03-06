@@ -1,0 +1,79 @@
+name: Deploy or Rollback
+
+on:
+#  release:
+#    types: [published, deleted]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  # Unzip, synth & deploy
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: latest
+        uses: thebritican/fetch-latest-release@v1.0.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.latest.outputs.tag_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: NPM install for Serverless
+        run: npm install
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install Poetry
+        uses: Gr1N/setup-poetry@v4
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install discord_app Poetry
+        run: cd discord_app && poetry install
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Package discord_app
+        run: cd discord_app/ && npx serverless package && cd ../
+
+      - name: Package error_parser_function
+        run: cd error_parser_function/ && npx serverless package && cd ../
+
+      - name: Install infra Poetry
+        run: cd infra && poetry install
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Synthesize CDK
+        run: cd infra && poetry run npx cdk synth --output build/cdk.out
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
+          DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
+          DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+
+      - name: Deploy CDK
+        run: cd infra && npx cdk synth --app ./build/cdk.out --require-approval never
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
