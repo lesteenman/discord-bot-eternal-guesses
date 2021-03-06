@@ -124,10 +124,8 @@ jobs:
           name: error-parser-package
 
       - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: changes
+        run: echo "::set-output name=changeLog::$(git show --format=%B | tail +3)"
 
       - name: Get the date of the release
         id: release_date
@@ -138,6 +136,6 @@ jobs:
         with:
           commitish: ${{ github.sha }}
           release_name: ${{ steps.release_name.outputs.date }} ${GITHUB_SHA::7}
-          body: ${{steps.github_release.outputs.changelog}}
+          body: ${{steps.changes.outputs.changelog}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
