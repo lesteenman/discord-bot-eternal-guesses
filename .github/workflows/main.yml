@@ -1,9 +1,7 @@
-name: CI/CD
+name: pre-release
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -15,56 +13,6 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.8
-
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v4
-
-      - name: Cache Poetry virtualenv
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Install discord_app Poetry
-        run: cd discord_app && poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
-
-      - name: Code Quality
-        run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
-
-      - name: Test with pytest
-        run: cd discord_app && poetry run pytest --cov=eternal_guesses --cov-report=xml
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: discord_app/coverage.xml
-          fail_ci_if_error: true
-          path_to_write_report: ./coverage/codecov_report.txt
-          verbose: true
-
-  #      # TODO: Create a release on specific refs (version number), or similar. The release can then be used to trigger a deployment.
-  #      #       For now, deploying on every master commit is fine.
-  #      - name: Create Release
-  #        id: create_release
-  #        uses: actions/create-release@v1
-  #        env:
-  #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-  #        with:
-  #          tag_name: ${{ github.sha }}
-  #          release_name: Release ${{ github.sha }}
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
       - uses: actions/checkout@v2
 
       - name: Setup Node.js
@@ -93,32 +41,86 @@ jobs:
         run: cd discord_app && poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Package discord_app
-        run: cd discord_app/ && npx serverless package && cd ../
-
-      - name: Package error_parser_function
-        run: cd error_parser_function/ && npx serverless package && cd ../
-
       - name: Install infra Poetry
         run: cd infra && poetry install
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Synthesize CDK
-        run: cd infra && poetry run npx cdk synth --output build/cdk.out
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
-          DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
-          DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
-          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
-          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+      - name: Verify code quality
+        run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
 
-      - name: Deploy CDK
-        run: cd infra && npx cdk synth --app ./build/cdk.out --require-approval never
+      - name: Test with pytest
+        run: cd discord_app && poetry run pytest --cov=eternal_guesses --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: discord_app/coverage.xml
+          fail_ci_if_error: true
+          path_to_write_report: ./coverage/codecov_report.txt
+          verbose: true
+
+      - name: Package discord_app
+        run: cd discord_app/ && npx serverless package && cd ../
+
+      - name: Upload the discord_app package
+        uses: actions/upload-artifact@v2
+        with:
+          name: discord-app-package
+          path: discord_app/.serverless/discord-app.zip
+
+      - name: Package error_parser_function
+        run: cd error_parser_function/ && npx serverless package && cd ../
+
+      - name: Upload the error_parser package
+        uses: actions/upload-artifact@v2
+        with:
+          name: error-parser-package
+          path: error_parser_function/.serverless/error-parser.zip
+
+  # Zip the packages and infra
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Download the discord_app package
+        uses: actions/download-artifact@v2
+        with:
+          name: discord-app-package
+
+      - name: Download the error_parser package
+        uses: actions/download-artifact@v2
+        with:
+          name: error-parser-package
+
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@main
         env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate a release name
+        id: release_name
+        run: echo "::set-output name=date::$(date +"%Y-%m-%dT%H:%M:%S%z")"
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        with:
+          commitish: ${{ github.sha }}
+          release_name: ${{ steps.release_name.outputs.date }}
+          body: ${{steps.github_release.outputs.changelog}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#      - name: Create release archive
+#        uses: papeloto/action-zip@v1
+#        with:
+#          files: error_parser_function/.serverless/error-parser.zip discord_app/.serverless/discord-app.zip infra/
+#          dest: release.zip
+#
+#      - name: Upload Release archive
+#          uses: ncipollo/release-action@v1
+#          with:
+#            artifacts: "release.zip"
+#            token: ${{ secrets.GITHUB_TOKEN }}
