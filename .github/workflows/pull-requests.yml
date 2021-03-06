@@ -28,22 +28,33 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install Poetry
-        uses: Gr1N/setup-poetry@v4
+      - name: Install poetry
+        uses: snok/install-poetry@v1.0.0
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
-      - name: Cache Poetry virtualenv
+      - name: Load cached venv for discord-app
+        id: cached-discord-app-poetry
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          path: discord_app/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('discord_app/poetry.lock') }}
 
-      - name: Install discord_app Poetry
+      - name: Install discord-app dependencies
         run: cd discord_app && poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cached-discord-app-poetry.outputs.cache-hit != 'true'
+
+      - name: Load cached venv for infra
+        id: cached-infra-poetry
+        uses: actions/cache@v2
+        with:
+          path: infra/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
 
       - name: Install infra Poetry
         run: cd infra && poetry install
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cached-infra-poetry.outputs.cache-hit != 'true'
 
       - name: Verify code quality
         run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
