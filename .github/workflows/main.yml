@@ -129,7 +129,7 @@ jobs:
       - name: Restore the artifact for infra
         uses: actions/download-artifact@v2
         with:
-          name: infra-package
+          name: infra
 
       - name: Install Python 3.8
         uses: actions/setup-python@v1
