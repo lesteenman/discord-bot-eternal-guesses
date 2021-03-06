@@ -1,4 +1,4 @@
-name: pre-release
+name: main
 
 on:
   push:
@@ -112,15 +112,3 @@ jobs:
           body: ${{steps.github_release.outputs.changelog}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#      - name: Create release archive
-#        uses: papeloto/action-zip@v1
-#        with:
-#          files: error_parser_function/.serverless/error-parser.zip discord_app/.serverless/discord-app.zip infra/
-#          dest: release.zip
-#
-#      - name: Upload Release archive
-#          uses: ncipollo/release-action@v1
-#          with:
-#            artifacts: "release.zip"
-#            token: ${{ secrets.GITHUB_TOKEN }}
