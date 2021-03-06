@@ -134,7 +134,7 @@ jobs:
       - name: Create Release
         uses: actions/create-release@v1
         with:
-          commitish: ${{ github.sha }}
+          tag_name: ${{ steps.release_name.outputs.date }} ${GITHUB_SHA::7}
           release_name: ${{ steps.release_name.outputs.date }} ${GITHUB_SHA::7}
           body: ${{steps.changes.outputs.changelog}}
         env:
