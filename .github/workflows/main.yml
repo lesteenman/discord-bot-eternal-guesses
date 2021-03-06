@@ -112,7 +112,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-#      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
       - name: Restore the artifact for the discord-app
         uses: actions/download-artifact@v2
@@ -125,11 +125,6 @@ jobs:
         with:
           name: error-parser-package
           path: error_parser_function/.serverless/
-
-      - name: Restore the artifact for infra
-        uses: actions/download-artifact@v2
-        with:
-          name: infra
 
       - name: Install Python 3.8
         uses: actions/setup-python@v1
