@@ -112,22 +112,24 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+#      - uses: actions/checkout@v2
 
       - name: Restore the artifact for the discord-app
         uses: actions/download-artifact@v2
         with:
           name: discord-app-package
+          path: discord_app/.serverless/
 
       - name: Restore the artifact for the error-parser
         uses: actions/download-artifact@v2
         with:
           name: error-parser-package
+          path: error_parser_function/.serverless/
 
-      - name: Restore the artifact for the error-parser
+      - name: Restore the artifact for infra
         uses: actions/download-artifact@v2
         with:
-          name: error-parser-package
+          name: infra-package
 
       - name: Install Python 3.8
         uses: actions/setup-python@v1
@@ -172,7 +174,7 @@ jobs:
           AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
 
   release:
-    needs: build # TODO: do after 'deploy'
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -190,7 +192,7 @@ jobs:
 
       - name: Build Changelog
         id: changes
-        run: echo "::set-output name=changelog::$(git log --format=%B -1 | tail +3)"
+        run: echo "::set-output name=changelog::$(git log --format=%B -1)"
 
       - name: Get the base version
         id: release_version
