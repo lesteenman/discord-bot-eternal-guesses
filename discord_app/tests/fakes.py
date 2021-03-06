@@ -1,5 +1,7 @@
 from typing import List, Optional
+from unittest.mock import MagicMock
 
+import discord
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.errors import DiscordEventDisallowedError
@@ -24,6 +26,11 @@ class FakeCommandAuthorizer(CommandAuthorizer):
             raise DiscordEventDisallowedError("Disallowed")
 
 
+class FakeNotFound(discord.NotFound):
+    def __init__(self):
+        pass
+
+
 class FakeDiscordMessaging(DiscordMessaging):
     def __init__(self):
         self.updated_channel_messages = []
@@ -31,19 +38,26 @@ class FakeDiscordMessaging(DiscordMessaging):
         self.sent_channel_messages = []
         self.sent_temp_messages = []
         self.created_channel_message_id = 0
+        self.deleted_messages = []
 
     async def send_channel_message(self, channel_id: int, text: str) -> int:
         self.sent_channel_messages.append({'channel_id': channel_id, 'text': text})
         return self.created_channel_message_id
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
-        self.updated_channel_messages.append({'channel_id': channel_id, 'message_id': message_id, 'text': text})
+        if message_id in self.deleted_messages:
+            raise FakeNotFound()
+        else:
+            self.updated_channel_messages.append({'channel_id': channel_id, 'message_id': message_id, 'text': text})
 
     async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
         self.sent_temp_messages.append({'channel_id': channel_id, 'text': text, 'timeout': timeout})
 
     async def send_dm(self, member: DiscordMember, text: str):
         self.sent_dms.append({'member': member, 'text': text})
+
+    def raise_404_on_update_of_message(self, message_id):
+        self.deleted_messages.append(message_id)
 
 
 class FakeGamesRepository(GamesRepository):

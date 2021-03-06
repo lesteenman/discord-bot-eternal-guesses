@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import discord
 from loguru import logger
 
 from eternal_guesses.discord_messaging import DiscordMessaging
@@ -25,9 +26,14 @@ class GuessRoute:
             for channel_message in game.channel_messages:
                 logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
                              f"message_id={channel_message.message_id}, message='{new_channel_message}'")
-                await self.discord_messaging.update_channel_message(channel_message.channel_id,
-                                                                    channel_message.message_id,
-                                                                    new_channel_message)
+
+                try:
+                    await self.discord_messaging.update_channel_message(channel_message.channel_id,
+                                                                        channel_message.message_id,
+                                                                        new_channel_message)
+                except discord.NotFound:
+                    game.channel_messages.remove(channel_message)
+                    self.games_repository.save(game)
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
