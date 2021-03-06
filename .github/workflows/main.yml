@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
       - name: Setup Node.js
@@ -89,6 +88,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+
       - name: Restore the artifact for the discord-app
         uses: actions/download-artifact@v2
         with:
