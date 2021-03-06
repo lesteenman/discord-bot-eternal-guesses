@@ -110,15 +110,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate a release name
-        id: release_name
-        run: echo "::set-output name=date::$(date +"%Y-%m-%dT%H:%M:%S%z")"
+      - name: Get the date of the release
+        id: release_date
+        run: echo "::set-output name=date::$(date +"%Y-%m-%d")"
 
       - name: Create Release
         uses: actions/create-release@v1
         with:
           commitish: ${{ github.sha }}
-          release_name: ${{ steps.release_name.outputs.date }}
+          release_name: ${{ steps.release_name.outputs.date }} ${GITHUB_SHA::7}
           body: ${{steps.github_release.outputs.changelog}}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
