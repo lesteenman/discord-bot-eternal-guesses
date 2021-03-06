@@ -157,3 +157,36 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
+
+  release:
+    needs: build # TODO: do after 'deploy'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Changelog
+        id: changes
+        run: echo "::set-output name=changelog::$(git show --format=%B | tail +3)"
+
+      - name: Get the date of the release
+        id: release_date
+        run: echo "::set-output name=date::$(date +"%Y-%m-%d")"
+
+      - name: Get the shorthash of the commit
+        id: release_hash
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Check changelog
+        run: echo ${{ steps.changes.outputs.changelog }}
+
+      - name: Check release name
+        run: echo ${{ steps.release_date.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
+          release_name: ${{ steps.release_name.outputs.date }} ${{ steps.release_hash.outputs.sha_short }}
+          body: ${{ steps.changes.outputs.changelog }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
