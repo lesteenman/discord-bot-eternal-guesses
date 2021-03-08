@@ -63,7 +63,7 @@ def publish_message(loggroup, logstream, error_msg, lambda_func_name):
         message += "# LogGroup Name:- " + str(loggroup) + "\n"
         message += "# LogStream:- " + str(logstream) + "\n"
         message += "# Log Message:- " + "\n"
-        message += "# \t\t" + str(error_msg.split("\n")) + "\n"
+        message += "# \t\t" + str(error_msg) + "\n"
         message += "##########################################################\n"
 
         # Sending the notification...

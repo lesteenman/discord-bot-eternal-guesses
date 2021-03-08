@@ -70,6 +70,7 @@ class DiscordMessagingImpl(DiscordMessaging):
         async with self._discord_client() as client:
             text_channel = await client.fetch_channel(channel_id)
 
+            # NOTE: This happens in the background. NOT suitable for AWS Lambda.
             await text_channel.send(content=text, delete_after=timeout)
 
     @contextlib.asynccontextmanager
