@@ -76,7 +76,7 @@ async def test_guess_updates_channel_messages():
     channel_message_1 = ChannelMessage(channel_id=1000, message_id=5000)
     channel_message_2 = ChannelMessage(channel_id=1005, message_id=5005)
 
-    list_guesses_message = "message with new gues"
+    list_guesses_message = "message with new guess"
     message_provider = MagicMock(MessageProvider)
     message_provider.channel_list_game_guesses.return_value = list_guesses_message
 
@@ -115,6 +115,43 @@ async def test_guess_updates_channel_messages():
 
     message_provider.channel_list_game_guesses.assert_called()
     assert user_id in message_provider.channel_list_game_guesses.call_args.args[0].guesses.keys()
+
+
+async def test_guess_channel_message_gone_silently_fails():
+    # Given
+    guild_id = 1001
+    user_id = 12000
+    game_id = 'game-id'
+    deleted_channel_message = ChannelMessage(channel_id=1000, message_id=5000)
+    other_channel_message = ChannelMessage(channel_id=1000, message_id=5001)
+
+    # We have a game with two channel messages
+    game = Game(
+        guild_id=guild_id,
+        game_id=game_id,
+        channel_messages=[deleted_channel_message, other_channel_message]
+    )
+    games_repository = FakeGamesRepository([game])
+
+    # And we will get a 'not found' error after updating one of those messages
+    discord_messaging = FakeDiscordMessaging()
+    discord_messaging.raise_404_on_update_of_message(deleted_channel_message.message_id)
+
+    guess_route = GuessRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+        message_provider=MessageProvider(),
+
+    )
+
+    # When we trigger an update
+    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
+    await guess_route.call(event)
+
+    # Then that channel message is removed from the game
+    updated_game = games_repository.get(guild_id=guild_id, game_id=game_id)
+    assert len(updated_game.channel_messages) == 1
+    assert updated_game.channel_messages[0].message_id == other_channel_message.message_id
 
 
 async def test_guess_sends_dm_to_user():
