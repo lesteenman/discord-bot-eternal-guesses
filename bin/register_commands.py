@@ -240,7 +240,7 @@ def register(config: Dict):
     ]
 
     for command in commands:
-        create_guild_command(command, config, 'personal')
+        create_command(command, config)
 
     global_commands = [{
         "name": "guess",
