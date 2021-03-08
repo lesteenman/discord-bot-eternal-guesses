@@ -1,7 +1,7 @@
 from typing import List, Optional
-from unittest.mock import MagicMock
 
 import discord
+
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.errors import DiscordEventDisallowedError
