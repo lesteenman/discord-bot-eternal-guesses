@@ -2,8 +2,10 @@ DISCORD_APP_DIR=discord_app
 ERROR_PARSER_DIR=error_parser_function
 INFRA_DIR=infra
 
-test:
+quality:
 	cd ${DISCORD_APP_DIR} && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
+
+test: quality
 	cd ${DISCORD_APP_DIR} && poetry run pytest
 
 build:
