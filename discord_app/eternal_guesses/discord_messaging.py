@@ -22,8 +22,7 @@ class DiscordMessaging(ABC):
         pass
 
     async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
-        logger.warning("Using an ABC method!")
-        pass
+        raise Exception()
 
 
 class DiscordMessagingImpl(DiscordMessaging):
@@ -64,14 +63,6 @@ class DiscordMessagingImpl(DiscordMessaging):
             user = await client.fetch_user(member.user_id)
 
             await user.send(text)
-
-    async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
-        logger.debug(f"Sending a temp message to {channel_id}, timeout={timeout}, text='{text}'")
-        async with self._discord_client() as client:
-            text_channel = await client.fetch_channel(channel_id)
-
-            # NOTE: This happens in the background. NOT suitable for AWS Lambda.
-            await text_channel.send(content=text, delete_after=timeout)
 
     @contextlib.asynccontextmanager
     async def _discord_client(self) -> discord.Client:

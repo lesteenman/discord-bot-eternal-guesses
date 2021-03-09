@@ -36,7 +36,7 @@ class CreateRoute:
         else:
             existing_game = self.games_repository.get(guild_id, game_id)
             if existing_game is not None:
-                await self.discord_messaging.send_temp_message(
+                await self.discord_messaging.send_channel_message(
                     text=f"Game id '{game_id}' already exists.",
                     channel_id=event.channel_id,
                 )
