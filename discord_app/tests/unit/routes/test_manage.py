@@ -5,7 +5,7 @@ import pytest
 
 from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.errors import DiscordEventDisallowedError
-from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.data.game import Game, ChannelMessage
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand, CommandType
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.repositories.games_repository import GamesRepository
@@ -29,7 +29,7 @@ async def test_post_creates_channel_message():
     # And we have a mock message provider
     formatted_message = "mock formatted message"
     message_provider = MagicMock(MessageProvider)
-    message_provider.channel_list_game_guesses.return_value = formatted_message
+    message_provider.game_managed_channel_message.return_value = formatted_message
 
     discord_messaging = FakeDiscordMessaging()
     manage_route = ManageRoute(
@@ -46,10 +46,7 @@ async def test_post_creates_channel_message():
     })
     await manage_route.post(event)
 
-    # Then a message is posted based on that game
-    message_provider.channel_list_game_guesses.assert_called_with(game)
-
-    # And it is sent in the given channel
+    # Then a message about that game is posted in the given channel
     assert {'channel_id': channel_id, 'text': formatted_message} in discord_messaging.sent_channel_messages
 
     # And the channel id is saved in the game
@@ -69,7 +66,7 @@ async def test_post_without_channel_uses_event_channel():
 
     formatted_message = "mock formatted message"
     message_provider = MagicMock(MessageProvider)
-    message_provider.channel_list_game_guesses.return_value = formatted_message
+    message_provider.game_managed_channel_message.return_value = formatted_message
 
     discord_messaging = FakeDiscordMessaging()
 
@@ -97,10 +94,7 @@ async def test_post_without_channel_uses_event_channel():
     )
     await manage_route.post(event)
 
-    # Then a message is posted based on that game
-    message_provider.channel_list_game_guesses.assert_called_with(game)
-
-    # And it is posted in the channel we sent this command from
+    # Then a message for that game is posted in the channel we sent this command from
     assert {'channel_id': event_channel_id, 'text': formatted_message} in discord_messaging.sent_channel_messages
 
 
@@ -347,6 +341,48 @@ async def test_close():
     # Then it should be closed
     saved_game = games_repository.get(guild_id, game.game_id)
     assert saved_game.closed
+
+
+async def test_close_updates_channel_messages():
+    guild_id = 1007
+    game_id = 'game-id-1'
+
+    # We have an open game with channel messages
+    channel_message_1 = ChannelMessage(channel_id=1, message_id=10)
+    channel_message_2 = ChannelMessage(channel_id=2, message_id=11)
+    game = Game(
+        game_id=game_id,
+        guild_id=guild_id,
+        closed=False,
+        channel_messages=[channel_message_1, channel_message_2]
+    )
+    games_repository = FakeGamesRepository([game])
+
+    discord_messaging = FakeDiscordMessaging()
+    manage_route = ManageRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+        message_provider=MessageProvider(),
+        command_authorizer=FakeCommandAuthorizer(passes=True)
+    )
+
+    # When we close it
+    event = _make_event(
+        guild_id=guild_id,
+        options={
+            'game-id': game.game_id,
+        }
+    )
+    await manage_route.close(event)
+
+    # Then the channel messages are updated
+    assert len(discord_messaging.updated_channel_messages) == 2
+
+    assert any(
+        map(lambda m: m['message_id'] == channel_message_1.message_id, discord_messaging.updated_channel_messages))
+
+    assert any(
+        map(lambda m: m['message_id'] == channel_message_2.message_id, discord_messaging.updated_channel_messages))
 
 
 async def test_close_already_closed_game():

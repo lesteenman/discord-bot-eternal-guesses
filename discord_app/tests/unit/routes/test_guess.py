@@ -78,7 +78,7 @@ async def test_guess_updates_channel_messages():
 
     list_guesses_message = "message with new guess"
     message_provider = MagicMock(MessageProvider)
-    message_provider.channel_list_game_guesses.return_value = list_guesses_message
+    message_provider.game_managed_channel_message.return_value = list_guesses_message
 
     game = Game(
         guild_id=guild_id,
@@ -112,9 +112,6 @@ async def test_guess_updates_channel_messages():
         'message_id': channel_message_1.message_id,
         'text': list_guesses_message
     } in update_channel_message_calls
-
-    message_provider.channel_list_game_guesses.assert_called()
-    assert user_id in message_provider.channel_list_game_guesses.call_args.args[0].guesses.keys()
 
 
 async def test_guess_channel_message_gone_silently_fails():

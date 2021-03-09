@@ -35,7 +35,7 @@ class ManageRoute:
             message = self.message_provider.dm_error_game_not_found(game_id)
             await self.discord_messaging.send_temp_message(channel_id=event.channel_id, text=message)
         else:
-            message = self.message_provider.channel_list_game_guesses(game)
+            message = self.message_provider.game_managed_channel_message(game)
             message_id = await self.discord_messaging.send_channel_message(channel_id, message)
 
             if game.channel_messages is None:
@@ -83,5 +83,9 @@ class ManageRoute:
             text=f"Game '{game_id} has now been closed for new guesses.",
             channel_id=event.channel_id,
         )
+
+        for message in game.channel_messages:
+            text = self.message_provider.game_managed_channel_message(game)
+            await self.discord_messaging.update_channel_message(message.channel_id, message.message_id, text)
 
         return DiscordResponse.acknowledge()
