@@ -9,7 +9,7 @@ class MessageProvider(ABC):
     def channel_list_game_guesses(self, game: Game) -> str:
         pass
 
-    def dm_error_game_not_found(self, game_id: str) -> str:
+    def manage_error_game_not_found(self, game_id: str) -> str:
         pass
 
     def dm_guess_added(self, game_id: str, guess: str) -> str:
@@ -36,6 +36,27 @@ class MessageProvider(ABC):
     def error_duplicate_management_channel(self, channel):
         pass
 
+    def admin_removed_management_role(self, role):
+        pass
+
+    def remove_invalid_management_role(self, role):
+        pass
+
+    def added_management_role(self, role):
+        pass
+
+    def add_duplicate_management_role(self, role):
+        pass
+
+    def removed_management_channel(self, channel):
+        pass
+
+    def remove_invalid_management_channel(self, channel):
+        pass
+
+    def added_management_channel(self, channel):
+        pass
+
 
 class MessageProviderImpl(MessageProvider):
 
@@ -54,7 +75,7 @@ class MessageProviderImpl(MessageProvider):
 
         return f"Actual guesses for {game.game_id}:\n\n{guesses}\n\n{add_guess}"
 
-    def dm_error_game_not_found(self, game_id: str) -> str:
+    def manage_error_game_not_found(self, game_id: str) -> str:
         return f"No game found with id {game_id}."
 
     def dm_guess_added(self, game_id: str, guess: str) -> str:
@@ -102,3 +123,24 @@ class MessageProviderImpl(MessageProvider):
 
     def error_duplicate_management_channel(self, channel):
         return f"<#{channel}> is already a management channel."
+
+    def admin_removed_management_role(self, role):
+        return f"Removed management role: <@&{role}>"
+
+    def remove_invalid_management_role(self, role):
+        return f"role <@&{role}> is not a management role."
+
+    def added_management_role(self, role):
+        return f"Added new management role: <@&{role}>"
+
+    def add_duplicate_management_role(self, role):
+        return f"Role <@&{role}> is already a management role."
+
+    def removed_management_channel(self, channel):
+        return f"Removed management channel: <#{channel}>"
+
+    def remove_invalid_management_channel(self, channel):
+        return f"Channel <#{channel}> was not a management channel."
+
+    def added_management_channel(self, channel):
+        return f"Added new management channel: <#{channel}>"

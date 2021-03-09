@@ -50,9 +50,6 @@ class FakeDiscordMessaging(DiscordMessaging):
         else:
             self.updated_channel_messages.append({'channel_id': channel_id, 'message_id': message_id, 'text': text})
 
-    async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
-        self.sent_temp_messages.append({'channel_id': channel_id, 'text': text, 'timeout': timeout})
-
     async def send_dm(self, member: DiscordMember, text: str):
         self.sent_dms.append({'member': member, 'text': text})
 

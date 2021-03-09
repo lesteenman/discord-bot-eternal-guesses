@@ -24,8 +24,8 @@ class AdminRoute:
         guild_config = self.configs_repository.get(guild_id=event.guild_id)
 
         message = self.message_provider.channel_admin_info(guild_config=guild_config)
-        await self.discord_messaging.send_temp_message(text=message,
-                                                       channel_id=event.channel_id)
+        await self.discord_messaging.send_channel_message(text=message,
+                                                          channel_id=event.channel_id)
 
         return DiscordResponse.acknowledge()
 
@@ -36,17 +36,17 @@ class AdminRoute:
 
         channel = event.command.options['channel']
         if channel in guild_config.management_channels:
-            message = self.message_provider.error_duplicate_management_channel(channel)
-            await self.discord_messaging.send_temp_message(text=message,
-                                                           channel_id=event.channel_id)
+            text = self.message_provider.error_duplicate_management_channel(channel)
+            await self.discord_messaging.send_channel_message(text=text,
+                                                              channel_id=event.channel_id)
             return DiscordResponse.acknowledge()
 
         guild_config.management_channels.append(channel)
         self.configs_repository.save(guild_config)
 
-        # TODO: MessageProvider
-        await self.discord_messaging.send_temp_message(text=f"Added new management channel: <#{channel}>",
-                                                       channel_id=event.channel_id)
+        text = self.message_provider.added_management_channel(channel)
+        await self.discord_messaging.send_channel_message(text=text,
+                                                          channel_id=event.channel_id)
         return DiscordResponse.acknowledge()
 
     async def remove_management_channel(self, event: DiscordEvent) -> DiscordResponse:
@@ -56,17 +56,18 @@ class AdminRoute:
 
         channel = event.command.options['channel']
         if channel not in guild_config.management_channels:
-            # TODO: MessageProvider
-            await self.discord_messaging.send_temp_message(text=f"Channel <#{channel}> was not a management channel.",
-                                                           channel_id=event.channel_id)
+            text = self.message_provider.remove_invalid_management_channel(channel)
+            await self.discord_messaging.send_channel_message(
+                text=text,
+                channel_id=event.channel_id)
             return DiscordResponse.acknowledge()
 
         guild_config.management_channels.remove(channel)
         self.configs_repository.save(guild_config)
 
-        # TODO: MessageProvider
-        await self.discord_messaging.send_temp_message(text=f"Removed management channel: <#{channel}>",
-                                                       channel_id=event.channel_id)
+        text = self.message_provider.removed_management_channel(channel)
+        await self.discord_messaging.send_channel_message(text=text,
+                                                          channel_id=event.channel_id)
         return DiscordResponse.acknowledge()
 
     async def add_management_role(self, event: DiscordEvent) -> DiscordResponse:
@@ -76,17 +77,17 @@ class AdminRoute:
 
         role = event.command.options['role']
         if role in guild_config.management_roles:
-            # TODO: MessageProvider
-            await self.discord_messaging.send_temp_message(text=f"Role <@&{role}> is already a management role.",
-                                                           channel_id=event.channel_id)
+            text = self.message_provider.add_duplicate_management_role(role)
+            await self.discord_messaging.send_channel_message(text=text,
+                                                              channel_id=event.channel_id)
             return DiscordResponse.acknowledge()
 
         guild_config.management_roles.append(role)
         self.configs_repository.save(guild_config)
 
-        # TODO: MessageProvider
-        await self.discord_messaging.send_temp_message(text=f"Added new management role: <@&{role}>",
-                                                       channel_id=event.channel_id)
+        text = self.message_provider.added_management_role(role)
+        await self.discord_messaging.send_channel_message(text=text,
+                                                          channel_id=event.channel_id)
         return DiscordResponse.acknowledge()
 
     async def remove_management_role(self, event: DiscordEvent) -> DiscordResponse:
@@ -96,17 +97,17 @@ class AdminRoute:
 
         role = event.command.options['role']
         if role not in guild_config.management_roles:
-            # TODO: MessageProvider
-            await self.discord_messaging.send_temp_message(text=f"role <@&{role}> is not a management role.",
-                                                           channel_id=event.channel_id)
+            text = self.message_provider.remove_invalid_management_role(role)
+            await self.discord_messaging.send_channel_message(text=text,
+                                                              channel_id=event.channel_id)
 
             return DiscordResponse.acknowledge()
 
         guild_config.management_roles.remove(role)
         self.configs_repository.save(guild_config)
 
-        # TODO: MessageProvider
-        await self.discord_messaging.send_temp_message(text=f"Removed management role: <@&{role}>",
-                                                       channel_id=event.channel_id)
+        text = self.message_provider.admin_removed_management_role(role=role)
+        await self.discord_messaging.send_channel_message(text=text,
+                                                          channel_id=event.channel_id)
 
         return DiscordResponse.acknowledge()
