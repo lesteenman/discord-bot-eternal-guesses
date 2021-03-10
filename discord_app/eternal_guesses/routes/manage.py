@@ -32,8 +32,8 @@ class ManageRoute:
 
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
-            message = self.message_provider.dm_error_game_not_found(game_id)
-            await self.discord_messaging.send_temp_message(channel_id=event.channel_id, text=message)
+            message = self.message_provider.manage_error_game_not_found(game_id)
+            await self.discord_messaging.send_channel_message(channel_id=event.channel_id, text=message)
         else:
             message = self.message_provider.game_managed_channel_message(game)
             message_id = await self.discord_messaging.send_channel_message(channel_id, message)

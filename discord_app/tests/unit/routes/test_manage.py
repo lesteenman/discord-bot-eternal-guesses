@@ -146,7 +146,7 @@ async def test_post_invalid_game_id_sends_dm_error():
 
     formatted_error = "mock formatted error"
     message_provider = MagicMock(MessageProvider)
-    message_provider.dm_error_game_not_found.return_value = formatted_error
+    message_provider.manage_error_game_not_found.return_value = formatted_error
 
     manage_route = ManageRoute(
         games_repository=games_repository,
@@ -170,12 +170,10 @@ async def test_post_invalid_game_id_sends_dm_error():
     await manage_route.post(event)
 
     # Then
-    message_provider.dm_error_game_not_found.assert_called_with(game_id)
+    message_provider.manage_error_game_not_found.assert_called_with(game_id)
 
-    assert len(discord_messaging.sent_temp_messages) == 1
-    assert len(discord_messaging.sent_channel_messages) == 0
-
-    sent_message = discord_messaging.sent_temp_messages[0]
+    assert len(discord_messaging.sent_channel_messages) == 1
+    sent_message = discord_messaging.sent_channel_messages[0]
     assert sent_message['text'] == formatted_error
     assert sent_message['channel_id'] == event_channel_id
 
