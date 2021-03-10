@@ -22,7 +22,7 @@ class GuessRoute:
     async def _update_channel_messages(self, game: Game):
         logger.info(f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
         if game.channel_messages is not None:
-            new_channel_message = self.message_provider.channel_list_game_guesses(game)
+            new_channel_message = self.message_provider.game_managed_channel_message(game)
             for channel_message in game.channel_messages:
                 logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
                              f"message_id={channel_message.message_id}, message='{new_channel_message}'")

@@ -6,7 +6,7 @@ from eternal_guesses.model.data.guild_config import GuildConfig
 
 
 class MessageProvider(ABC):
-    def channel_list_game_guesses(self, game: Game) -> str:
+    def game_managed_channel_message(self, game: Game) -> str:
         pass
 
     def manage_error_game_not_found(self, game_id: str) -> str:
@@ -60,7 +60,9 @@ class MessageProvider(ABC):
 
 class MessageProviderImpl(MessageProvider):
 
-    def channel_list_game_guesses(self, game: Game) -> str:
+    def game_managed_channel_message(self, game: Game) -> str:
+        message = f"Guesses for {game.game_id}:\n\n"
+
         guess_list = []
         for user_id, guess in game.guesses.items():
             guess_list.append(f"{user_id}: {guess.guess} (<@{user_id}>)")
@@ -69,11 +71,17 @@ class MessageProviderImpl(MessageProvider):
             guesses = "\n".join(guess_list)
         else:
             guesses = "None yet!"
+        message = f"{message}\n\n{guesses}"
 
-        add_guess = f"To add your own guess, copy this template and post it in the chat:" \
-                    f"`/guess game-id: {game.game_id} guess:`"
+        if game.closed:
+            message = f"{message}\n\n" \
+                      f"This game has been closed for new guesses."
+        else:
+            message = f"{message}\n\n" \
+                      f"To add your own guess, copy this template and post it in the chat:" \
+                        f"`/guess game-id: {game.game_id} guess:`"
 
-        return f"Actual guesses for {game.game_id}:\n\n{guesses}\n\n{add_guess}"
+        return message
 
     def manage_error_game_not_found(self, game_id: str) -> str:
         return f"No game found with id {game_id}."
