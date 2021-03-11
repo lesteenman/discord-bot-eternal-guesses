@@ -91,7 +91,7 @@ class MessageProviderImpl(MessageProvider):
 
     def channel_admin_info(self, guild_config: GuildConfig) -> str:
         roles = ", ".join(f"<@{role}>" for role in guild_config.management_roles)
-        channels = ", ".join(f"<@{channel}>" for channel in guild_config.management_channels)
+        channels = ", ".join(f"<#{channel}>" for channel in guild_config.management_channels)
 
         admin_info = f"Eternal-Guess configuration for this server:\n" \
                      f"- management_roles: {roles}\n" \
