@@ -21,9 +21,6 @@ class DiscordMessaging(ABC):
         logger.warning("Using an ABC method!")
         pass
 
-    async def send_temp_message(self, channel_id: int, text: str, timeout: int = 30):
-        raise Exception()
-
 
 class DiscordMessagingImpl(DiscordMessaging):
     async def send_channel_message(self, channel_id: int, text: str) -> int:
