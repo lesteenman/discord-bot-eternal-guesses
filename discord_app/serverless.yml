@@ -13,6 +13,11 @@ functions:
 plugins:
   - serverless-python-requirements
 
+package:
+  exclude:
+    - tests/**
+    - .venv/**
+
 custom:
   pythonRequirements:
     dockerizePip: non-linux
