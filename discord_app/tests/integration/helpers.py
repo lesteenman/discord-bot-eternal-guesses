@@ -195,6 +195,33 @@ def make_discord_admin_add_role_event(guild_id: int, new_management_role: int, i
     return _make_event(event_body)
 
 
+def make_discord_admin_info(guild_id: int, is_admin: bool,
+                            channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+                            role_id: int = DEFAULT_ROLE_ID,
+                            member_nickname: str = DEFAULT_MEMBER_NICK,
+                            user_name: str = DEFAULT_USER_NAME) -> Dict:
+    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+                                  is_admin=is_admin)
+    event_body['data'] = {
+        "id": "2001",
+        "name": "eternal-guess",
+        "options": [
+            {
+                "name": "admin",
+                "options": [
+                    {
+                        "name": "info",
+                    }
+                ]
+            }
+        ]
+
+    }
+
+    return _make_event(event_body)
+
+
 def make_discord_manage_list_event(guild_id: int, channel_id: int, user_id: int = DEFAULT_USER_ID,
                                    role_id: int = DEFAULT_ROLE_ID,
                                    member_nickname: str = DEFAULT_MEMBER_NICK,

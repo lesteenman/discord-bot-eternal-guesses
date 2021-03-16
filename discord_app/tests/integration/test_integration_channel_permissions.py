@@ -2,7 +2,7 @@ from eternal_guesses import handler
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
 from tests.integration.helpers import create_context, make_discord_manage_list_event, \
-    make_discord_admin_add_channel_event, make_discord_admin_add_role_event
+    make_discord_admin_add_channel_event, make_discord_admin_add_role_event, make_discord_admin_info
 
 
 def test_integration_channel_permissions():
@@ -26,6 +26,14 @@ def test_integration_channel_permissions():
     assert manage_list_games(guild_id=1, channel_id=other_channel, role_id=other_role) == 401
 
     # But if we do it from the correct channel, it is allowed
+    assert manage_list_games(guild_id=1, channel_id=management_channel, role_id=other_role) == 200
+
+    # And doing it with the correct role is also allowed
+    assert manage_list_games(guild_id=1, channel_id=other_channel, role_id=management_role) == 200
+
+    # Getting the admin info only works when done as an Admin
+    assert admin_info(guild_id=guild_id, channel_id=management_channel, role_id=management_role, is_admin=False) == 401
+    assert admin_info(guild_id=guild_id, channel_id=other_channel, role_id=other_role, is_admin=True) == 200
 
 
 def add_management_channel(guild_id, channel_id):
@@ -35,6 +43,15 @@ def add_management_channel(guild_id, channel_id):
     )
 
     assert response['statusCode'] == 200
+
+
+def admin_info(guild_id: int, channel_id: int, role_id: int, is_admin: bool):
+    response = handler.handle_lambda(
+        make_discord_admin_info(guild_id=guild_id, channel_id=channel_id, role_id=role_id, is_admin=is_admin),
+        create_context()
+    )
+
+    return response['statusCode']
 
 
 def add_management_role(guild_id, management_role):

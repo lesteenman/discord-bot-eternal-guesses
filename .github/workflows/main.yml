@@ -156,7 +156,7 @@ jobs:
           NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
 
       - name: Deploy CDK
-        run: cd infra && npx cdk synth --app ./build/cdk.out --require-approval never
+        run: cd infra && poetry run npx cdk deploy --app ./build/cdk.out --require-approval never
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

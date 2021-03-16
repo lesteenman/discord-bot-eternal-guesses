@@ -1,3 +1,4 @@
+from loguru import logger
 from typing import Dict
 
 import docker
@@ -67,12 +68,15 @@ def fixed_authorization_result(mocker):
 def stub_discord_messaging(mocker):
     class SilentDiscordMessaging(DiscordMessaging):
         async def send_channel_message(self, channel_id: int, text: str) -> int:
+            logger.info(f"[stub send_channel_emssage] channel_id={channel_id}, text={text}")
             return 1
 
         async def update_channel_message(self, channel_id: int, message_id: int, text: str):
+            logger.info(f"[stub update_channel_emssage] channel_id={channel_id}, message_id={message_id} text={text}")
             pass
 
         async def send_dm(self, member: DiscordMember, text: str):
+            logger.info(f"[stub send_dm] member_id={member.user_id} text={text}")
             pass
 
     silent_discord_messaging = SilentDiscordMessaging()
