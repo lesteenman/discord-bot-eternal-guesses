@@ -26,9 +26,9 @@ class ManageRoute:
         logger.debug(f"posting a game's info. guild_id={guild_id}, game_id={game_id}")
 
         if 'channel' in event.command.options:
-            channel_id = event.command.options['channel']
+            channel_id = int(event.command.options['channel'])
         else:
-            channel_id = event.channel_id
+            channel_id = int(event.channel_id)
 
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
