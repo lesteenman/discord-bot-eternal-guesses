@@ -2,6 +2,7 @@ import contextlib
 from abc import ABC
 
 import discord
+from discord import AllowedMentions
 from loguru import logger
 
 from eternal_guesses.model.discord.discord_member import DiscordMember
@@ -32,7 +33,7 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             text_channel = await client.fetch_channel(channel_id)
 
-            channel_message = await text_channel.send(content=text, allowed_mentions={'parse': []})
+            channel_message = await text_channel.send(content=text, allowed_mentions=AllowedMentions.none())
             logger.debug(f"channel message id = {channel_message.id}")
 
             return channel_message.id
@@ -46,11 +47,9 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             text_channel = await client.fetch_channel(channel_id)
 
-            real_message_id = 804804560538304583
-            logger.info(f"Is this the message? {message_id == real_message_id}")
             message = await text_channel.fetch_message(message_id)
 
-            await message.edit(content=text, allowed_mentions={'parse': []})
+            await message.edit(content=text, allowed_mentions=AllowedMentions.none())
             logger.debug("updated channel message")
 
     async def send_dm(self, member: DiscordMember, text: str):
