@@ -112,11 +112,11 @@ def make_discord_manage_post_event(guild_id: int, game_id: str, channel_id: int,
                         "options": [
                             {
                                 "name": "game-id",
-                                "value": game_id
+                                "value": str(game_id)
                             },
                             {
                                 "name": "channel",
-                                "value": channel_id
+                                "value": str(channel_id)
                             }
                         ]
                     }
@@ -149,7 +149,40 @@ def make_discord_admin_add_channel_event(guild_id: int, new_management_channel_i
                         "options": [
                             {
                                 "name": "channel",
-                                "value": new_management_channel_id
+                                "value": str(new_management_channel_id)
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+    }
+
+    return _make_event(event_body)
+
+
+def make_discord_admin_remove_channel_event(guild_id: int, management_channel_id: int, is_admin: bool,
+                                            channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+                                            role_id: int = DEFAULT_ROLE_ID,
+                                            member_nickname: str = DEFAULT_MEMBER_NICK,
+                                            user_name: str = DEFAULT_USER_NAME) -> Dict:
+    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+                                  is_admin=is_admin)
+    event_body['data'] = {
+        "id": "2001",
+        "name": "eternal-guess",
+        "options": [
+            {
+                "name": "admin",
+                "options": [
+                    {
+                        "name": "remove-management-channel",
+                        "options": [
+                            {
+                                "name": "channel",
+                                "value": str(management_channel_id)
                             }
                         ]
                     }
@@ -182,7 +215,40 @@ def make_discord_admin_add_role_event(guild_id: int, new_management_role: int, i
                         "options": [
                             {
                                 "name": "role",
-                                "value": new_management_role
+                                "value": str(new_management_role)
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+
+    }
+
+    return _make_event(event_body)
+
+
+def make_discord_admin_remove_role_event(guild_id: int, management_role: int, is_admin: bool,
+                                         channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+                                         role_id: int = DEFAULT_ROLE_ID,
+                                         member_nickname: str = DEFAULT_MEMBER_NICK,
+                                         user_name: str = DEFAULT_USER_NAME) -> Dict:
+    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+                                  is_admin=is_admin)
+    event_body['data'] = {
+        "id": "2001",
+        "name": "eternal-guess",
+        "options": [
+            {
+                "name": "admin",
+                "options": [
+                    {
+                        "name": "remove-management-role",
+                        "options": [
+                            {
+                                "name": "role",
+                                "value": str(management_role)
                             }
                         ]
                     }
@@ -237,12 +303,6 @@ def make_discord_manage_list_event(guild_id: int, channel_id: int, user_id: int 
                 "options": [
                     {
                         "name": "list-games",
-                        # "options": [
-                        #     {
-                        #         "name": "closed",
-                        #         "value": False
-                        #     },
-                        # ]
                     }
                 ]
             }

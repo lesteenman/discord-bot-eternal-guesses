@@ -34,7 +34,7 @@ class AdminRoute:
 
         guild_config = self.configs_repository.get(guild_id=event.guild_id)
 
-        channel = event.command.options['channel']
+        channel = int(event.command.options['channel'])
         if channel in guild_config.management_channels:
             text = self.message_provider.error_duplicate_management_channel(channel)
             await self.discord_messaging.send_channel_message(text=text,
@@ -54,7 +54,7 @@ class AdminRoute:
 
         guild_config = self.configs_repository.get(guild_id=event.guild_id)
 
-        channel = event.command.options['channel']
+        channel = int(event.command.options['channel'])
         if channel not in guild_config.management_channels:
             text = self.message_provider.remove_invalid_management_channel(channel)
             await self.discord_messaging.send_channel_message(
@@ -75,7 +75,7 @@ class AdminRoute:
 
         guild_config = self.configs_repository.get(guild_id=event.guild_id)
 
-        role = event.command.options['role']
+        role = int(event.command.options['role'])
         if role in guild_config.management_roles:
             text = self.message_provider.add_duplicate_management_role(role)
             await self.discord_messaging.send_channel_message(text=text,
@@ -95,7 +95,7 @@ class AdminRoute:
 
         guild_config = self.configs_repository.get(guild_id=event.guild_id)
 
-        role = event.command.options['role']
+        role = int(event.command.options['role'])
         if role not in guild_config.management_roles:
             text = self.message_provider.remove_invalid_management_role(role)
             await self.discord_messaging.send_channel_message(text=text,
