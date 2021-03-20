@@ -65,13 +65,13 @@ class MessageProviderImpl(MessageProvider):
 
         guess_list = []
         for user_id, guess in game.guesses.items():
-            guess_list.append(f"{user_id}: {guess.guess} (<@{user_id}>)")
+            guess_list.append(f"<@{user_id}>: {guess.guess}")
 
         if len(guess_list) > 0:
             guesses = "\n".join(guess_list)
         else:
             guesses = "None yet!"
-        message = f"{message}\n\n{guesses}"
+        message = f"{message}{guesses}"
 
         if game.closed:
             message = f"{message}\n\n" \
