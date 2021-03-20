@@ -103,4 +103,4 @@ class InfraStack(core.Stack):
         aws_logs.SubscriptionFilter(self, "eternal-guess-handler-subscription-filter",
                                     log_group=app_handler.log_group,
                                     destination=aws_logs_destinations.LambdaDestination(logs_handler),
-                                    filter_pattern=aws_logs.FilterPattern.any_term("ERROR", "WARNING", "500"))
+                                    filter_pattern=aws_logs.FilterPattern.any_term("ERROR", "WARNING"))
