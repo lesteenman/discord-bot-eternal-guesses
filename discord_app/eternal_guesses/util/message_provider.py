@@ -64,7 +64,7 @@ class MessageProviderImpl(MessageProvider):
         message = f"Guesses for {game.game_id}:\n\n"
 
         guess_list = []
-        for user_id, guess in game.guesses.items():
+        for user_id, guess in sorted(game.guesses.items(), key=lambda i: i[1].guess):
             guess_list.append(f"<@{user_id}>: {guess.guess}")
 
         if len(guess_list) > 0:
