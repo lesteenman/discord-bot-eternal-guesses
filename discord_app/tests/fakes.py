@@ -11,6 +11,7 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.util.message_provider import MessageProvider
 
 
 class FakeCommandAuthorizer(CommandAuthorizer):
@@ -103,3 +104,68 @@ class FakeConfigsRepository(ConfigsRepository):
     def save(self, guild_config: GuildConfig):
         if guild_config.guild_id == self.guild_config.guild_id:
             self.guild_config = guild_config
+
+
+class FakeMessageProvider(MessageProvider):
+    def game_post_embed(self, game: Game) -> discord.Embed:
+        pass
+
+    def game_managed_channel_message(self, game: Game) -> str:
+        pass
+
+    def manage_error_game_not_found(self, game_id: str) -> str:
+        pass
+
+    def dm_guess_added(self, game_id: str, guess: str) -> str:
+        pass
+
+    def channel_manage_list_all_games(self, games: List[Game]) -> str:
+        pass
+
+    def channel_manage_list_open_games(self, games: List[Game]) -> str:
+        pass
+
+    def channel_manage_list_closed_games(self, games: List[Game]) -> str:
+        pass
+
+    def dm_error_guess_on_closed_game(self, game_id):
+        pass
+
+    def dm_error_duplicate_guess(self, game_id):
+        pass
+
+    def error_duplicate_management_channel(self, channel):
+        pass
+
+    def admin_removed_management_role(self, role):
+        pass
+
+    def remove_invalid_management_role(self, role):
+        pass
+
+    def added_management_role(self, role):
+        pass
+
+    def add_duplicate_management_role(self, role):
+        pass
+
+    def removed_management_channel(self, channel):
+        pass
+
+    def remove_invalid_management_channel(self, channel):
+        pass
+
+    def added_management_channel(self, channel):
+        pass
+
+    def __init__(self):
+        self.message = None
+        self.expected_config = None
+
+    def expect_channel_admin_info_call(self, expected_config: GuildConfig, message: str):
+        self.expected_config = expected_config
+        self.message = message
+
+    def channel_admin_info(self, guild_config: GuildConfig) -> str:
+        if guild_config == self.expected_config:
+            return self.message

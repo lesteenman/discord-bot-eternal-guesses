@@ -114,7 +114,19 @@ def register(config: Dict):
                             "description": "The ID of the Eternal Guess game. If omitted, will generate a random ID.",
                             "type": COMMAND_OPTION_TYPE_STRING,
                             "required": False,
-                        }
+                        },
+                        {
+                            "name": "title",
+                            "description": "The (short) title of this game.",
+                            "type": COMMAND_OPTION_TYPE_STRING,
+                            "required": False,
+                        },
+                        {
+                            "name": "description",
+                            "description": "The (longer) description of this game.",
+                            "type": COMMAND_OPTION_TYPE_STRING,
+                            "required": False,
+                        },
                     ],
                 },
                 {

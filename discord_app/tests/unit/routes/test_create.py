@@ -173,3 +173,41 @@ async def test_create_sets_created_by_to_calling_user():
 
     game = args[0][0]
     assert game.created_by == calling_user_id
+
+
+async def test_create_sets_title_and_description():
+    # Given
+    title = "This is the title"
+    description = "This is the description"
+
+    mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
+    mock_games_repository.get.return_value = None
+
+    event = DiscordEvent(
+        command_type=CommandType.COMMAND,
+        command=DiscordCommand(
+            command_id=-1,
+            command_name="create",
+            options={
+                'game-id': 'game-id',
+                'title': title,
+                'description': description,
+            }
+        ),
+        guild_id=1000,
+        member=DiscordMember(),
+    )
+
+    # When
+    create_route = CreateRoute(
+        games_repository=mock_games_repository,
+        discord_messaging=FakeDiscordMessaging(),
+    )
+    await create_route.call(event)
+
+    # Then
+    args = mock_games_repository.save.call_args
+
+    game = args[0][0]
+    assert game.title == title
+    assert game.description == description

@@ -10,6 +10,7 @@ from eternal_guesses.routes.create import CreateRoute
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.routes.manage import ManageRoute
 from eternal_guesses.routes.ping import PingRoute
+from eternal_guesses.routes.post import PostRoute
 
 
 class UnknownEventException(Exception):
@@ -29,9 +30,10 @@ class Router(ABC):
 
 
 class RouterImpl(Router):
-    def __init__(self, manage_route: ManageRoute = None, create_route: CreateRoute = None,
+    def __init__(self, manage_route: ManageRoute = None, post_route: PostRoute = None, create_route: CreateRoute = None,
                  guess_route: GuessRoute = None, ping_route: PingRoute = None, admin_route: AdminRoute = None):
         self.manage_route = manage_route
+        self.post_route = post_route
         self.create_route = create_route
         self.guess_route = guess_route
         self.ping_route = ping_route
@@ -39,7 +41,7 @@ class RouterImpl(Router):
 
     async def _handle_manage_command(self, event: DiscordEvent) -> DiscordResponse:
         if event.command.subcommand_name == "post":
-            return await self.manage_route.post(event)
+            return await self.post_route.call(event)
 
         if event.command.subcommand_name == "close":
             return await self.manage_route.close(event)

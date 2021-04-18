@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from eternal_guesses.model.data.game import Game, ChannelMessage
+from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from tests.integration.conftest import TABLE_NAME, HOST
@@ -54,6 +55,8 @@ def test_get_game():
     create_datetime = datetime(2021, 1, 1, 10, 12, 45)
     close_datetime = datetime(2021, 1, 5, 8, 6, 3)
     closed = True
+    title = 'A mockery of fools'
+    description = 'A tale as old as time'
 
     game = Game(
         guild_id=guild_id,
@@ -62,6 +65,8 @@ def test_get_game():
         close_datetime=close_datetime,
         closed=closed,
         game_id=game_id,
+        title=title,
+        description=description,
         guesses={
             user_id: GameGuess(
                 user_id=user_id,
@@ -86,6 +91,9 @@ def test_get_game():
     assert retrieved_game.create_datetime == create_datetime
     assert retrieved_game.close_datetime == close_datetime
     assert retrieved_game.closed is closed
+
+    assert retrieved_game.title == title
+    assert retrieved_game.description == description
 
     assert user_id in retrieved_game.guesses
 

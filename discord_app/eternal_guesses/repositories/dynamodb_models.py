@@ -25,6 +25,8 @@ class EternalGuessesTable(Model):
     closed = BooleanAttribute(null=True)
     channel_messages = ListAttribute(of=ChannelMessageMap, null=True)
     guesses = UnicodeAttribute(null=True)
+    title = UnicodeAttribute(null=True)
+    description = UnicodeAttribute(null=True)
 
     # GuildConfig
     management_roles = ListAttribute(of=NumberAttribute, null=True)

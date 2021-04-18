@@ -6,62 +6,71 @@ from eternal_guesses.model.data.guild_config import GuildConfig
 
 
 class MessageProvider(ABC):
+    # def game_post_embed(self, game: Game) -> discord.Embed:
+    #     raise NotImplementedError()
+
     def game_managed_channel_message(self, game: Game) -> str:
-        pass
+        raise NotImplementedError()
 
     def manage_error_game_not_found(self, game_id: str) -> str:
-        pass
+        raise NotImplementedError()
 
     def dm_guess_added(self, game_id: str, guess: str) -> str:
-        pass
+        raise NotImplementedError()
 
     def channel_admin_info(self, guild_config: GuildConfig) -> str:
-        pass
+        raise NotImplementedError()
 
     def channel_manage_list_all_games(self, games: List[Game]) -> str:
-        pass
+        raise NotImplementedError()
 
     def channel_manage_list_open_games(self, games: List[Game]) -> str:
-        pass
+        raise NotImplementedError()
 
     def channel_manage_list_closed_games(self, games: List[Game]) -> str:
-        pass
+        raise NotImplementedError()
 
     def dm_error_guess_on_closed_game(self, game_id):
-        pass
+        raise NotImplementedError()
 
     def dm_error_duplicate_guess(self, game_id):
-        pass
+        raise NotImplementedError()
 
     def error_duplicate_management_channel(self, channel):
-        pass
+        raise NotImplementedError()
 
     def admin_removed_management_role(self, role):
-        pass
+        raise NotImplementedError()
 
     def remove_invalid_management_role(self, role):
-        pass
+        raise NotImplementedError()
 
     def added_management_role(self, role):
-        pass
+        raise NotImplementedError()
 
     def add_duplicate_management_role(self, role):
-        pass
+        raise NotImplementedError()
 
     def removed_management_channel(self, channel):
-        pass
+        raise NotImplementedError()
 
     def remove_invalid_management_channel(self, channel):
-        pass
+        raise NotImplementedError()
 
     def added_management_channel(self, channel):
-        pass
+        raise NotImplementedError()
 
 
 class MessageProviderImpl(MessageProvider):
-
     def game_managed_channel_message(self, game: Game) -> str:
-        message = f"Guesses for {game.game_id}:\n\n"
+        message = ""
+        if game.title:
+            message = f"**{game.title}**\n\n"
+
+        if game.description:
+            message += f"{game.description}\n\n"
+
+        message += "Guesses:\n\n"
 
         guess_list = []
         for user_id, guess in sorted(game.guesses.items(), key=lambda i: i[1].guess):

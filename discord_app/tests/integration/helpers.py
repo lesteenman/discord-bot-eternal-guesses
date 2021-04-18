@@ -40,23 +40,39 @@ def make_discord_guess_event(guild_id: int, game_id: str, guess: str, user_id: i
     return _make_event(event_body)
 
 
-def make_discord_create_event(guild_id: int, game_id: str, channel_id: int = DEFAULT_CHANNEL_ID,
-                              user_id: int = DEFAULT_USER_ID, member_nickname: str = DEFAULT_MEMBER_NICK,
-                              user_name: str = DEFAULT_USER_NAME, role_id: int = DEFAULT_ROLE_ID):
+def make_discord_create_event(guild_id: int, game_id: str, game_title: str = None, game_description: str = None,
+                              channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+                              member_nickname: str = DEFAULT_MEMBER_NICK, user_name: str = DEFAULT_USER_NAME,
+                              role_id: int = DEFAULT_ROLE_ID):
     event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
                                   member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+
+    options = [
+        {
+            "name": "game-id",
+            "value": game_id
+        }
+    ]
+
+    if game_title is not None:
+        options.append({
+            "name": "title",
+            "value": game_title,
+        })
+
+    if game_description is not None:
+        options.append({
+            "name": "description",
+            "value": game_description,
+        })
+
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
         "options": [
             {
                 "name": "create",
-                "options": [
-                    {
-                        "name": "game-id",
-                        "value": game_id
-                    }
-                ]
+                "options": options,
             }
         ]
     }
