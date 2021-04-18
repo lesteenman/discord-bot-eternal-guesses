@@ -1,3 +1,4 @@
+import discord
 from loguru import logger
 from typing import Dict
 
@@ -67,7 +68,7 @@ def fixed_authorization_result(mocker):
 @pytest.fixture(autouse=True)
 def stub_discord_messaging(mocker):
     class SilentDiscordMessaging(DiscordMessaging):
-        async def send_channel_message(self, channel_id: int, text: str) -> int:
+        async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
             logger.info(f"[stub send_channel_emssage] channel_id={channel_id}, text={text}")
             return 1
 

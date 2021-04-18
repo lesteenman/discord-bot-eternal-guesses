@@ -3,14 +3,15 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from eternal_guesses.model.data.game import Game, ChannelMessage
+from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent, CommandType
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.routes import guess
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeDiscordMessaging, FakeGamesRepository
+from tests.fakes import FakeDiscordMessaging, FakeGamesRepository, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
 
@@ -43,7 +44,7 @@ async def test_guess_updates_game_guesses(mock_datetime):
     guess_route = GuessRoute(
         games_repository=fake_games_repository,
         discord_messaging=fake_discord_messaging,
-        message_provider=MessageProvider()
+        message_provider=FakeMessageProvider()
     )
 
     # When we make a guess
@@ -137,7 +138,7 @@ async def test_guess_channel_message_gone_silently_fails():
     guess_route = GuessRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        message_provider=MessageProvider(),
+        message_provider=FakeMessageProvider(),
 
     )
 
@@ -252,7 +253,7 @@ async def test_guess_duplicate_guess():
     guess_route = GuessRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        message_provider=MessageProvider()
+        message_provider=FakeMessageProvider()
     )
 
     # When we guess '42' as the same user
@@ -299,7 +300,7 @@ async def test_guess_closed_game():
     route = GuessRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        message_provider=MessageProvider(),
+        message_provider=FakeMessageProvider(),
     )
 
     # When

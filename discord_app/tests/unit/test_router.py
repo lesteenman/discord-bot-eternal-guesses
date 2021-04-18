@@ -12,6 +12,7 @@ from eternal_guesses.routes.create import CreateRoute
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.routes.manage import ManageRoute
 from eternal_guesses.routes.ping import PingRoute
+from eternal_guesses.routes.post import PostRoute
 
 pytestmark = pytest.mark.asyncio
 
@@ -39,7 +40,7 @@ async def test_handle_guess():
     event = DiscordEvent(
         CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="guess"
         ),
         member=DiscordMember()
@@ -66,7 +67,7 @@ async def test_handle_manage_post():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="post"
         ),
@@ -75,15 +76,15 @@ async def test_handle_manage_post():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_manage_route = AsyncMock(ManageRoute, autospec=True)
-    mock_manage_route.post.return_value = mock_response
+    mock_post_route = AsyncMock(PostRoute, autospec=True)
+    mock_post_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(manage_route=mock_manage_route)
+    router = RouterImpl(post_route=mock_post_route)
     response = await router.route(event)
 
     # Then
-    mock_manage_route.post.assert_called_with(event)
+    mock_post_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
@@ -94,7 +95,7 @@ async def test_handle_manage_close():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="close"
         ),
@@ -122,7 +123,7 @@ async def test_handle_manage_list():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="manage",
             subcommand_name="list-games"
         ),
@@ -150,7 +151,7 @@ async def test_handle_create():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="create"
         ),
         member=DiscordMember()
@@ -177,7 +178,7 @@ async def test_handle_admin_info():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="admin",
             subcommand_name="info"
         ),
@@ -205,7 +206,7 @@ async def test_handle_admin_add_management_channel():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="admin",
             subcommand_name="add-management-channel"
         ),
@@ -233,7 +234,7 @@ async def test_handle_admin_remove_management_channel():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="admin",
             subcommand_name="remove-management-channel"
         ),
@@ -261,7 +262,7 @@ async def test_handle_admin_add_management_role():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="admin",
             subcommand_name="add-management-role"
         ),
@@ -289,7 +290,7 @@ async def test_handle_admin_remove_management_role():
     event = DiscordEvent(
         command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id="-1",
+            command_id=-1,
             command_name="admin",
             subcommand_name="remove-management-role"
         ),

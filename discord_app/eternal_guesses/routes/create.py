@@ -30,6 +30,8 @@ class CreateRoute:
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
         game_id = event.command.options.get('game-id')
+        title = event.command.options.get('title')
+        description = event.command.options.get('description')
 
         if game_id is None:
             game_id = self._generate_game_id(guild_id)
@@ -46,6 +48,8 @@ class CreateRoute:
         game = Game(
             guild_id=guild_id,
             game_id=game_id,
+            title=title,
+            description=description,
             created_by=event.member.user_id,
             create_datetime=datetime.now(),
             close_datetime=None,

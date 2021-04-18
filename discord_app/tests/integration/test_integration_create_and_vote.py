@@ -22,11 +22,15 @@ def test_integration_full_flow():
 
     # Create a new game
     game_id = 'game-1'
-    create_new_game(guild_id=guild_id, game_id=game_id)
+    game_title = 'Testing Game'
+    game_description = 'This game is merely for show!'
+    create_new_game(guild_id=guild_id, game_id=game_id, title=game_title, description=game_description)
 
     game = games_repository.get(guild_id, game_id)
     assert game.guild_id == guild_id
     assert game.game_id == game_id
+    assert game.title == game_title
+    assert game.description == game_description
 
     # Vote on the game
     user_id = 100
@@ -61,9 +65,14 @@ def guess_on_game(guild_id: int, game_id: str, guess: str, user_id: int):
     assert response['statusCode'] == 200
 
 
-def create_new_game(guild_id: int, game_id: str):
+def create_new_game(guild_id: int, game_id: str, title: str, description: str):
     response = handler.handle_lambda(
-        make_discord_create_event(guild_id=guild_id, game_id=game_id),
+        make_discord_create_event(
+            guild_id=guild_id,
+            game_id=game_id,
+            game_title=title,
+            game_description=description,
+        ),
         create_context()
     )
 

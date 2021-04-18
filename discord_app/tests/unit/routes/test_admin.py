@@ -3,29 +3,13 @@ from typing import Dict
 import pytest
 
 from eternal_guesses.errors import DiscordEventDisallowedError
-from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord_response import ResponseType
 from eternal_guesses.routes.admin import AdminRoute
-from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeCommandAuthorizer, FakeConfigsRepository, FakeDiscordMessaging
+from tests.fakes import FakeCommandAuthorizer, FakeConfigsRepository, FakeDiscordMessaging, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
-
-
-class FakeMessageProvider(MessageProvider):
-    def __init__(self):
-        self.message = None
-        self.expected_config = None
-
-    def expect_channel_admin_info_call(self, expected_config: GuildConfig, message: str):
-        self.expected_config = expected_config
-        self.message = message
-
-    def channel_admin_info(self, guild_config: GuildConfig) -> str:
-        if guild_config == self.expected_config:
-            return self.message
 
 
 async def test_admin_info():

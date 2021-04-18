@@ -6,7 +6,8 @@ from typing import Optional, List
 
 from pynamodb.exceptions import DoesNotExist
 
-from eternal_guesses.model.data.game import Game, ChannelMessage
+from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable, ChannelMessageMap
 
@@ -46,6 +47,14 @@ def _game_from_model(model: EternalGuessesTable) -> Game:
     if model.closed is not None:
         closed = model.closed
 
+    title = ""
+    if model.title is not None:
+        title = model.title
+
+    description = ""
+    if model.description is not None:
+        description = model.description
+
     channel_messages = []
     if model.channel_messages is not None:
         channel_messages = list(_channel_message_from_model(message_model) for message_model in model.channel_messages)
@@ -58,6 +67,8 @@ def _game_from_model(model: EternalGuessesTable) -> Game:
     return Game(
         guild_id=guild_id,
         game_id=game_id,
+        title=title,
+        description=description,
         created_by=model.created_by,
         create_datetime=create_datetime,
         close_datetime=close_datetime,
@@ -124,6 +135,12 @@ class GamesRepositoryImpl(GamesRepository):
 
         model.created_by = int(game.created_by)
         model.closed = game.closed
+
+        if game.title:
+            model.title = game.title
+
+        if game.description:
+            model.description = game.description
 
         if game.create_datetime is not None:
             model.create_datetime = game.create_datetime.isoformat()

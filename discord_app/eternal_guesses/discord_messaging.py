@@ -10,21 +10,18 @@ from eternal_guesses.util import app_config
 
 
 class DiscordMessaging(ABC):
-    async def send_channel_message(self, channel_id: int, text: str) -> int:
-        logger.warning("Using an ABC method!")
-        pass
+    async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
+        raise NotImplementedError()
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
-        logger.warning("Using an ABC method!")
-        pass
+        raise NotImplementedError()
 
     async def send_dm(self, member: DiscordMember, text: str):
-        logger.warning("Using an ABC method!")
-        pass
+        raise NotImplementedError()
 
 
 class DiscordMessagingImpl(DiscordMessaging):
-    async def send_channel_message(self, channel_id: int, text: str) -> int:
+    async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
         logger.debug(f"send_channel_message, channel_id={channel_id}, text='{text}'")
         async with self._discord_client() as client:
             logger.info("Posting a new channel message")
@@ -33,7 +30,11 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             text_channel = await client.fetch_channel(channel_id)
 
-            channel_message = await text_channel.send(content=text, allowed_mentions=AllowedMentions.none())
+            channel_message = await text_channel.send(
+                content=text,
+                embed=embed,
+                allowed_mentions=AllowedMentions.none(),
+            )
             logger.debug(f"channel message id = {channel_message.id}")
 
             return channel_message.id
