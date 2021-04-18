@@ -2,10 +2,10 @@ from typing import Dict
 
 import pytest
 
-from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord_response import ResponseType
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.routes.admin import AdminRoute
 from tests.fakes import FakeCommandAuthorizer, FakeConfigsRepository, FakeDiscordMessaging, FakeMessageProvider
 

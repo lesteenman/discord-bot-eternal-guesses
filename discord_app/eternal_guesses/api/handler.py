@@ -3,8 +3,7 @@ from typing import Dict
 
 from loguru import logger
 
-from eternal_guesses import injector
-
+from eternal_guesses.util import injector
 
 discord_event_handler = None
 

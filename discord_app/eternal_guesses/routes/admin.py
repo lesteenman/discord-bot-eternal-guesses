@@ -1,16 +1,19 @@
 from loguru import logger
 
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
-from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
+from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 
 
 class AdminRoute:
-    def __init__(self, message_provider: MessageProvider, configs_repository: ConfigsRepository,
-                 command_authorizer: CommandAuthorizer, discord_messaging: DiscordMessaging):
+    def __init__(self,
+                 message_provider: MessageProvider,
+                 configs_repository: ConfigsRepository,
+                 command_authorizer: CommandAuthorizer,
+                 discord_messaging: DiscordMessaging):
         self.command_authorizer = command_authorizer
         self.message_provider = message_provider
         self.configs_repository = configs_repository

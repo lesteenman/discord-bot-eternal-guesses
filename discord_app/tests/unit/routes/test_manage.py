@@ -3,14 +3,14 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from eternal_guesses.discord_messaging import DiscordMessaging
-from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand, CommandType
 from eternal_guesses.model.discord.discord_member import DiscordMember
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.manage import ManageRoute
+from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeDiscordMessaging, FakeGamesRepository, FakeCommandAuthorizer, FakeMessageProvider
 

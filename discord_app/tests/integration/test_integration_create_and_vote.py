@@ -1,4 +1,4 @@
-from eternal_guesses import handler
+from eternal_guesses.api import handler
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl

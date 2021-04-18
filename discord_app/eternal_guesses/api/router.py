@@ -1,9 +1,9 @@
 from loguru import logger
 from abc import ABC
 
-from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType, DiscordCommand
 from eternal_guesses.model.discord_response import DiscordResponse
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.routes.admin import AdminRoute
 from eternal_guesses.routes.create import CreateRoute

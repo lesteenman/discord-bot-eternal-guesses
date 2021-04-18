@@ -1,9 +1,9 @@
 import pytest
 
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizerImpl
-from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType
 from eternal_guesses.model.discord.discord_member import DiscordMember
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from tests.fakes import FakeConfigsRepository
 
 pytestmark = pytest.mark.asyncio

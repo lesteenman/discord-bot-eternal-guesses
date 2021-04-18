@@ -1,16 +1,18 @@
 from loguru import logger
 from datetime import datetime
 
-from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.util import id_generator
+from eternal_guesses.util.discord_messaging import DiscordMessaging
 
 
 class CreateRoute:
-    def __init__(self, games_repository: GamesRepository, discord_messaging: DiscordMessaging):
+    def __init__(self,
+                 games_repository: GamesRepository,
+                 discord_messaging: DiscordMessaging):
         self.discord_messaging = discord_messaging
         self.games_repository = games_repository
 

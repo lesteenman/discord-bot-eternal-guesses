@@ -3,14 +3,14 @@ from typing import List, Optional
 import discord
 
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
-from eternal_guesses.discord_messaging import DiscordMessaging
-from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
 
 
@@ -41,7 +41,7 @@ class FakeDiscordMessaging(DiscordMessaging):
         self.created_channel_message_id = 0
         self.deleted_messages = []
 
-    async def send_channel_message(self, channel_id: int, text: str) -> int:
+    async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
         self.sent_channel_messages.append({'channel_id': channel_id, 'text': text})
         return self.created_channel_message_id
 

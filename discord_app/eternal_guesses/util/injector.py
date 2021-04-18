@@ -1,16 +1,16 @@
+from eternal_guesses.api.discord_event_handler import DiscordEventHandler
+from eternal_guesses.api.router import Router, RouterImpl
 from eternal_guesses.authorization.api_authorizer import ApiAuthorizerImpl, ApiAuthorizer
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer, CommandAuthorizerImpl
-from eternal_guesses.discord_event_handler import DiscordEventHandler
-from eternal_guesses.discord_messaging import DiscordMessaging, DiscordMessagingImpl
 from eternal_guesses.repositories.configs_repository import ConfigsRepository, ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl, GamesRepository
-from eternal_guesses.router import Router, RouterImpl
 from eternal_guesses.routes.admin import AdminRoute
 from eternal_guesses.routes.create import CreateRoute
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.routes.manage import ManageRoute
 from eternal_guesses.routes.ping import PingRoute
 from eternal_guesses.routes.post import PostRoute
+from eternal_guesses.util.discord_messaging import DiscordMessaging, DiscordMessagingImpl
 from eternal_guesses.util.message_provider import MessageProviderImpl, MessageProvider
 
 
@@ -71,8 +71,11 @@ def _router() -> Router:
     )
 
 
-def _post_route(games_repository: GamesRepository, discord_messaging: DiscordMessaging,
-                message_provider: MessageProvider, command_authorizer: CommandAuthorizer):
+def _post_route(
+        games_repository: GamesRepository,
+        discord_messaging: DiscordMessaging,
+        message_provider: MessageProvider,
+        command_authorizer: CommandAuthorizer):
     return PostRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
@@ -111,8 +114,11 @@ def _ping_route():
     return PingRoute()
 
 
-def _admin_route(message_provider: MessageProvider, configs_repository: ConfigsRepository,
-                 command_authorizer: CommandAuthorizer, discord_messaging: DiscordMessaging):
+def _admin_route(
+        message_provider: MessageProvider,
+        configs_repository: ConfigsRepository,
+        command_authorizer: CommandAuthorizer,
+        discord_messaging: DiscordMessaging):
     return AdminRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
