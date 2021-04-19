@@ -7,7 +7,6 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.util.discord_messaging import DiscordMessaging
@@ -19,13 +18,11 @@ class FakeCommandAuthorizer(CommandAuthorizer):
         self.management = management
         self.admin = admin
 
-    async def authorize_management_call(self, event: DiscordEvent):
-        if self.management is False:
-            raise DiscordEventDisallowedError("Disallowed")
+    async def authorize_management_call(self, event: DiscordEvent) -> bool:
+        return self.management
 
-    async def authorize_admin_call(self, event: DiscordEvent):
-        if self.admin is False:
-            raise DiscordEventDisallowedError("Disallowed")
+    async def authorize_admin_call(self, event: DiscordEvent) -> bool:
+        return self.admin
 
 
 class FakeNotFound(discord.NotFound):
@@ -114,10 +111,10 @@ class FakeMessageProvider(MessageProvider):
     def game_managed_channel_message(self, game: Game) -> str:
         pass
 
-    def manage_error_game_not_found(self, game_id: str) -> str:
+    def error_game_not_found(self, game_id: str) -> str:
         pass
 
-    def dm_guess_added(self, game_id: str, guess: str) -> str:
+    def guess_added(self, game_id: str, guess: str) -> str:
         pass
 
     def channel_manage_list_all_games(self, games: List[Game]) -> str:
@@ -129,10 +126,10 @@ class FakeMessageProvider(MessageProvider):
     def channel_manage_list_closed_games(self, games: List[Game]) -> str:
         pass
 
-    def dm_error_guess_on_closed_game(self, game_id):
+    def error_guess_on_closed_game(self, game_id):
         pass
 
-    def dm_error_duplicate_guess(self, game_id):
+    def error_duplicate_guess(self, game_id):
         pass
 
     def error_duplicate_management_channel(self, channel):
@@ -170,3 +167,21 @@ class FakeMessageProvider(MessageProvider):
     def channel_admin_info(self, guild_config: GuildConfig) -> str:
         if guild_config == self.expected_config:
             return self.message
+
+    def disallowed_management_call(self, command) -> str:
+        pass
+
+    def disallowed_admin_call(self, command) -> str:
+        pass
+
+    def game_closed(self, game) -> str:
+        pass
+
+    def game_created(self, game) -> str:
+        pass
+
+    def duplicate_game_id(self, game_id) -> str:
+        pass
+
+    def game_post_created_message(self) -> str:
+        pass

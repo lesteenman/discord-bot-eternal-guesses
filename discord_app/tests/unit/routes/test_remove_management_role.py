@@ -5,9 +5,8 @@ import pytest
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.routes.remove_management_role import RemoveManagementRoleRoute
-from tests.fakes import FakeConfigsRepository, FakeMessageProvider, FakeCommandAuthorizer, FakeDiscordMessaging
+from tests.fakes import FakeConfigsRepository, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
 
@@ -29,16 +28,16 @@ async def test_remove_management_role():
     route = RemoveManagementRoleRoute(
         message_provider=FakeMessageProvider(),
         configs_repository=configs_repository,
-        command_authorizer=FakeCommandAuthorizer(admin=True),
-        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
-    await route.call(event)
+    response = await route.call(event)
 
     # Then
     guild_config = configs_repository.get(guild_id)
     assert role not in guild_config.management_roles
+
+    assert response.is_ephemeral
 
 
 async def test_remove_invalid_management_role():
@@ -59,37 +58,17 @@ async def test_remove_invalid_management_role():
     route = RemoveManagementRoleRoute(
         message_provider=FakeMessageProvider(),
         configs_repository=configs_repository,
-        command_authorizer=FakeCommandAuthorizer(admin=True),
-        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
-    await route.call(event)
+    response = await route.call(event)
 
     # Then
     guild_config = configs_repository.get(guild_id)
     assert role_to_remove not in guild_config.management_roles
     assert management_role in guild_config.management_roles
 
-
-async def test_admin_remove_management_role_unauthorized():
-    # Given: the command authorizer fails
-    authorizer = FakeCommandAuthorizer(admin=False)
-    event = _make_event()
-
-    route = RemoveManagementRoleRoute(
-        command_authorizer=authorizer,
-        message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1),
-        discord_messaging=FakeDiscordMessaging(),
-    )
-
-    # Then: the call should raise an Exception
-    try:
-        await route.call(event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
+    assert response.is_ephemeral
 
 
 def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent:

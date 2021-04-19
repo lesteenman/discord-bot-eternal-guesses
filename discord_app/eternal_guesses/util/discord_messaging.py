@@ -5,7 +5,6 @@ import discord
 from discord import AllowedMentions
 from loguru import logger
 
-from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.util import app_config
 
 
@@ -14,9 +13,6 @@ class DiscordMessaging(ABC):
         raise NotImplementedError()
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str):
-        raise NotImplementedError()
-
-    async def send_dm(self, member: DiscordMember, text: str):
         raise NotImplementedError()
 
 
@@ -52,14 +48,6 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             await message.edit(content=text, allowed_mentions=AllowedMentions.none())
             logger.debug("updated channel message")
-
-    async def send_dm(self, member: DiscordMember, text: str):
-        logger.debug(f"send_dm to {member.user_id}, text='{text}'")
-        async with self._discord_client() as client:
-            logger.info("Fetching user")
-            user = await client.fetch_user(member.user_id)
-
-            await user.send(text)
 
     @contextlib.asynccontextmanager
     async def _discord_client(self) -> discord.Client:

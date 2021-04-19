@@ -1,4 +1,5 @@
 app_config.json
+*/coverage.xml
 
 */.serverless
 infra/cdk.out

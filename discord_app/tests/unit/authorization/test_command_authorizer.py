@@ -3,7 +3,6 @@ import pytest
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizerImpl
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from tests.fakes import FakeConfigsRepository
 
 pytestmark = pytest.mark.asyncio
@@ -31,12 +30,11 @@ async def test_unauthorized_management_call():
         member=DiscordMember(roles=[other_role]),
     )
 
+    # When
+    allowed = await command_authorizer.authorize_management_call(event=event)
+
     # Then
-    try:
-        await command_authorizer.authorize_management_call(event=event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
+    assert not allowed
 
 
 async def test_authorized_role_management_call():
@@ -60,8 +58,11 @@ async def test_authorized_role_management_call():
         member=DiscordMember(roles=[management_role]),
     )
 
+    # When
+    allowed = await command_authorizer.authorize_management_call(event=event)
+
     # Then
-    await command_authorizer.authorize_management_call(event=event)
+    assert allowed
 
 
 async def test_authorized_channel_management_call():
@@ -85,8 +86,11 @@ async def test_authorized_channel_management_call():
         member=DiscordMember(roles=[other_role]),
     )
 
+    # When
+    allowed = await command_authorizer.authorize_management_call(event=event)
+
     # Then
-    await command_authorizer.authorize_management_call(event=event)
+    assert allowed
 
 
 async def test_admin_management_call():
@@ -114,8 +118,11 @@ async def test_admin_management_call():
         ),
     )
 
+    # When
+    allowed = await command_authorizer.authorize_management_call(event=event)
+
     # Then
-    await command_authorizer.authorize_management_call(event=event)
+    assert allowed
 
 
 async def test_unauthorized_admin_call():
@@ -129,12 +136,11 @@ async def test_unauthorized_admin_call():
         member=DiscordMember(),
     )
 
+    # When
+    allowed = await command_authorizer.authorize_admin_call(event=event)
+
     # Then
-    try:
-        await command_authorizer.authorize_admin_call(event=event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
+    assert not allowed
 
 
 async def test_authorized_admin_call():
@@ -148,5 +154,8 @@ async def test_authorized_admin_call():
         member=DiscordMember(is_admin=True),
     )
 
+    # When
+    allowed = await command_authorizer.authorize_admin_call(event=event)
+
     # Then
-    await command_authorizer.authorize_admin_call(event=event)
+    assert allowed

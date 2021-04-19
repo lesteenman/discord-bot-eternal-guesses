@@ -7,11 +7,9 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
-from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.post import PostRoute
-from eternal_guesses.util.message_provider import MessageProvider, MessageProviderImpl
-from tests.fakes import FakeGamesRepository, FakeDiscordMessaging, FakeCommandAuthorizer, FakeMessageProvider
+from eternal_guesses.util.message_provider import MessageProvider
+from tests.fakes import FakeGamesRepository, FakeDiscordMessaging, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
 
@@ -36,7 +34,6 @@ async def test_post_creates_channel_message():
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When we post a channel message for our game with an explicit channel
@@ -74,7 +71,6 @@ async def test_post_without_channel_uses_event_channel():
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When we post a channel message without an explicit target channel
@@ -104,7 +100,6 @@ async def test_post_saves_message_id_to_game():
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When
@@ -135,13 +130,12 @@ async def test_post_invalid_game_id_sends_dm_error():
 
     formatted_error = "mock formatted error"
     message_provider = MagicMock(MessageProvider)
-    message_provider.manage_error_game_not_found.return_value = formatted_error
+    message_provider.error_game_not_found.return_value = formatted_error
 
     post_route = PostRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     discord_member = DiscordMember()
@@ -159,34 +153,12 @@ async def test_post_invalid_game_id_sends_dm_error():
     await post_route.call(event)
 
     # Then
-    message_provider.manage_error_game_not_found.assert_called_with(game_id)
+    message_provider.error_game_not_found.assert_called_with(game_id)
 
     assert len(discord_messaging.sent_channel_messages) == 1
     sent_message = discord_messaging.sent_channel_messages[0]
     assert sent_message['text'] == formatted_error
     assert sent_message['channel_id'] == event_channel_id
-
-
-async def test_post_disallowed():
-    # Given
-    command_authorizer = FakeCommandAuthorizer(management=False)
-
-    manage_route = PostRoute(
-        games_repository=GamesRepository(),
-        discord_messaging=FakeDiscordMessaging(),
-        message_provider=MessageProviderImpl(),
-        command_authorizer=command_authorizer
-    )
-
-    # When
-    event = _make_event()
-
-    # Then
-    try:
-        await manage_route.call(event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
 
 
 def _make_event(guild_id: int = -1, options: typing.Dict = None, discord_member: DiscordMember = None,

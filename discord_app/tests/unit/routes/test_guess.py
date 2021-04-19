@@ -8,8 +8,10 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
+from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes import guess
 from eternal_guesses.routes.guess import GuessRoute
+from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeDiscordMessaging, FakeGamesRepository, FakeMessageProvider
 
@@ -41,10 +43,9 @@ async def test_guess_updates_game_guesses(mock_datetime):
     fake_games_repository = FakeGamesRepository([existing_game])
     fake_discord_messaging = FakeDiscordMessaging()
 
-    guess_route = GuessRoute(
+    guess_route = _route(
         games_repository=fake_games_repository,
         discord_messaging=fake_discord_messaging,
-        message_provider=FakeMessageProvider()
     )
 
     # When we make a guess
@@ -90,7 +91,7 @@ async def test_guess_updates_channel_messages():
     games_repository = FakeGamesRepository([game])
     discord_messaging = FakeDiscordMessaging()
 
-    guess_route = GuessRoute(
+    guess_route = _route(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider
@@ -135,11 +136,9 @@ async def test_guess_channel_message_gone_silently_fails():
     discord_messaging = FakeDiscordMessaging()
     discord_messaging.raise_404_on_update_of_message(deleted_channel_message.message_id)
 
-    guess_route = GuessRoute(
-        games_repository=games_repository,
+    guess_route = _route(
         discord_messaging=discord_messaging,
-        message_provider=FakeMessageProvider(),
-
+        games_repository=games_repository
     )
 
     # When we trigger an update
@@ -152,33 +151,31 @@ async def test_guess_channel_message_gone_silently_fails():
     assert updated_game.channel_messages[0].message_id == other_channel_message.message_id
 
 
-async def test_guess_sends_dm_to_user():
+async def test_guess_replies_with_ephemeral_message():
     # Given
     guild_id = 1005
     user_id = 13000
     game_id = 'game-id'
 
-    dm_message = "message with new guess"
+    response_message = "message with new guess"
     message_provider = MagicMock(MessageProvider, autospec=True)
-    message_provider.dm_guess_added.return_value = dm_message
+    message_provider.guess_added.return_value = response_message
 
     game = Game(guild_id=guild_id, game_id=game_id)
     fake_games_repository = FakeGamesRepository([game])
 
-    fake_discord_messaging = FakeDiscordMessaging()
-
-    guess_route = GuessRoute(
+    guess_route = _route(
         games_repository=fake_games_repository,
-        discord_messaging=fake_discord_messaging,
-        message_provider=message_provider
+        message_provider=message_provider,
     )
 
     # When
     event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
-    await guess_route.call(event)
+    response = await guess_route.call(event)
 
     # Then
-    assert {'member': event.member, 'text': dm_message} in fake_discord_messaging.sent_dms
+    assert response.is_ephemeral
+    assert response.content == response_message
 
 
 async def test_guess_game_does_not_exist():
@@ -191,16 +188,13 @@ async def test_guess_game_does_not_exist():
 
     fake_games_repository = FakeGamesRepository([])
 
-    dm_error = "error dm"
+    error_message = "error dm"
     message_provider = MagicMock(MessageProvider)
-    message_provider.manage_error_game_not_found.return_value = dm_error
+    message_provider.error_game_not_found.return_value = error_message
 
-    fake_discord_messaging = FakeDiscordMessaging()
-
-    guess_route = GuessRoute(
+    guess_route = _route(
         games_repository=fake_games_repository,
-        discord_messaging=fake_discord_messaging,
-        message_provider=message_provider
+        message_provider=message_provider,
     )
 
     # When
@@ -212,14 +206,13 @@ async def test_guess_game_does_not_exist():
         user_nickname='nickname',
         member=member,
     )
-    await guess_route.call(event)
+    response = await guess_route.call(event)
 
     # Then
     assert len(fake_games_repository.get_all(guild_id=guild_id)) == 0
 
-    assert len(fake_discord_messaging.sent_dms) == 1
-    assert fake_discord_messaging.sent_dms[0]['member'] == member
-    assert fake_discord_messaging.sent_dms[0]['text'] == dm_error
+    assert response.is_ephemeral
+    assert response.content == error_message
 
 
 async def test_guess_duplicate_guess():
@@ -249,11 +242,14 @@ async def test_guess_duplicate_guess():
     )
     games_repository = FakeGamesRepository(games=[existing_game])
 
-    discord_messaging = FakeDiscordMessaging()
+    duplicate_guess_message = "You already placed a guess for this game."
+    message_provider = MagicMock(MessageProvider)
+    message_provider.error_duplicate_guess.return_value = duplicate_guess_message
+
     guess_route = GuessRoute(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
-        message_provider=FakeMessageProvider()
+        discord_messaging=FakeDiscordMessaging(),
+        message_provider=message_provider
     )
 
     # When we guess '42' as the same user
@@ -265,14 +261,15 @@ async def test_guess_duplicate_guess():
         event_channel_id=event_channel_id,
         member=member,
     )
-    await guess_route.call(event)
+    response = await guess_route.call(event)
 
     # Then no new guess is added
     saved_game = games_repository.get(guild_id, existing_game.game_id)
     assert saved_game.guesses[guessing_user_id].guess == old_guess
 
-    # And a DM is sent to the user guessing
-    assert discord_messaging.sent_dms[0]['member'] == member
+    # And an ephemeral error is the response
+    assert response.is_ephemeral
+    assert response.content == duplicate_guess_message
 
 
 async def test_guess_closed_game():
@@ -295,12 +292,14 @@ async def test_guess_closed_game():
     )
     games_repository = FakeGamesRepository([game])
 
-    discord_messaging = FakeDiscordMessaging()
+    duplicate_guess_message = "This game has been closed for new guesses."
+    message_provider = MagicMock(MessageProvider)
+    message_provider.error_guess_on_closed_game.return_value = duplicate_guess_message
 
     route = GuessRoute(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
-        message_provider=FakeMessageProvider(),
+        discord_messaging=FakeDiscordMessaging(),
+        message_provider=message_provider,
     )
 
     # When
@@ -311,14 +310,15 @@ async def test_guess_closed_game():
         event_channel_id=event_channel_id,
         member=member,
     )
-    await route.call(event)
+    response = await route.call(event)
 
     # Then: no guess is added
     saved_game = games_repository.get(guild_id, game_id)
     assert list(saved_game.guesses.keys()) == [other_user_id]
 
-    # And a DM is sent to the user guessing
-    assert discord_messaging.sent_dms[0]['member'] == member
+    # And an ephemeral error is the response
+    assert response.is_ephemeral
+    assert response.content == duplicate_guess_message
 
 
 def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nickname: str = 'nickname',
@@ -343,3 +343,24 @@ def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nic
     )
 
     return event
+
+
+def _route(discord_messaging: DiscordMessaging = None,
+           games_repository: GamesRepository = None,
+           message_provider: MessageProvider = None):
+
+    if discord_messaging is None:
+        discord_messaging = FakeDiscordMessaging()
+
+    if games_repository is None:
+        games_repository = FakeGamesRepository([])
+
+    if message_provider is None:
+        message_provider = FakeMessageProvider()
+
+    guess_route = GuessRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+        message_provider=message_provider,
+    )
+    return guess_route

@@ -1,13 +1,14 @@
 import typing
+from unittest.mock import MagicMock
 
 import pytest
 
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.routes.add_management_channel import AddManagementChannelRoute
-from tests.fakes import FakeConfigsRepository, FakeMessageProvider, FakeCommandAuthorizer, FakeDiscordMessaging
+from eternal_guesses.util.message_provider import MessageProvider
+from tests.fakes import FakeConfigsRepository
 
 pytestmark = pytest.mark.asyncio
 
@@ -28,20 +29,26 @@ async def test_add_duplicate_management_channel():
         }
     )
 
+    error_message = "channel is already a management channel."
+
+    message_provider = MagicMock(MessageProvider)
+    message_provider.error_duplicate_management_channel.return_value = error_message
+
     route = AddManagementChannelRoute(
         configs_repository=configs_repository,
-        message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(admin=True),
-        discord_messaging=FakeDiscordMessaging(),
+        message_provider=message_provider,
     )
 
     # When
-    await route.call(event)
+    response = await route.call(event)
 
     # Then
     guild_config = configs_repository.get(guild_id)
     assert channel in guild_config.management_channels
     assert len(guild_config.management_channels) == 1
+
+    assert response.is_ephemeral
+    assert response.content == error_message
 
 
 async def test_add_management_channel():
@@ -52,6 +59,10 @@ async def test_add_management_channel():
     # We have no management channels yet
     configs_repository = FakeConfigsRepository(guild_id=guild_id)
 
+    message = "New management channel added."
+    message_provider = MagicMock(MessageProvider)
+    message_provider.added_management_channel.return_value = message
+
     # We add the new management channel
     event = _make_event(
         guild_id=guild_id,
@@ -59,38 +70,19 @@ async def test_add_management_channel():
     )
 
     route = AddManagementChannelRoute(
-        message_provider=FakeMessageProvider(),
+        message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=FakeCommandAuthorizer(admin=True),
-        discord_messaging=FakeDiscordMessaging(),
     )
 
     # When
-    await route.call(event)
+    response = await route.call(event)
 
     # Then
     guild_config = configs_repository.get(guild_id)
     assert channel in guild_config.management_channels
 
-
-async def test_admin_add_management_channel_unauthorized():
-    # Given: the command authorizer fails
-    authorizer = FakeCommandAuthorizer(admin=False)
-    event = _make_event()
-
-    route = AddManagementChannelRoute(
-        command_authorizer=authorizer,
-        message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1),
-        discord_messaging=FakeDiscordMessaging(),
-    )
-
-    # Then: the call should raise an Exception
-    try:
-        await route.call(event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
+    assert response.is_ephemeral
+    assert response.content == message
 
 
 def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent:

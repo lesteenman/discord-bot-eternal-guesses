@@ -7,12 +7,9 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
-from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.list_games import ListGamesRoute
-from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeGamesRepository, FakeDiscordMessaging, FakeCommandAuthorizer
+from tests.fakes import FakeGamesRepository
 
 pytestmark = pytest.mark.asyncio
 
@@ -27,21 +24,16 @@ async def test_list_all_without_closed_option():
     closed_game = Game(closed=True)
     games_repository = FakeGamesRepository([open_game, closed_game])
 
-    discord_messaging = FakeDiscordMessaging()
-    command_authorizer = FakeCommandAuthorizer(management=True)
-
     route = ListGamesRoute(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer,
     )
 
     # When
     event = _make_event(
         options={}
     )
-    await route.call(event)
+    response = await route.call(event)
 
     # Then
     message_provider.channel_manage_list_all_games.assert_called()
@@ -49,10 +41,8 @@ async def test_list_all_without_closed_option():
     assert closed_game in used_games
     assert open_game in used_games
 
-    assert len(discord_messaging.sent_channel_messages) == 1
-    sent_message = discord_messaging.sent_channel_messages[0]
-
-    assert sent_message['text'] == list_games_message
+    assert response.is_ephemeral
+    assert response.content == list_games_message
 
 
 async def test_list_all_closed_games():
@@ -69,19 +59,16 @@ async def test_list_all_closed_games():
     message_provider = MagicMock(MessageProvider)
     message_provider.channel_manage_list_closed_games.return_value = list_games_message
 
-    discord_messaging = FakeDiscordMessaging()
     route = ListGamesRoute(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When we list only the closed games
     event = _make_event(guild_id=guild_id, options={
         'closed': True
     })
-    await route.call(event)
+    response = await route.call(event)
 
     # Then: a message is sent based on only the closed games
     message_provider.channel_manage_list_closed_games.assert_called()
@@ -89,9 +76,8 @@ async def test_list_all_closed_games():
     assert closed_game in used_games
     assert open_game not in used_games
 
-    assert len(discord_messaging.sent_channel_messages)
-    sent_game = discord_messaging.sent_channel_messages[0]
-    assert sent_game['text'] == list_games_message
+    assert response.is_ephemeral
+    assert response.content == list_games_message
 
 
 async def test_list_all_open_games():
@@ -108,19 +94,16 @@ async def test_list_all_open_games():
     message_provider = MagicMock(MessageProvider)
     message_provider.channel_manage_list_open_games.return_value = list_games_message
 
-    discord_messaging = FakeDiscordMessaging()
     route = ListGamesRoute(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When we list only the open games
     event = _make_event(guild_id=guild_id, options={
         'closed': False
     })
-    await route.call(event)
+    response = await route.call(event)
 
     # Then: a message is sent based on only the open games
     message_provider.channel_manage_list_open_games.assert_called()
@@ -128,30 +111,8 @@ async def test_list_all_open_games():
     assert closed_game not in used_games
     assert open_game in used_games
 
-    assert len(discord_messaging.sent_channel_messages) == 1
-    sent_message = discord_messaging.sent_channel_messages[0]
-    assert sent_message['text'] == list_games_message
-
-
-async def test_list_disallowed():
-    # Given
-    command_authorizer = FakeCommandAuthorizer(management=False)
-
-    route = ListGamesRoute(
-        command_authorizer=command_authorizer,
-        games_repository=GamesRepository(),
-        discord_messaging=DiscordMessaging(),
-        message_provider=MessageProvider()
-    )
-
-    # When
-    try:
-        event = _make_event()
-        await route.call(event)
-        assert False
-    # Then
-    except DiscordEventDisallowedError:
-        pass
+    assert response.is_ephemeral
+    assert response.content == list_games_message
 
 
 def _make_event(guild_id: int = -1,

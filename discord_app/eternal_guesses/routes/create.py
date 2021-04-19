@@ -1,28 +1,27 @@
-from loguru import logger
 from datetime import datetime
 
-from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
+from loguru import logger
+
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent
-from eternal_guesses.model.discord_response import DiscordResponse
+from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
 from eternal_guesses.util import id_generator
 from eternal_guesses.util.discord_messaging import DiscordMessaging
+from eternal_guesses.util.message_provider import MessageProvider
 
 
 class CreateRoute(Route):
     def __init__(self,
                  games_repository: GamesRepository,
                  discord_messaging: DiscordMessaging,
-                 command_authorizer: CommandAuthorizer):
+                 message_provider: MessageProvider):
         self.discord_messaging = discord_messaging
         self.games_repository = games_repository
-        self.command_authorizer = command_authorizer
+        self.message_provider = message_provider
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
-        await self.command_authorizer.authorize_management_call(event)
-
         guild_id = event.guild_id
         game_id = event.command.options.get('game-id')
         title = event.command.options.get('title')
@@ -33,12 +32,9 @@ class CreateRoute(Route):
         else:
             existing_game = self.games_repository.get(guild_id, game_id)
             if existing_game is not None:
-                await self.discord_messaging.send_channel_message(
-                    text=f"Game id '{game_id}' already exists.",
-                    channel_id=event.channel_id,
-                )
+                message = self.message_provider.duplicate_game_id(game_id)
 
-                return DiscordResponse.acknowledge()
+                return DiscordResponse.ephemeral_channel_message(message)
 
         game = Game(
             guild_id=guild_id,
@@ -52,12 +48,8 @@ class CreateRoute(Route):
         )
         self.games_repository.save(game)
 
-        await self.discord_messaging.send_channel_message(
-            text=f"Game created with id '{game_id}'.",
-            channel_id=event.channel_id,
-        )
-
-        return DiscordResponse.acknowledge()
+        game_created_message = self.message_provider.game_created(game)
+        return DiscordResponse.ephemeral_channel_message(game_created_message)
 
     def _generate_game_id(self, guild_id: int, attempt: int = 0):
         if attempt >= 10:

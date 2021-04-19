@@ -1,3 +1,6 @@
+import json
+import typing
+
 from eternal_guesses.api import handler
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
@@ -24,25 +27,33 @@ def test_integration_channel_permissions():
     # If we perform a management action as a different role or channel, it is disallowed
     other_channel = 101
     other_role = 201
-    assert manage_list_games(guild_id=1, channel_id=other_channel, role_id=other_role) == 401
+    response = manage_list_games(guild_id=1, channel_id=other_channel, role_id=other_role)
+    assert is_disallowed_message(response)
 
     # But if we do it from the correct channel, it is allowed
-    assert manage_list_games(guild_id=1, channel_id=management_channel, role_id=other_role) == 200
+    response = manage_list_games(guild_id=1, channel_id=management_channel, role_id=other_role)
+    assert not is_disallowed_message(response)
 
     # And doing it with the correct role is also allowed
-    assert manage_list_games(guild_id=1, channel_id=other_channel, role_id=management_role) == 200
+    response = manage_list_games(guild_id=1, channel_id=other_channel, role_id=management_role)
+    assert not is_disallowed_message(response)
 
     # If we delete the channel again, it's no longer allowed
     remove_management_channel(guild_id=guild_id, management_channel_id=management_channel)
-    assert manage_list_games(guild_id=1, channel_id=management_channel, role_id=other_role) == 401
+    response = manage_list_games(guild_id=1, channel_id=management_channel, role_id=other_role)
+    assert is_disallowed_message(response)
 
     # If we delete the role again, that too is no longer allowed
     remove_management_role(guild_id=guild_id, management_role=management_role)
-    assert manage_list_games(guild_id=1, channel_id=management_channel, role_id=management_role) == 401
+    response = manage_list_games(guild_id=1, channel_id=management_channel, role_id=management_role)
+    assert is_disallowed_message(response)
 
     # Getting the admin info only works when done as an Admin
-    assert admin_info(guild_id=guild_id, channel_id=management_channel, role_id=management_role, is_admin=False) == 401
-    assert admin_info(guild_id=guild_id, channel_id=other_channel, role_id=other_role, is_admin=True) == 200
+    response = admin_info(guild_id=guild_id, channel_id=management_channel, role_id=management_role, is_admin=False)
+    assert is_disallowed_message(response)
+
+    response = admin_info(guild_id=guild_id, channel_id=other_channel, role_id=other_role, is_admin=True)
+    assert not is_disallowed_message(response)
 
 
 def add_management_channel(guild_id, channel_id):
@@ -52,6 +63,7 @@ def add_management_channel(guild_id, channel_id):
     )
 
     assert response['statusCode'] == 200
+    return json.loads(response['body'])
 
 
 def remove_management_channel(guild_id, management_channel_id: int):
@@ -62,6 +74,7 @@ def remove_management_channel(guild_id, management_channel_id: int):
     )
 
     assert response['statusCode'] == 200
+    return json.loads(response['body'])
 
 
 def admin_info(guild_id: int, channel_id: int, role_id: int, is_admin: bool):
@@ -70,7 +83,8 @@ def admin_info(guild_id: int, channel_id: int, role_id: int, is_admin: bool):
         create_context()
     )
 
-    return response['statusCode']
+    assert response['statusCode'] == 200
+    return json.loads(response['body'])
 
 
 def add_management_role(guild_id, management_role):
@@ -80,6 +94,7 @@ def add_management_role(guild_id, management_role):
     )
 
     assert response['statusCode'] == 200
+    return json.loads(response['body'])
 
 
 def remove_management_role(guild_id, management_role):
@@ -89,6 +104,7 @@ def remove_management_role(guild_id, management_role):
     )
 
     assert response['statusCode'] == 200
+    return json.loads(response['body'])
 
 
 def get_guild_config(guild_id) -> GuildConfig:
@@ -96,10 +112,16 @@ def get_guild_config(guild_id) -> GuildConfig:
     return configs_repository.get(guild_id=guild_id)
 
 
-def manage_list_games(guild_id, channel_id, role_id) -> int:
+def manage_list_games(guild_id, channel_id, role_id) -> dict:
     response = handler.handle_lambda(
         make_discord_manage_list_event(guild_id=guild_id, channel_id=channel_id, role_id=role_id),
         create_context()
     )
 
-    return response['statusCode']
+    assert response['statusCode'] == 200
+    return json.loads(response['body'])
+
+
+def is_disallowed_message(response: typing.Dict):
+    return 'data' in response and response['data']['flags'] & 64 == 64 \
+           and "You are not allowed" in response['data']['content']

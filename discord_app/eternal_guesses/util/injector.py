@@ -1,4 +1,5 @@
 from eternal_guesses.api.discord_event_handler import DiscordEventHandler
+from eternal_guesses.api.route_handler import RouteHandlerImpl
 from eternal_guesses.api.router import Router, RouterImpl
 from eternal_guesses.authorization.api_authorizer import ApiAuthorizerImpl, ApiAuthorizer
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer, CommandAuthorizerImpl
@@ -37,11 +38,16 @@ def _router() -> Router:
     message_provider = _message_provider()
     command_authorizer = _command_authorizer(configs_repository=configs_repository)
 
+    route_handler = _route_handler(
+        command_authorizer=command_authorizer,
+        message_provider=message_provider,
+    )
+
     ping_route = _ping_route()
     create_route = _create_route(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        command_authorizer=command_authorizer,
+        message_provider=message_provider,
     )
     guess_route = _guess_route(
         games_repository=games_repository,
@@ -49,55 +55,42 @@ def _router() -> Router:
         message_provider=message_provider
     )
     close_game_route = _close_game_route(
-        command_authorizer=command_authorizer,
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider
     )
     list_games_route = _list_games_route(
-        command_authorizer=command_authorizer,
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider
     )
     post_route = _post_route(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer
     )
     guild_info_route = _guild_info_route(
         configs_repository=configs_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer,
     )
     add_management_channel_route = _add_management_channel_route_route(
         configs_repository=configs_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer,
     )
     remove_management_channel_route = _remove_management_channel_route(
         configs_repository=configs_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer,
     )
     add_management_role_route = _add_management_role_route(
         configs_repository=configs_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer,
     )
     remove_management_role_route = _remove_management_role_route(
         configs_repository=configs_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer,
     )
 
     return RouterImpl(
+        route_handler=route_handler,
         ping_route=ping_route,
         post_route=post_route,
         create_route=create_route,
@@ -112,6 +105,14 @@ def _router() -> Router:
     )
 
 
+def _route_handler(command_authorizer: CommandAuthorizer,
+                   message_provider: MessageProvider):
+    return RouteHandlerImpl(
+        command_authorizer=command_authorizer,
+        message_provider=message_provider,
+    )
+
+
 def _ping_route():
     return PingRoute()
 
@@ -119,23 +120,21 @@ def _ping_route():
 def _post_route(
         games_repository: GamesRepository,
         discord_messaging: DiscordMessaging,
-        message_provider: MessageProvider,
-        command_authorizer: CommandAuthorizer):
+        message_provider: MessageProvider):
     return PostRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=command_authorizer
     )
 
 
 def _create_route(games_repository: GamesRepository,
                   discord_messaging: DiscordMessaging,
-                  command_authorizer: CommandAuthorizer):
+                  message_provider: MessageProvider,):
     return CreateRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        command_authorizer=command_authorizer,
+        message_provider=message_provider,
     )
 
 
@@ -149,93 +148,67 @@ def _guess_route(games_repository: GamesRepository,
     )
 
 
-def _close_game_route(command_authorizer: CommandAuthorizer,
-                      games_repository: GamesRepository,
+def _close_game_route(games_repository: GamesRepository,
                       discord_messaging: DiscordMessaging,
                       message_provider: MessageProvider):
     return CloseGameRoute(
-        command_authorizer=command_authorizer,
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider
     )
 
 
-def _list_games_route(command_authorizer: CommandAuthorizer,
-                      games_repository: GamesRepository,
-                      discord_messaging: DiscordMessaging,
+def _list_games_route(games_repository: GamesRepository,
                       message_provider: MessageProvider):
     return ListGamesRoute(
-        command_authorizer=command_authorizer,
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
     )
 
 
 def _guild_info_route(
         message_provider: MessageProvider,
-        configs_repository: ConfigsRepository,
-        command_authorizer: CommandAuthorizer,
-        discord_messaging: DiscordMessaging):
+        configs_repository: ConfigsRepository):
     return GuildInfoRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer,
-        discord_messaging=discord_messaging,
     )
 
 
 def _add_management_channel_route_route(
         message_provider: MessageProvider,
-        configs_repository: ConfigsRepository,
-        command_authorizer: CommandAuthorizer,
-        discord_messaging: DiscordMessaging):
+        configs_repository: ConfigsRepository):
 
     return AddManagementChannelRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer,
-        discord_messaging=discord_messaging,
     )
 
 
 def _remove_management_channel_route(
         message_provider: MessageProvider,
-        configs_repository: ConfigsRepository,
-        command_authorizer: CommandAuthorizer,
-        discord_messaging: DiscordMessaging):
+        configs_repository: ConfigsRepository):
     return RemoveManagementChannelRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer,
-        discord_messaging=discord_messaging,
     )
 
 
 def _add_management_role_route(
         message_provider: MessageProvider,
-        configs_repository: ConfigsRepository,
-        command_authorizer: CommandAuthorizer,
-        discord_messaging: DiscordMessaging):
+        configs_repository: ConfigsRepository):
     return AddManagementRoleRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer,
-        discord_messaging=discord_messaging,
     )
 
 
 def _remove_management_role_route(
         message_provider: MessageProvider,
-        configs_repository: ConfigsRepository,
-        command_authorizer: CommandAuthorizer,
-        discord_messaging: DiscordMessaging):
+        configs_repository: ConfigsRepository):
     return RemoveManagementRoleRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer,
-        discord_messaging=discord_messaging,
     )
 
 

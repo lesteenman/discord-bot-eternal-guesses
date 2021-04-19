@@ -3,6 +3,7 @@ from typing import List
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
+from eternal_guesses.model.discord.discord_command import DiscordCommand
 
 
 class MessageProvider(ABC):
@@ -12,10 +13,10 @@ class MessageProvider(ABC):
     def game_managed_channel_message(self, game: Game) -> str:
         raise NotImplementedError()
 
-    def manage_error_game_not_found(self, game_id: str) -> str:
+    def error_game_not_found(self, game_id: str) -> str:
         raise NotImplementedError()
 
-    def dm_guess_added(self, game_id: str, guess: str) -> str:
+    def guess_added(self, game_id: str, guess: str) -> str:
         raise NotImplementedError()
 
     def channel_admin_info(self, guild_config: GuildConfig) -> str:
@@ -30,10 +31,10 @@ class MessageProvider(ABC):
     def channel_manage_list_closed_games(self, games: List[Game]) -> str:
         raise NotImplementedError()
 
-    def dm_error_guess_on_closed_game(self, game_id):
+    def error_guess_on_closed_game(self, game_id):
         raise NotImplementedError()
 
-    def dm_error_duplicate_guess(self, game_id):
+    def error_duplicate_guess(self, game_id):
         raise NotImplementedError()
 
     def error_duplicate_management_channel(self, channel):
@@ -58,6 +59,24 @@ class MessageProvider(ABC):
         raise NotImplementedError()
 
     def added_management_channel(self, channel):
+        raise NotImplementedError()
+
+    def disallowed_management_call(self, command) -> str:
+        raise NotImplementedError()
+
+    def disallowed_admin_call(self, command) -> str:
+        raise NotImplementedError()
+
+    def game_closed(self, game) -> str:
+        raise NotImplementedError()
+
+    def game_created(self, game) -> str:
+        raise NotImplementedError()
+
+    def duplicate_game_id(self, game_id) -> str:
+        raise NotImplementedError()
+
+    def game_post_created_message(self) -> str:
         raise NotImplementedError()
 
 
@@ -88,14 +107,14 @@ class MessageProviderImpl(MessageProvider):
         else:
             message = f"{message}\n\n" \
                       f"To add your own guess, copy this template and post it in the chat:" \
-                        f"`/guess game-id: {game.game_id} guess:`"
+                f"`/guess game-id: {game.game_id} guess:`"
 
         return message
 
-    def manage_error_game_not_found(self, game_id: str) -> str:
+    def error_game_not_found(self, game_id: str) -> str:
         return f"No game found with id {game_id}."
 
-    def dm_guess_added(self, game_id: str, guess: str) -> str:
+    def guess_added(self, game_id: str, guess: str) -> str:
         return f"Your guess '{guess}' for game '{game_id}' has been registered."
 
     def channel_admin_info(self, guild_config: GuildConfig) -> str:
@@ -132,10 +151,10 @@ class MessageProviderImpl(MessageProvider):
 
         return "All closed games:\n" + "\n".join(sorted(lines))
 
-    def dm_error_guess_on_closed_game(self, game_id):
-        return f"The game '{game_id}' you placed a guess for has already been closed."
+    def error_guess_on_closed_game(self, game_id):
+        return f"This game ({game_id}) has already been closed."
 
-    def dm_error_duplicate_guess(self, game_id):
+    def error_duplicate_guess(self, game_id):
         return f"You have already placed a guess for game '{game_id}'"
 
     def error_duplicate_management_channel(self, channel):
@@ -161,3 +180,31 @@ class MessageProviderImpl(MessageProvider):
 
     def added_management_channel(self, channel):
         return f"Added new management channel: <#{channel}>"
+
+    def disallowed_management_call(self, command: DiscordCommand) -> str:
+        if command.subcommand_name:
+            command_name = f"/eternal-guess {command.command_name} {command.subcommand_name}"
+        else:
+            command_name = f"/eternal-guess {command.command_name}"
+
+        return f"You are not allowed to use '{command_name}' from this channel."
+
+    def disallowed_admin_call(self, command: DiscordCommand) -> str:
+        if command.subcommand_name:
+            command_name = f"/eternal-guess {command.command_name} {command.subcommand_name}"
+        else:
+            command_name = f"/eternal-guess {command.command_name}"
+
+        return f"You are not allowed to use '{command_name}'."
+
+    def game_closed(self, game) -> str:
+        return f"Game {game.game_id} has been closed for new guesses."
+
+    def duplicate_game_id(self, game_id) -> str:
+        return f"Another game with id '{game_id}' already exists."
+
+    def game_post_created_message(self) -> str:
+        return "Game post created. It will be automatically updated if new guesses are placed."
+
+    def game_created(self, game) -> str:
+        return f"Game {game.game_id} created."
