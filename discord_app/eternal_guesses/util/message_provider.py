@@ -1,16 +1,15 @@
 from abc import ABC
 from typing import List
 
+import discord
+
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 
 
 class MessageProvider(ABC):
-    # def game_post_embed(self, game: Game) -> discord.Embed:
-    #     raise NotImplementedError()
-
-    def game_managed_channel_message(self, game: Game) -> str:
+    def game_post_embed(self, game: Game) -> discord.Embed:
         raise NotImplementedError()
 
     def error_game_not_found(self, game_id: str) -> str:
@@ -81,15 +80,17 @@ class MessageProvider(ABC):
 
 
 class MessageProviderImpl(MessageProvider):
-    def game_managed_channel_message(self, game: Game) -> str:
-        message = ""
+    def game_post_embed(self, game: Game) -> discord.Embed:
         if game.title:
-            message = f"**{game.title}**\n\n"
+            title = game.title
+        else:
+            title = game.game_id
 
+        description = ""
         if game.description:
-            message += f"{game.description}\n\n"
+            description += f"{game.description}\n\n"
 
-        message += "Guesses:\n\n"
+        description += "Guesses:\n\n"
 
         guess_list = []
         for user_id, guess in sorted(game.guesses.items(), key=lambda i: i[1].guess):
@@ -99,17 +100,17 @@ class MessageProviderImpl(MessageProvider):
             guesses = "\n".join(guess_list)
         else:
             guesses = "None yet!"
-        message = f"{message}{guesses}"
+        description = f"{description}{guesses}"
 
         if game.closed:
-            message = f"{message}\n\n" \
-                      f"This game has been closed for new guesses."
+            footer = "Game closed."
         else:
-            message = f"{message}\n\n" \
-                      f"To add your own guess, copy this template and post it in the chat:" \
-                f"`/guess game-id: {game.game_id} guess:`"
+            footer = f"`/guess game-id:{game.game_id} guess:<your guess>`"
 
-        return message
+        embed = discord.Embed(title=title, description=description, color=0x723EEA)
+        embed.set_footer(text=footer)
+
+        return embed
 
     def error_game_not_found(self, game_id: str) -> str:
         return f"No game found with id {game_id}."

@@ -1,6 +1,7 @@
 import typing
 from unittest.mock import MagicMock
 
+import discord
 import pytest
 
 from eternal_guesses.model.data.game import Game
@@ -25,9 +26,9 @@ async def test_post_creates_channel_message():
     games_repository = FakeGamesRepository([game])
 
     # And we have a mock message provider
-    formatted_message = "mock formatted message"
+    post_embed = discord.Embed()
     message_provider = MagicMock(MessageProvider)
-    message_provider.game_managed_channel_message.return_value = formatted_message
+    message_provider.game_post_embed.return_value = post_embed
 
     discord_messaging = FakeDiscordMessaging()
     post_route = PostRoute(
@@ -44,7 +45,7 @@ async def test_post_creates_channel_message():
     await post_route.call(event)
 
     # Then a message about that game is posted in the given channel
-    assert {'channel_id': channel_id, 'text': formatted_message} in discord_messaging.sent_channel_messages
+    assert {'channel_id': channel_id, 'embed': post_embed} in discord_messaging.sent_channel_messages
 
     # And the channel id is saved in the game
     saved_game = games_repository.get(guild_id, game_id)
@@ -61,9 +62,9 @@ async def test_post_without_channel_uses_event_channel():
     game = Game(guild_id=guild_id, game_id=game_id)
     games_repository = FakeGamesRepository([game])
 
-    formatted_message = "mock formatted message"
+    post_embed = discord.Embed()
     message_provider = MagicMock(MessageProvider)
-    message_provider.game_managed_channel_message.return_value = formatted_message
+    message_provider.game_post_embed.return_value = post_embed
 
     discord_messaging = FakeDiscordMessaging()
 
@@ -80,7 +81,7 @@ async def test_post_without_channel_uses_event_channel():
     await post_route.call(event)
 
     # Then a message for that game is posted in the channel we sent this command from
-    assert {'channel_id': event_channel_id, 'text': formatted_message} in discord_messaging.sent_channel_messages
+    assert {'channel_id': event_channel_id, 'embed': post_embed} in discord_messaging.sent_channel_messages
 
 
 async def test_post_saves_message_id_to_game():
@@ -150,15 +151,13 @@ async def test_post_invalid_game_id_sends_dm_error():
             'channel': channel_id,
         }
     )
-    await post_route.call(event)
+    response = await post_route.call(event)
 
     # Then
     message_provider.error_game_not_found.assert_called_with(game_id)
 
-    assert len(discord_messaging.sent_channel_messages) == 1
-    sent_message = discord_messaging.sent_channel_messages[0]
-    assert sent_message['text'] == formatted_error
-    assert sent_message['channel_id'] == event_channel_id
+    assert response.is_ephemeral
+    assert response.content == formatted_error
 
 
 def _make_event(guild_id: int = -1, options: typing.Dict = None, discord_member: DiscordMember = None,

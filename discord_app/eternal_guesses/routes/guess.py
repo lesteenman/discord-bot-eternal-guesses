@@ -59,15 +59,15 @@ class GuessRoute(Route):
     async def _update_channel_messages(self, game: Game):
         logger.info(f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
         if game.channel_messages is not None:
-            new_channel_message = self.message_provider.game_managed_channel_message(game)
+            new_embed = self.message_provider.game_post_embed(game)
             for channel_message in game.channel_messages:
                 logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
-                             f"message_id={channel_message.message_id}, message='{new_channel_message}'")
+                             f"message_id={channel_message.message_id}, message='{new_embed}'")
 
                 try:
                     await self.discord_messaging.update_channel_message(channel_message.channel_id,
                                                                         channel_message.message_id,
-                                                                        new_channel_message)
+                                                                        embed=new_embed)
                 except discord.NotFound:
                     game.channel_messages.remove(channel_message)
                     self.games_repository.save(game)

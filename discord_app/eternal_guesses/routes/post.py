@@ -31,17 +31,17 @@ class PostRoute(Route):
 
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
-            message = self.message_provider.error_game_not_found(game_id)
-            await self.discord_messaging.send_channel_message(channel_id=event.channel_id, text=message)
-        else:
-            message = self.message_provider.game_managed_channel_message(game)
-            message_id = await self.discord_messaging.send_channel_message(channel_id, message)
+            error_message = self.message_provider.error_game_not_found(game_id)
+            return DiscordResponse.ephemeral_channel_message(error_message)
 
-            if game.channel_messages is None:
-                game.channel_messages = []
+        embed = self.message_provider.game_post_embed(game)
+        message_id = await self.discord_messaging.send_channel_message(channel_id, embed=embed)
 
-            game.channel_messages.append(ChannelMessage(channel_id, message_id))
-            self.games_repository.save(game)
+        if game.channel_messages is None:
+            game.channel_messages = []
+
+        game.channel_messages.append(ChannelMessage(channel_id, message_id))
+        self.games_repository.save(game)
 
         response_message = self.message_provider.game_post_created_message()
         return DiscordResponse.ephemeral_channel_message(response_message)

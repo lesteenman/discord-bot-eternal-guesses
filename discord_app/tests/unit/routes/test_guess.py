@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest.mock import patch, MagicMock
 
+import discord
 import pytest
 
 from eternal_guesses.model.data.channel_message import ChannelMessage
@@ -75,17 +76,17 @@ async def test_guess_updates_channel_messages():
     # Given
     guild_id = 1001
     user_id = 12000
-    channel_message_1 = ChannelMessage(channel_id=1000, message_id=5000)
-    channel_message_2 = ChannelMessage(channel_id=1005, message_id=5005)
+    game_post_1 = ChannelMessage(channel_id=1000, message_id=5000)
+    game_post_2 = ChannelMessage(channel_id=1005, message_id=5005)
 
-    list_guesses_message = "message with new guess"
+    post_embed = discord.Embed()
     message_provider = MagicMock(MessageProvider)
-    message_provider.game_managed_channel_message.return_value = list_guesses_message
+    message_provider.game_post_embed.return_value = post_embed
 
     game = Game(
         guild_id=guild_id,
         game_id='game-id',
-        channel_messages=[channel_message_1, channel_message_2]
+        channel_messages=[game_post_1, game_post_2]
     )
 
     games_repository = FakeGamesRepository([game])
@@ -105,14 +106,14 @@ async def test_guess_updates_channel_messages():
     update_channel_message_calls = discord_messaging.updated_channel_messages
     assert len(update_channel_message_calls) == 2
     assert {
-        'channel_id': channel_message_1.channel_id,
-        'message_id': channel_message_1.message_id,
-        'text': list_guesses_message
+        'channel_id': game_post_1.channel_id,
+        'message_id': game_post_1.message_id,
+        'embed': post_embed,
     } in update_channel_message_calls
     assert {
-        'channel_id': channel_message_1.channel_id,
-        'message_id': channel_message_1.message_id,
-        'text': list_guesses_message
+        'channel_id': game_post_2.channel_id,
+        'message_id': game_post_2.message_id,
+        'embed': post_embed,
     } in update_channel_message_calls
 
 
