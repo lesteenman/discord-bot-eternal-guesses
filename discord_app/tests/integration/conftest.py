@@ -72,8 +72,10 @@ def stub_discord_messaging(mocker):
             logger.info(f"[stub send_channel_emssage] channel_id={channel_id}, text={text}")
             return 1
 
-        async def update_channel_message(self, channel_id: int, message_id: int, text: str):
-            logger.info(f"[stub update_channel_emssage] channel_id={channel_id}, message_id={message_id} text={text}")
+        async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
+                                         embed: discord.Embed = None):
+            logger.info(f"[stub update_channel_emssage] channel_id={channel_id}, message_id={message_id} text={text},"
+                        f"embed={embed}")
             pass
 
         async def send_dm(self, member: DiscordMember, text: str):

@@ -40,14 +40,30 @@ class FakeDiscordMessaging(DiscordMessaging):
         self.deleted_messages = []
 
     async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
-        self.sent_channel_messages.append({'channel_id': channel_id, 'text': text})
+        if text is not None:
+            self.sent_channel_messages.append({'channel_id': channel_id, 'text': text})
+        elif embed is not None:
+            self.sent_channel_messages.append({'channel_id': channel_id, 'embed': embed})
+
         return self.created_channel_message_id
 
-    async def update_channel_message(self, channel_id: int, message_id: int, text: str):
+    async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
+                                     embed: discord.Embed = None):
         if message_id in self.deleted_messages:
             raise FakeNotFound()
         else:
-            self.updated_channel_messages.append({'channel_id': channel_id, 'message_id': message_id, 'text': text})
+            if text is not None:
+                self.updated_channel_messages.append({
+                    'channel_id': channel_id,
+                    'message_id': message_id,
+                    'text': text,
+                })
+            elif embed is not None:
+                self.updated_channel_messages.append({
+                    'channel_id': channel_id,
+                    'message_id': message_id,
+                    'embed': embed,
+                })
 
     async def send_dm(self, member: DiscordMember, text: str):
         self.sent_dms.append({'member': member, 'text': text})

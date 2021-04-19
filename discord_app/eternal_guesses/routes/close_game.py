@@ -29,8 +29,8 @@ class CloseGameRoute(Route):
         )
 
         for message in game.channel_messages:
-            text = self.message_provider.game_managed_channel_message(game)
-            await self.discord_messaging.update_channel_message(message.channel_id, message.message_id, text)
+            embed = self.message_provider.game_post_embed(game)
+            await self.discord_messaging.update_channel_message(message.channel_id, message.message_id, embed=embed)
 
         game_closed_message = self.message_provider.game_closed(game)
         return DiscordResponse.ephemeral_channel_message(game_closed_message)

@@ -12,7 +12,8 @@ class DiscordMessaging(ABC):
     async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
         raise NotImplementedError()
 
-    async def update_channel_message(self, channel_id: int, message_id: int, text: str):
+    async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
+                                     embed: discord.Embed = None):
         raise NotImplementedError()
 
 
@@ -35,7 +36,8 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             return channel_message.id
 
-    async def update_channel_message(self, channel_id: int, message_id: int, text: str):
+    async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
+                                     embed: discord.Embed = None):
         logger.debug(f"update_channel_message, channel_id={channel_id}, message_id={message_id}, text='{text}'")
         async with self._discord_client() as client:
             logger.info("Posting a new channel message")
@@ -46,7 +48,7 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             message = await text_channel.fetch_message(message_id)
 
-            await message.edit(content=text, allowed_mentions=AllowedMentions.none())
+            await message.edit(content=text, embed=embed, allowed_mentions=AllowedMentions.none())
             logger.debug("updated channel message")
 
     @contextlib.asynccontextmanager
