@@ -51,7 +51,7 @@ class InfraStack(core.Stack):
                                    timeout=core.Duration.seconds(10),
                                    memory_size=1024,
                                    code=aws_lambda.Code.from_asset("../discord_app/.serverless/discord-app.zip"),
-                                   handler="eternal_guesses.api.handler.handle_lambda",
+                                   handler="eternal_guesses.handler.handle_lambda",
                                    environment=environment
                                    )
 
