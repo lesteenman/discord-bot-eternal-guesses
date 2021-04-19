@@ -3,23 +3,33 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand, CommandType
+from eternal_guesses.api.router import RouterImpl
+from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord_response import DiscordResponse
-from eternal_guesses.router import RouterImpl
-from eternal_guesses.routes.admin import AdminRoute
+from eternal_guesses.routes.add_management_channel import AddManagementChannelRoute
+from eternal_guesses.routes.add_management_role import AddManagementRoleRoute
+from eternal_guesses.routes.close_game import CloseGameRoute
 from eternal_guesses.routes.create import CreateRoute
 from eternal_guesses.routes.guess import GuessRoute
-from eternal_guesses.routes.manage import ManageRoute
+from eternal_guesses.routes.guild_info import GuildInfoRoute
+from eternal_guesses.routes.list_games import ListGamesRoute
 from eternal_guesses.routes.ping import PingRoute
 from eternal_guesses.routes.post import PostRoute
+from eternal_guesses.routes.remove_management_channel import RemoveManagementChannelRoute
+from eternal_guesses.routes.remove_management_role import RemoveManagementRoleRoute
+from eternal_guesses.routes.route import Route
 
 pytestmark = pytest.mark.asyncio
 
 
 async def test_handle_ping():
     # Given
-    event = DiscordEvent(CommandType.PING)
+    event = DiscordEvent(
+        command=DiscordCommand(
+            command_name="ping",
+        )
+    )
 
     pong_response = DiscordResponse.pong()
 
@@ -27,7 +37,7 @@ async def test_handle_ping():
     mock_ping_route.call.return_value = pong_response
 
     # When
-    router = RouterImpl(ping_route=mock_ping_route)
+    router = _router(ping_route=mock_ping_route)
     response = await router.route(event)
 
     # Then
@@ -38,9 +48,7 @@ async def test_handle_ping():
 async def test_handle_guess():
     # Given
     event = DiscordEvent(
-        CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="guess"
         ),
         member=DiscordMember()
@@ -52,7 +60,7 @@ async def test_handle_guess():
     mock_guess_route.call.return_value = guess_response
 
     # When
-    router = RouterImpl(guess_route=mock_guess_route)
+    router = _router(guess_route=mock_guess_route)
     response = await router.route(event)
 
     # Then
@@ -65,9 +73,7 @@ async def test_handle_guess():
 async def test_handle_manage_post():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="manage",
             subcommand_name="post"
         ),
@@ -80,7 +86,7 @@ async def test_handle_manage_post():
     mock_post_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(post_route=mock_post_route)
+    router = _router(post_route=mock_post_route)
     response = await router.route(event)
 
     # Then
@@ -93,9 +99,7 @@ async def test_handle_manage_post():
 async def test_handle_manage_close():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="manage",
             subcommand_name="close"
         ),
@@ -104,15 +108,15 @@ async def test_handle_manage_close():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_manage_route = AsyncMock(ManageRoute, autospec=True)
-    mock_manage_route.close.return_value = mock_response
+    mock_close_game_route = AsyncMock(CloseGameRoute, autospec=True)
+    mock_close_game_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(manage_route=mock_manage_route)
+    router = _router(close_game_route=mock_close_game_route)
     response = await router.route(event)
 
     # Then
-    mock_manage_route.close.assert_called_with(event)
+    mock_close_game_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
@@ -121,9 +125,7 @@ async def test_handle_manage_close():
 async def test_handle_manage_list():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="manage",
             subcommand_name="list-games"
         ),
@@ -132,15 +134,15 @@ async def test_handle_manage_list():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_manage_route = AsyncMock(ManageRoute, autospec=True)
-    mock_manage_route.list_games.return_value = mock_response
+    mock_list_games_route = AsyncMock(ListGamesRoute, autospec=True)
+    mock_list_games_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(manage_route=mock_manage_route)
+    router = _router(list_games_route=mock_list_games_route)
     response = await router.route(event)
 
     # Then
-    mock_manage_route.list_games.assert_called_with(event)
+    mock_list_games_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
@@ -149,9 +151,7 @@ async def test_handle_manage_list():
 async def test_handle_create():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create"
         ),
         member=DiscordMember()
@@ -163,7 +163,7 @@ async def test_handle_create():
     mock_create_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(create_route=mock_create_route)
+    router = _router(create_route=mock_create_route)
     response = await router.route(event)
 
     # Then
@@ -176,9 +176,7 @@ async def test_handle_create():
 async def test_handle_admin_info():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="admin",
             subcommand_name="info"
         ),
@@ -187,15 +185,15 @@ async def test_handle_admin_info():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
-    mock_admin_route.info.return_value = mock_response
+    mock_guild_info_route = AsyncMock(GuildInfoRoute, autospec=True)
+    mock_guild_info_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(admin_route=mock_admin_route)
+    router = _router(guild_info_route=mock_guild_info_route)
     response = await router.route(event)
 
     # Then
-    mock_admin_route.info.assert_called_with(event)
+    mock_guild_info_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
@@ -204,9 +202,7 @@ async def test_handle_admin_info():
 async def test_handle_admin_add_management_channel():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="admin",
             subcommand_name="add-management-channel"
         ),
@@ -215,15 +211,15 @@ async def test_handle_admin_add_management_channel():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
-    mock_admin_route.add_management_channel.return_value = mock_response
+    mock_add_management_channel_route = AsyncMock(AddManagementChannelRoute, autospec=True)
+    mock_add_management_channel_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(admin_route=mock_admin_route)
+    router = _router(add_management_channel_route=mock_add_management_channel_route)
     response = await router.route(event)
 
     # Then
-    mock_admin_route.add_management_channel.assert_called_with(event)
+    mock_add_management_channel_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
@@ -232,9 +228,7 @@ async def test_handle_admin_add_management_channel():
 async def test_handle_admin_remove_management_channel():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="admin",
             subcommand_name="remove-management-channel"
         ),
@@ -243,15 +237,15 @@ async def test_handle_admin_remove_management_channel():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
-    mock_admin_route.remove_management_channel.return_value = mock_response
+    mock_route = AsyncMock(RemoveManagementChannelRoute, autospec=True)
+    mock_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(admin_route=mock_admin_route)
+    router = _router(remove_management_channel_route=mock_route)
     response = await router.route(event)
 
     # Then
-    mock_admin_route.remove_management_channel.assert_called_with(event)
+    mock_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
@@ -260,9 +254,7 @@ async def test_handle_admin_remove_management_channel():
 async def test_handle_admin_add_management_role():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="admin",
             subcommand_name="add-management-role"
         ),
@@ -271,15 +263,15 @@ async def test_handle_admin_add_management_role():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
-    mock_admin_route.add_management_role.return_value = mock_response
+    mock_route = AsyncMock(AddManagementRoleRoute, autospec=True)
+    mock_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(admin_route=mock_admin_route)
+    router = _router(add_management_role_route=mock_route)
     response = await router.route(event)
 
     # Then
-    mock_admin_route.add_management_role.assert_called_with(event)
+    mock_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
@@ -288,9 +280,7 @@ async def test_handle_admin_add_management_role():
 async def test_handle_admin_remove_management_role():
     # Given
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="admin",
             subcommand_name="remove-management-role"
         ),
@@ -299,15 +289,43 @@ async def test_handle_admin_remove_management_role():
 
     mock_response = DiscordResponse.acknowledge()
 
-    mock_admin_route = AsyncMock(AdminRoute, autospec=True)
-    mock_admin_route.remove_management_role.return_value = mock_response
+    mock_route = AsyncMock(RemoveManagementRoleRoute, autospec=True)
+    mock_route.call.return_value = mock_response
 
     # When
-    router = RouterImpl(admin_route=mock_admin_route)
+    router = _router(remove_management_role_route=mock_route)
     response = await router.route(event)
 
     # Then
-    mock_admin_route.remove_management_role.assert_called_with(event)
+    mock_route.call.assert_called_with(event)
 
     assert response.status_code == 200
     assert json.loads(response.body) == mock_response.json()
+
+
+def _router(
+        ping_route=None,
+        guess_route=None,
+        create_route=None,
+        post_route=None,
+        close_game_route=None,
+        list_games_route=None,
+        guild_info_route=None,
+        add_management_channel_route=None,
+        remove_management_channel_route=None,
+        add_management_role_route=None,
+        remove_management_role_route=None,
+):
+    return RouterImpl(
+        ping_route=ping_route or Route(),
+        guess_route=guess_route or Route(),
+        create_route=create_route or Route(),
+        post_route=post_route or Route(),
+        close_game_route=close_game_route or Route(),
+        list_games_route=list_games_route or Route(),
+        guild_info_route=guild_info_route or Route(),
+        add_management_channel_route=add_management_channel_route or Route(),
+        remove_management_channel_route=remove_management_channel_route or Route(),
+        add_management_role_route=add_management_role_route or Route(),
+        remove_management_role_route=remove_management_role_route or Route(),
+    )

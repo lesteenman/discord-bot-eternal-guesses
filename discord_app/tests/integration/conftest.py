@@ -1,14 +1,14 @@
-import discord
-from loguru import logger
 from typing import Dict
 
+import discord
 import docker
 import opnieuw
 import pytest
+from eternal_guesses.util.discord_messaging import DiscordMessaging
+from loguru import logger
 from pynamodb.exceptions import TableError
 
 from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, AuthorizationResult
-from eternal_guesses.discord_messaging import DiscordMessaging
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
@@ -62,7 +62,7 @@ def fixed_authorization_result(mocker):
             return AuthorizationResult.PASS, None
 
     test_authorizer = PassingTestAuthorizer()
-    mocker.patch('eternal_guesses.injector._api_authorizer', return_value=test_authorizer)
+    mocker.patch('eternal_guesses.util.injector._api_authorizer', return_value=test_authorizer)
 
 
 @pytest.fixture(autouse=True)
@@ -81,4 +81,4 @@ def stub_discord_messaging(mocker):
             pass
 
     silent_discord_messaging = SilentDiscordMessaging()
-    mocker.patch('eternal_guesses.injector._discord_messaging', return_value=silent_discord_messaging)
+    mocker.patch('eternal_guesses.util.injector._discord_messaging', return_value=silent_discord_messaging)

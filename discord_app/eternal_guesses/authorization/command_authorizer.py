@@ -2,8 +2,8 @@ from abc import ABC
 
 from loguru import logger
 
-from eternal_guesses.errors import DiscordEventDisallowedError
 from eternal_guesses.model.discord.discord_event import DiscordEvent
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.repositories.configs_repository import ConfigsRepository
 
 

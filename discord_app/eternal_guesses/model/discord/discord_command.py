@@ -2,7 +2,11 @@ from typing import Dict
 
 
 class DiscordCommand:
-    def __init__(self, command_id: int, command_name: str, subcommand_name: str = None, options: Dict = None):
+    def __init__(self,
+                 command_id: int = -1,
+                 command_name: str = None,
+                 subcommand_name: str = None,
+                 options: Dict = None):
         self.command_id = int(command_id)
         self.command_name = command_name
         self.subcommand_name = subcommand_name

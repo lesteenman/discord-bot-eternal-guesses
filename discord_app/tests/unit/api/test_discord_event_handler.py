@@ -3,10 +3,10 @@ from typing import Dict, Optional
 from unittest.mock import patch
 
 from eternal_guesses.authorization.api_authorizer import AuthorizationResult, ApiAuthorizer
-from eternal_guesses.discord_event_handler import DiscordEventHandler
+from eternal_guesses.api.discord_event_handler import DiscordEventHandler
 from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType
 from eternal_guesses.model.lambda_response import LambdaResponse
-from eternal_guesses.router import Router
+from eternal_guesses.api.router import Router
 
 
 class _TestAuthorizer(ApiAuthorizer):
@@ -49,7 +49,7 @@ def test_unauthorized_request():
     assert response['statusCode'] == 401
 
 
-@patch('eternal_guesses.discord_event_handler.discord_event.from_event', autospec=True)
+@patch('eternal_guesses.api.discord_event_handler.discord_event.from_event', autospec=True)
 def test_authorized_request(mock_from_event):
     # Given
     test_authorizer = _TestAuthorizer(AuthorizationResult.PASS, None)
@@ -75,7 +75,7 @@ def test_authorized_request(mock_from_event):
     assert json.loads(response['body']) == {'response': 'mocked'}
 
 
-@patch('eternal_guesses.discord_event_handler.discord_event.from_event', autospec=True)
+@patch('eternal_guesses.api.discord_event_handler.discord_event.from_event', autospec=True)
 def test_discord_event(mock_from_event):
     # Given
     test_authorizer = _TestAuthorizer(AuthorizationResult.PASS, None)

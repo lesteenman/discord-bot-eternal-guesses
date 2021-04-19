@@ -3,13 +3,16 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
+from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand, CommandType
+from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
+from eternal_guesses.repositories.games_repository import GamesRepositoryImpl, GamesRepository
 from eternal_guesses.routes import create
 from eternal_guesses.routes.create import CreateRoute
-from tests.fakes import FakeDiscordMessaging
+from eternal_guesses.util.discord_messaging import DiscordMessaging
+from tests.fakes import FakeDiscordMessaging, FakeCommandAuthorizer
 
 pytestmark = pytest.mark.asyncio
 
@@ -27,16 +30,11 @@ async def test_create_generated_id(mock_id_generator, mock_datetime):
     mock_games_repository.get.return_value = None
     mock_id_generator.game_id.return_value = "potatoific-tomatopuss"
 
-    create_route = CreateRoute(
-        games_repository=mock_games_repository,
-        discord_messaging=FakeDiscordMessaging(),
-    )
+    create_route = _route(games_repository=mock_games_repository)
 
     # When
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={}
         ),
@@ -70,16 +68,11 @@ async def test_create_given_id(mock_datetime):
     mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = None
 
-    create_route = CreateRoute(
-        games_repository=mock_games_repository,
-        discord_messaging=FakeDiscordMessaging(),
-    )
+    create_route = _route(games_repository=mock_games_repository)
 
     # When
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': game_id
@@ -115,16 +108,11 @@ async def test_create_duplicate_given_id():
     mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = existing_game
 
-    create_route = CreateRoute(
-        games_repository=mock_games_repository,
-        discord_messaging=FakeDiscordMessaging(),
-    )
+    create_route = _route(games_repository=mock_games_repository)
 
     # When
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': game_id
@@ -147,9 +135,7 @@ async def test_create_sets_created_by_to_calling_user():
     mock_games_repository.get.return_value = None
 
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': 'game-id'
@@ -162,10 +148,7 @@ async def test_create_sets_created_by_to_calling_user():
     )
 
     # When
-    create_route = CreateRoute(
-        games_repository=mock_games_repository,
-        discord_messaging=FakeDiscordMessaging(),
-    )
+    create_route = _route(games_repository=mock_games_repository)
     await create_route.call(event)
 
     # Then
@@ -183,10 +166,40 @@ async def test_create_sets_title_and_description():
     mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = None
 
-    event = DiscordEvent(
-        command_type=CommandType.COMMAND,
+    event = _make_event(description, title)
+
+    # When
+    create_route = _route(games_repository=mock_games_repository)
+    await create_route.call(event)
+
+    # Then
+    args = mock_games_repository.save.call_args
+
+    game = args[0][0]
+    assert game.title == title
+    assert game.description == description
+
+
+async def test_create_disallowed():
+    # Given
+    command_authorizer = FakeCommandAuthorizer(management=False)
+
+    route = _route(command_authorizer=command_authorizer)
+
+    # When
+    try:
+        await route.call(_make_event())
+        assert False
+    # Then
+    except DiscordEventDisallowedError:
+        pass
+
+
+def _make_event(
+        description="",
+        title=""):
+    return DiscordEvent(
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': 'game-id',
@@ -198,16 +211,21 @@ async def test_create_sets_title_and_description():
         member=DiscordMember(),
     )
 
-    # When
-    create_route = CreateRoute(
-        games_repository=mock_games_repository,
-        discord_messaging=FakeDiscordMessaging(),
+
+def _route(games_repository: GamesRepository = None,
+           discord_messaging: DiscordMessaging = None,
+           command_authorizer: CommandAuthorizer = None):
+    if games_repository is None:
+        games_repository = GamesRepository()
+
+    if discord_messaging is None:
+        discord_messaging = FakeDiscordMessaging()
+
+    if command_authorizer is None:
+        command_authorizer = FakeCommandAuthorizer(management=True)
+
+    return CreateRoute(
+        games_repository=games_repository,
+        discord_messaging=discord_messaging,
+        command_authorizer=command_authorizer,
     )
-    await create_route.call(event)
-
-    # Then
-    args = mock_games_repository.save.call_args
-
-    game = args[0][0]
-    assert game.title == title
-    assert game.description == description

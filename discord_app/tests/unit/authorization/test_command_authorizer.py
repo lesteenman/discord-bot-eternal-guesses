@@ -1,9 +1,9 @@
 import pytest
 
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizerImpl
-from eternal_guesses.errors import DiscordEventDisallowedError
-from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType
+from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
+from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from tests.fakes import FakeConfigsRepository
 
 pytestmark = pytest.mark.asyncio
@@ -27,7 +27,6 @@ async def test_unauthorized_management_call():
 
     event = DiscordEvent(
         guild_id=guild_id,
-        command_type=CommandType.COMMAND,
         channel_id=other_channel,
         member=DiscordMember(roles=[other_role]),
     )
@@ -57,7 +56,6 @@ async def test_authorized_role_management_call():
 
     event = DiscordEvent(
         guild_id=guild_id,
-        command_type=CommandType.COMMAND,
         channel_id=other_channel,
         member=DiscordMember(roles=[management_role]),
     )
@@ -83,7 +81,6 @@ async def test_authorized_channel_management_call():
 
     event = DiscordEvent(
         guild_id=guild_id,
-        command_type=CommandType.COMMAND,
         channel_id=management_channel,
         member=DiscordMember(roles=[other_role]),
     )
@@ -110,7 +107,6 @@ async def test_admin_management_call():
 
     event = DiscordEvent(
         guild_id=guild_id,
-        command_type=CommandType.COMMAND,
         channel_id=other_channel,
         member=DiscordMember(
             roles=[other_role],
@@ -130,7 +126,6 @@ async def test_unauthorized_admin_call():
 
     event = DiscordEvent(
         guild_id=guild_id,
-        command_type=CommandType.COMMAND,
         member=DiscordMember(),
     )
 
@@ -150,7 +145,6 @@ async def test_authorized_admin_call():
 
     event = DiscordEvent(
         guild_id=guild_id,
-        command_type=CommandType.COMMAND,
         member=DiscordMember(is_admin=True),
     )
 
