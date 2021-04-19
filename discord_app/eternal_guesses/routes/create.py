@@ -1,6 +1,7 @@
 from loguru import logger
 from datetime import datetime
 
+from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
@@ -13,11 +14,15 @@ from eternal_guesses.util.discord_messaging import DiscordMessaging
 class CreateRoute(Route):
     def __init__(self,
                  games_repository: GamesRepository,
-                 discord_messaging: DiscordMessaging):
+                 discord_messaging: DiscordMessaging,
+                 command_authorizer: CommandAuthorizer):
         self.discord_messaging = discord_messaging
         self.games_repository = games_repository
+        self.command_authorizer = command_authorizer
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
+        await self.command_authorizer.authorize_management_call(event)
+
         guild_id = event.guild_id
         game_id = event.command.options.get('game-id')
         title = event.command.options.get('title')

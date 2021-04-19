@@ -41,6 +41,7 @@ def _router() -> Router:
     create_route = _create_route(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
+        command_authorizer=command_authorizer,
     )
     guess_route = _guess_route(
         games_repository=games_repository,
@@ -128,10 +129,13 @@ def _post_route(
     )
 
 
-def _create_route(games_repository: GamesRepository, discord_messaging: DiscordMessaging):
+def _create_route(games_repository: GamesRepository,
+                  discord_messaging: DiscordMessaging,
+                  command_authorizer: CommandAuthorizer):
     return CreateRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
+        command_authorizer=command_authorizer,
     )
 
 
