@@ -6,7 +6,7 @@ from loguru import logger
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordEvent
-from eternal_guesses.model.discord_response import DiscordResponse
+from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
 from eternal_guesses.util.discord_messaging import DiscordMessaging
@@ -21,6 +21,40 @@ class GuessRoute(Route):
         self.games_repository = games_repository
         self.discord_messaging = discord_messaging
         self.message_provider = message_provider
+
+    async def call(self, event: DiscordEvent) -> DiscordResponse:
+        guild_id = event.guild_id
+        user_id = event.member.user_id
+        user_nickname = event.member.nickname
+        game_id = event.command.options['game-id']
+        guess = event.command.options['guess']
+
+        game = self.games_repository.get(guild_id, game_id)
+        if game is None:
+            error_message = self.message_provider.error_game_not_found(game_id)
+            return DiscordResponse.ephemeral_channel_message(content=error_message)
+
+        if game.guesses.get(user_id) is not None:
+            error_message = self.message_provider.error_duplicate_guess(game_id)
+            return DiscordResponse.ephemeral_channel_message(error_message)
+
+        if game.closed:
+            error_message = self.message_provider.error_guess_on_closed_game(game_id)
+            return DiscordResponse.ephemeral_channel_message(error_message)
+
+        game_guess = GameGuess()
+        game_guess.user_id = user_id
+        game_guess.user_nickname = user_nickname
+        game_guess.timestamp = datetime.now()
+        game_guess.guess = guess
+
+        game.guesses[int(user_id)] = game_guess
+        self.games_repository.save(game)
+
+        await self._update_channel_messages(game)
+
+        guess_added_message = self.message_provider.guess_added(game_id, guess)
+        return DiscordResponse.ephemeral_channel_message(content=guess_added_message)
 
     async def _update_channel_messages(self, game: Game):
         logger.info(f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
@@ -37,45 +71,3 @@ class GuessRoute(Route):
                 except discord.NotFound:
                     game.channel_messages.remove(channel_message)
                     self.games_repository.save(game)
-
-    async def call(self, event: DiscordEvent) -> DiscordResponse:
-        guild_id = event.guild_id
-        user_id = event.member.user_id
-        user_nickname = event.member.nickname
-        game_id = event.command.options['game-id']
-        guess = event.command.options['guess']
-
-        game = self.games_repository.get(guild_id, game_id)
-        if game is None:
-            error_message = self.message_provider.manage_error_game_not_found(game_id)
-            await self.discord_messaging.send_dm(event.member, error_message)
-
-            return DiscordResponse.acknowledge()
-
-        if game.guesses.get(user_id) is not None:
-            error_message = self.message_provider.dm_error_duplicate_guess(game_id)
-            await self.discord_messaging.send_dm(event.member, error_message)
-
-            return DiscordResponse.acknowledge()
-
-        if game.closed:
-            error_message = self.message_provider.dm_error_guess_on_closed_game(game_id)
-            await self.discord_messaging.send_dm(event.member, error_message)
-
-            return DiscordResponse.acknowledge()
-
-        game_guess = GameGuess()
-        game_guess.user_id = user_id
-        game_guess.user_nickname = user_nickname
-        game_guess.timestamp = datetime.now()
-        game_guess.guess = guess
-
-        game.guesses[int(user_id)] = game_guess
-        self.games_repository.save(game)
-
-        guess_added_dm = self.message_provider.dm_guess_added(game_id, guess)
-        await self.discord_messaging.send_dm(event.member, guess_added_dm)
-
-        await self._update_channel_messages(game)
-
-        return DiscordResponse.acknowledge()

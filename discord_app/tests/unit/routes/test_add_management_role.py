@@ -1,13 +1,14 @@
 import typing
+from unittest.mock import MagicMock
 
 import pytest
 
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.routes.add_management_role import AddManagementRoleRoute
-from tests.fakes import FakeConfigsRepository, FakeMessageProvider, FakeCommandAuthorizer, FakeDiscordMessaging
+from eternal_guesses.util.message_provider import MessageProvider
+from tests.fakes import FakeConfigsRepository
 
 pytestmark = pytest.mark.asyncio
 
@@ -26,19 +27,24 @@ async def test_add_management_role():
         options={'role': role}
     )
 
+    message = "Management role added"
+    message_provider = MagicMock(MessageProvider)
+    message_provider.added_management_role.return_value = message
+
     route = AddManagementRoleRoute(
         configs_repository=configs_repository,
-        message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(admin=True),
-        discord_messaging=FakeDiscordMessaging(),
+        message_provider=message_provider,
     )
 
     # When
-    await route.call(event)
+    response = await route.call(event)
 
     # Then
     guild_config = configs_repository.get(guild_id)
     assert role in guild_config.management_roles
+
+    assert response.is_ephemeral
+    assert response.content == message
 
 
 async def test_add_duplicate_management_role():
@@ -58,40 +64,25 @@ async def test_add_duplicate_management_role():
         options={'role': duplicate_role, }
     )
 
+    message = "Role is already a management role."
+    message_provider = MagicMock(MessageProvider)
+    message_provider.add_duplicate_management_role.return_value = message
+
     route = AddManagementRoleRoute(
         configs_repository=configs_repository,
-        message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(admin=True),
-        discord_messaging=FakeDiscordMessaging(),
+        message_provider=message_provider,
     )
 
     # When
-    await route.call(event)
+    response = await route.call(event)
 
     # Then
     guild_config = configs_repository.get(guild_id)
     assert duplicate_role in guild_config.management_roles
     assert len(guild_config.management_roles) == 1
 
-
-async def test_admin_add_management_role_unauthorized():
-    # Given: the command authorizer fails
-    authorizer = FakeCommandAuthorizer(admin=False)
-    event = _make_event()
-
-    route = AddManagementRoleRoute(
-        command_authorizer=authorizer,
-        message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1),
-        discord_messaging=FakeDiscordMessaging(),
-    )
-
-    # Then: the call should raise an Exception
-    try:
-        await route.call(event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
+    assert response.is_ephemeral
+    assert response.content == message
 
 
 def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent:

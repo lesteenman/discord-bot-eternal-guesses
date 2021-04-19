@@ -3,18 +3,21 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl, GamesRepository
 from eternal_guesses.routes import create
 from eternal_guesses.routes.create import CreateRoute
 from eternal_guesses.util.discord_messaging import DiscordMessaging
-from tests.fakes import FakeDiscordMessaging, FakeCommandAuthorizer
+from eternal_guesses.util.message_provider import MessageProvider
+from tests.fakes import FakeDiscordMessaging
 
 pytestmark = pytest.mark.asyncio
+
+
+GAME_CREATED_MESSAGE = "Game created."
+DUPLICATE_GAME_ID = "Duplicate game id."
 
 
 @patch.object(create, 'datetime', autospec=True)
@@ -41,7 +44,7 @@ async def test_create_generated_id(mock_id_generator, mock_datetime):
         guild_id=guild_id,
         member=DiscordMember()
     )
-    await create_route.call(event)
+    response = await create_route.call(event)
 
     # Then
     mock_games_repository.save.assert_called()
@@ -54,6 +57,9 @@ async def test_create_generated_id(mock_id_generator, mock_datetime):
     assert game.create_datetime == create_datetime
     assert game.close_datetime is None
     assert game.closed is False
+
+    assert response.is_ephemeral
+    assert response.content == GAME_CREATED_MESSAGE
 
 
 @patch.object(create, 'datetime', autospec=True)
@@ -81,7 +87,7 @@ async def test_create_given_id(mock_datetime):
         guild_id=guild_id,
         member=DiscordMember()
     )
-    await create_route.call(event)
+    response = await create_route.call(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
@@ -95,6 +101,9 @@ async def test_create_given_id(mock_datetime):
     assert game.create_datetime == create_datetime
     assert game.close_datetime is None
     assert game.closed is False
+
+    assert response.is_ephemeral
+    assert response.content == GAME_CREATED_MESSAGE
 
 
 async def test_create_duplicate_given_id():
@@ -120,11 +129,14 @@ async def test_create_duplicate_given_id():
         ),
         guild_id=guild_id
     )
-    await create_route.call(event)
+    response = await create_route.call(event)
 
     # Then
     mock_games_repository.get.assert_called_with(guild_id, game_id)
     mock_games_repository.save.assert_not_called()
+
+    assert response.is_ephemeral
+    assert response.content == DUPLICATE_GAME_ID
 
 
 async def test_create_sets_created_by_to_calling_user():
@@ -170,7 +182,7 @@ async def test_create_sets_title_and_description():
 
     # When
     create_route = _route(games_repository=mock_games_repository)
-    await create_route.call(event)
+    response = await create_route.call(event)
 
     # Then
     args = mock_games_repository.save.call_args
@@ -179,20 +191,8 @@ async def test_create_sets_title_and_description():
     assert game.title == title
     assert game.description == description
 
-
-async def test_create_disallowed():
-    # Given
-    command_authorizer = FakeCommandAuthorizer(management=False)
-
-    route = _route(command_authorizer=command_authorizer)
-
-    # When
-    try:
-        await route.call(_make_event())
-        assert False
-    # Then
-    except DiscordEventDisallowedError:
-        pass
+    assert response.is_ephemeral
+    assert response.content == GAME_CREATED_MESSAGE
 
 
 def _make_event(
@@ -214,18 +214,20 @@ def _make_event(
 
 def _route(games_repository: GamesRepository = None,
            discord_messaging: DiscordMessaging = None,
-           command_authorizer: CommandAuthorizer = None):
+           message_provider: MessageProvider = None):
     if games_repository is None:
         games_repository = GamesRepository()
 
     if discord_messaging is None:
         discord_messaging = FakeDiscordMessaging()
 
-    if command_authorizer is None:
-        command_authorizer = FakeCommandAuthorizer(management=True)
+    if message_provider is None:
+        message_provider = MagicMock(MessageProvider)
+        message_provider.game_created.return_value = GAME_CREATED_MESSAGE
+        message_provider.duplicate_game_id.return_value = DUPLICATE_GAME_ID
 
     return CreateRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        command_authorizer=command_authorizer,
+        message_provider=message_provider,
     )

@@ -1,7 +1,7 @@
 import typing
 
+from eternal_guesses.api.permission_set import PermissionSet
 from eternal_guesses.model.discord.discord_command import DiscordCommand
-from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.routes.route import Route
 
 
@@ -11,7 +11,7 @@ class RouteDefinition:
                  command: str,
                  subcommand: str = None,
                  options: typing.List[typing.Dict] = None,
-                 permission: str = None):
+                 permission: PermissionSet = PermissionSet.ANYONE):
         self.route = route
         self.command = command
         self.subcommand = subcommand
@@ -26,6 +26,3 @@ class RouteDefinition:
             return False
 
         return True
-
-    async def handle(self, event: DiscordEvent):
-        return await self.route.call(event)

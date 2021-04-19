@@ -1,9 +1,8 @@
 from loguru import logger
 
-from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.discord.discord_event import DiscordEvent
-from eternal_guesses.model.discord_response import DiscordResponse
+from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
 from eternal_guesses.util.discord_messaging import DiscordMessaging
@@ -12,18 +11,14 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 class PostRoute(Route):
     def __init__(self,
-                 command_authorizer: CommandAuthorizer,
                  games_repository: GamesRepository,
                  message_provider: MessageProvider,
                  discord_messaging: DiscordMessaging):
-        self.command_authorizer = command_authorizer
         self.discord_messaging = discord_messaging
         self.message_provider = message_provider
         self.games_repository = games_repository
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
-        await self.command_authorizer.authorize_management_call(event)
-
         guild_id = event.guild_id
         game_id = event.command.options['game-id']
 
@@ -36,7 +31,7 @@ class PostRoute(Route):
 
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
-            message = self.message_provider.manage_error_game_not_found(game_id)
+            message = self.message_provider.error_game_not_found(game_id)
             await self.discord_messaging.send_channel_message(channel_id=event.channel_id, text=message)
         else:
             message = self.message_provider.game_managed_channel_message(game)
@@ -48,4 +43,5 @@ class PostRoute(Route):
             game.channel_messages.append(ChannelMessage(channel_id, message_id))
             self.games_repository.save(game)
 
-        return DiscordResponse.acknowledge()
+        response_message = self.message_provider.game_post_created_message()
+        return DiscordResponse.ephemeral_channel_message(response_message)

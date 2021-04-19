@@ -1,4 +1,5 @@
 from typing import Dict
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -6,12 +7,9 @@ from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
-from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.close_game import CloseGameRoute
-from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeDiscordMessaging, FakeGamesRepository, FakeCommandAuthorizer, FakeMessageProvider
+from tests.fakes import FakeDiscordMessaging, FakeGamesRepository
 
 pytestmark = pytest.mark.asyncio
 
@@ -36,20 +34,26 @@ async def test_close():
         }
     )
 
+    game_closed_message = "Game closed."
+    message_provider = MagicMock(MessageProvider)
+    message_provider.game_closed.return_value = game_closed_message
+
     discord_messaging = FakeDiscordMessaging()
     route = CloseGameRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        message_provider=MessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(management=True)
+        message_provider=message_provider,
     )
 
     # When we close it
-    await route.call(event)
+    response = await route.call(event)
 
     # Then it should be closed
     saved_game = games_repository.get(guild_id, game.game_id)
     assert saved_game.closed
+
+    assert response.is_ephemeral
+    assert response.content == game_closed_message
 
 
 async def test_close_updates_channel_messages():
@@ -71,8 +75,7 @@ async def test_close_updates_channel_messages():
     route = CloseGameRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
-        message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(management=True)
+        message_provider=MagicMock(MessageProvider),
     )
 
     # When we close it
@@ -114,41 +117,25 @@ async def test_close_already_closed_game():
         }
     )
 
+    game_already_closed_message = "Game was already closed closed."
+    message_provider = MagicMock(MessageProvider)
+    message_provider.game_closed.return_value = game_already_closed_message
+
     route = CloseGameRoute(
         games_repository=games_repository,
         discord_messaging=FakeDiscordMessaging(),
-        message_provider=MessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(management=True)
+        message_provider=message_provider,
     )
 
     # When we close it again
-    await route.call(event)
+    response = await route.call(event)
 
     # Then it should just still be closed
     saved_game = games_repository.get(guild_id, game.game_id)
     assert saved_game.closed
 
-
-async def test_close_disallowed():
-    # Given
-    command_authorizer = FakeCommandAuthorizer(management=False)
-
-    route = CloseGameRoute(
-        games_repository=GamesRepository(),
-        discord_messaging=DiscordMessaging(),
-        message_provider=MessageProvider(),
-        command_authorizer=command_authorizer
-    )
-
-    # When
-    event = _make_event()
-
-    # Then
-    try:
-        await route.call(event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
+    assert response.is_ephemeral
+    assert response.content == game_already_closed_message
 
 
 def _make_event(guild_id: int = -1, options: Dict = None, discord_member: DiscordMember = None, channel_id: int = -1):

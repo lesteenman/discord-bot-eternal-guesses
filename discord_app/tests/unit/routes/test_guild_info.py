@@ -5,10 +5,8 @@ import pytest
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.discord_response import ResponseType
-from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.routes.guild_info import GuildInfoRoute
-from tests.fakes import FakeCommandAuthorizer, FakeMessageProvider, FakeConfigsRepository, FakeDiscordMessaging
+from tests.fakes import FakeMessageProvider, FakeConfigsRepository
 
 pytestmark = pytest.mark.asyncio
 
@@ -18,7 +16,6 @@ async def test_admin_info():
     guild_id = 1001
 
     configs_repository = FakeConfigsRepository(guild_id=guild_id)
-    command_authorizer = FakeCommandAuthorizer(admin=True)
 
     guild_config = configs_repository.get(guild_id)
 
@@ -29,8 +26,6 @@ async def test_admin_info():
     route = GuildInfoRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
-        command_authorizer=command_authorizer,
-        discord_messaging=FakeDiscordMessaging(),
     )
 
     event = _make_event(guild_id=guild_id)
@@ -39,27 +34,8 @@ async def test_admin_info():
     response = await route.call(event)
 
     # Then
-    assert response.response_type == ResponseType.ACKNOWLEDGE
-
-
-async def test_guild_info_unauthorized():
-    # Given: the command authorizer fails
-    authorizer = FakeCommandAuthorizer(admin=False)
-    event = _make_event()
-
-    route = GuildInfoRoute(
-        command_authorizer=authorizer,
-        message_provider=FakeMessageProvider(),
-        configs_repository=FakeConfigsRepository(guild_id=-1),
-        discord_messaging=FakeDiscordMessaging(),
-    )
-
-    # Then: the call should raise an Exception
-    try:
-        await route.call(event)
-        assert False
-    except DiscordEventDisallowedError:
-        pass
+    assert response.is_ephemeral
+    assert response.content == static_message
 
 
 def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent:
