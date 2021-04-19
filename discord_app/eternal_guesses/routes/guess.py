@@ -3,16 +3,17 @@ from datetime import datetime
 import discord
 from loguru import logger
 
-from eternal_guesses.util.discord_messaging import DiscordMessaging
-from eternal_guesses.util.message_provider import MessageProvider
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.routes.route import Route
+from eternal_guesses.util.discord_messaging import DiscordMessaging
+from eternal_guesses.util.message_provider import MessageProvider
 
 
-class GuessRoute:
+class GuessRoute(Route):
     def __init__(self,
                  games_repository: GamesRepository,
                  discord_messaging: DiscordMessaging,

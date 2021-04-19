@@ -14,8 +14,7 @@ def test_from_ping_event():
     event = discord_event.from_event(event_body)
 
     # Then
-    assert event.type == discord_event.CommandType.PING
-    assert event.command is None
+    assert event.command.command_name == "ping"
 
 
 def test_member_from_event():
@@ -132,7 +131,6 @@ def test_from_manage_command_event():
     event = discord_event.from_event(event_body)
 
     # Then
-    assert event.type == discord_event.CommandType.COMMAND
     assert event.channel_id == 1001
     assert event.guild_id == 4001
 
@@ -197,7 +195,6 @@ def test_from_manage_list_command_event():
     event = discord_event.from_event(event_body)
 
     # Then
-    assert event.type == discord_event.CommandType.COMMAND
     assert event.channel_id == 1001
     assert event.guild_id == 4001
 
@@ -255,7 +252,6 @@ def test_from_manage_list_without_options_command_event():
     event = discord_event.from_event(event_body)
 
     # Then
-    assert event.type == discord_event.CommandType.COMMAND
     assert event.channel_id == 1001
     assert event.guild_id == 4001
 
@@ -319,7 +315,6 @@ def test_from_admin_command_event():
     event = discord_event.from_event(event_body)
 
     # Then
-    assert event.type == discord_event.CommandType.COMMAND
     assert event.channel_id == 1001
     assert event.guild_id == 4001
 
@@ -379,7 +374,6 @@ def test_from_guess_command_event():
     event = discord_event.from_event(event_body)
 
     # Then
-    assert event.type == discord_event.CommandType.COMMAND
     assert event.channel_id == 1001
     assert event.guild_id == 4001
 
@@ -441,7 +435,6 @@ def test_from_create_command_event():
     event = discord_event.from_event(event_body)
 
     # Then
-    assert event.type == discord_event.CommandType.COMMAND
     assert event.channel_id == 1001
     assert event.guild_id == 3001
 

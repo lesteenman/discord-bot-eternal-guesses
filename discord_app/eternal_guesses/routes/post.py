@@ -5,20 +5,21 @@ from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
+from eternal_guesses.routes.route import Route
 from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
 
 
-class PostRoute():
+class PostRoute(Route):
     def __init__(self,
-                 command_authorizer: CommandAuthorizer = None,
-                 games_repository: GamesRepository = None,
-                 message_provider: MessageProvider = None,
-                 discord_messaging: DiscordMessaging = None):
+                 command_authorizer: CommandAuthorizer,
+                 games_repository: GamesRepository,
+                 message_provider: MessageProvider,
+                 discord_messaging: DiscordMessaging):
+        self.command_authorizer = command_authorizer
         self.discord_messaging = discord_messaging
         self.message_provider = message_provider
         self.games_repository = games_repository
-        self.command_authorizer = command_authorizer
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         await self.command_authorizer.authorize_management_call(event)

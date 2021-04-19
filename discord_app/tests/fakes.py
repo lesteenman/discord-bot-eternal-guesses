@@ -15,15 +15,16 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class FakeCommandAuthorizer(CommandAuthorizer):
-    def __init__(self, passes: bool):
-        self.passes = passes
+    def __init__(self, management: bool = True, admin: bool = True):
+        self.management = management
+        self.admin = admin
 
     async def authorize_management_call(self, event: DiscordEvent):
-        if self.passes is False:
+        if self.management is False:
             raise DiscordEventDisallowedError("Disallowed")
 
     async def authorize_admin_call(self, event: DiscordEvent):
-        if self.passes is False:
+        if self.admin is False:
             raise DiscordEventDisallowedError("Disallowed")
 
 

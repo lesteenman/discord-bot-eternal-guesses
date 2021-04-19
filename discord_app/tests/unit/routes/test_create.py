@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand, CommandType
+from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from eternal_guesses.routes import create
@@ -34,9 +34,7 @@ async def test_create_generated_id(mock_id_generator, mock_datetime):
 
     # When
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={}
         ),
@@ -77,9 +75,7 @@ async def test_create_given_id(mock_datetime):
 
     # When
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': game_id
@@ -122,9 +118,7 @@ async def test_create_duplicate_given_id():
 
     # When
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': game_id
@@ -147,9 +141,7 @@ async def test_create_sets_created_by_to_calling_user():
     mock_games_repository.get.return_value = None
 
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': 'game-id'
@@ -184,9 +176,7 @@ async def test_create_sets_title_and_description():
     mock_games_repository.get.return_value = None
 
     event = DiscordEvent(
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="create",
             options={
                 'game-id': 'game-id',

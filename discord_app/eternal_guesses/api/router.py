@@ -1,27 +1,14 @@
-from loguru import logger
+import typing
 from abc import ABC
 
-from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType, DiscordCommand
-from eternal_guesses.model.discord_response import DiscordResponse
+from loguru import logger
+
+from eternal_guesses.api.route_definition import RouteDefinition
+from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
+from eternal_guesses.model.error.unkonwn_event_exception import UnknownEventException
 from eternal_guesses.model.lambda_response import LambdaResponse
-from eternal_guesses.routes.admin import AdminRoute
-from eternal_guesses.routes.create import CreateRoute
-from eternal_guesses.routes.guess import GuessRoute
-from eternal_guesses.routes.manage import ManageRoute
-from eternal_guesses.routes.ping import PingRoute
-from eternal_guesses.routes.post import PostRoute
-
-
-class UnknownEventException(Exception):
-    def __init__(self, event: DiscordEvent):
-        super().__init__(f"could not handle event (type={event.type}")
-
-
-class UnknownCommandException(Exception):
-    def __init__(self, command: DiscordCommand):
-        super().__init__(f"could not handle command (command={command.command_name}, "
-                         f"subcommand={command.subcommand_name})")
+from eternal_guesses.routes.route import Route
 
 
 class Router(ABC):
@@ -30,79 +17,69 @@ class Router(ABC):
 
 
 class RouterImpl(Router):
-    def __init__(self, manage_route: ManageRoute = None, post_route: PostRoute = None, create_route: CreateRoute = None,
-                 guess_route: GuessRoute = None, ping_route: PingRoute = None, admin_route: AdminRoute = None):
-        self.manage_route = manage_route
+    def __init__(self,
+                 close_game_route: Route,
+                 list_games_route: Route,
+                 post_route: Route,
+                 create_route: Route,
+                 guess_route: Route,
+                 ping_route: Route,
+                 guild_info_route: Route,
+                 add_management_channel_route: Route,
+                 remove_management_channel_route: Route,
+                 add_management_role_route: Route,
+                 remove_management_role_route: Route):
+        self.list_games_route = list_games_route
+        self.close_game_route = close_game_route
         self.post_route = post_route
         self.create_route = create_route
         self.guess_route = guess_route
         self.ping_route = ping_route
-        self.admin_route = admin_route
+        self.guild_info_route = guild_info_route
+        self.add_management_channel_route = add_management_channel_route
+        self.remove_management_channel_route = remove_management_channel_route
+        self.add_management_role_route = add_management_role_route
+        self.remove_management_role_route = remove_management_role_route
 
-    async def _handle_manage_command(self, event: DiscordEvent) -> DiscordResponse:
-        if event.command.subcommand_name == "post":
-            return await self.post_route.call(event)
+        self.routes = []
+        self._register_routes()
 
-        if event.command.subcommand_name == "close":
-            return await self.manage_route.close(event)
+    def _register_routes(self):
+        self._register(RouteDefinition(self.ping_route, 'ping'))
+        self._register(RouteDefinition(self.guess_route, 'guess'))
+        self._register(RouteDefinition(self.post_route, 'manage', 'post', permission='manage'))
+        self._register(RouteDefinition(self.close_game_route, 'manage', 'close', permission='manage'))
+        self._register(RouteDefinition(self.list_games_route, 'manage', 'list-games', permission='manage'))
+        self._register(RouteDefinition(self.create_route, 'create', permission='manage'))
+        self._register(RouteDefinition(self.guild_info_route, 'admin', 'info', permission='admin'))
+        self._register(RouteDefinition(self.add_management_channel_route, 'admin', 'add-management-channel',
+                                       permission='admin'))
+        self._register(RouteDefinition(self.remove_management_channel_route, 'admin', 'remove-management-channel',
+                                       permission='admin'))
+        self._register(RouteDefinition(self.add_management_role_route, 'admin', 'add-management-role',
+                                       permission='admin'))
+        self._register(RouteDefinition(self.remove_management_role_route, 'admin', 'remove-management-role',
+                                       permission='admin'))
 
-        if event.command.subcommand_name == "list-games":
-            return await self.manage_route.list_games(event)
-
-        raise UnknownCommandException(event.command)
-
-    async def _handle_admin_command(self, event: DiscordEvent) -> DiscordResponse:
-        if event.command.subcommand_name == "info":
-            return await self.admin_route.info(event)
-
-        if event.command.subcommand_name == "add-management-channel":
-            return await self.admin_route.add_management_channel(event)
-
-        if event.command.subcommand_name == "remove-management-channel":
-            return await self.admin_route.remove_management_channel(event)
-
-        if event.command.subcommand_name == "add-management-role":
-            return await self.admin_route.add_management_role(event)
-
-        if event.command.subcommand_name == "remove-management-role":
-            return await self.admin_route.remove_management_role(event)
-
-        raise UnknownCommandException(event.command)
-
-    async def _handle_application_command(self, event: DiscordEvent) -> DiscordResponse:
-        if event.command.command_name == "guess":
-            return await self.guess_route.call(event)
-
-        if event.command.command_name == "create":
-            return await self.create_route.call(event)
-
-        if event.command.command_name == "manage":
-            return await self._handle_manage_command(event)
-
-        if event.command.command_name == "admin":
-            return await self._handle_admin_command(event)
-
-        raise UnknownCommandException(event.command)
+    def _register(self, definition: RouteDefinition):
+        self.routes.append(definition)
 
     async def route(self, event: DiscordEvent) -> LambdaResponse:
-        if event.type is CommandType.PING:
-            logger.info("handling 'ping'")
-            discord_response = await self.ping_route.call()
+        route = self.find_matching_route(event)
 
+        if route is None:
+            raise UnknownEventException(event)
+
+        try:
+            discord_response = await route.handle(event)
             return LambdaResponse.success(discord_response.json())
+        except DiscordEventDisallowedError as e:
+            logger.warning(f"disallowed call detected: {e}")
+            return LambdaResponse.unauthorized(str(e))
 
-        if event.type is CommandType.COMMAND:
-            logger.info(f"handling application command, type='{event.command.command_name}', "
-                        f"subcommand='{event.command.subcommand_name}'")
-            logger.debug(
-                f"guild={event.guild_id}, channel={event.channel_id}, user={event.member.user_id}")
-            logger.debug(f"options={event.command.options}")
+    def find_matching_route(self, event: DiscordEvent) -> typing.Optional[RouteDefinition]:
+        for route in self.routes:
+            if route.matches(event.command):
+                return route
 
-            try:
-                discord_response = await self._handle_application_command(event)
-                return LambdaResponse.success(discord_response.json())
-            except DiscordEventDisallowedError as e:
-                logger.warning(f"disallowed call detected: {e}")
-                return LambdaResponse.unauthorized(str(e))
-
-        raise UnknownEventException(event)
+        return None

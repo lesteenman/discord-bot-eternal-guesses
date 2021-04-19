@@ -3,10 +3,10 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.channel_message import ChannelMessage
+from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent, CommandType
+from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.routes import guess
 from eternal_guesses.routes.guess import GuessRoute
@@ -331,9 +331,7 @@ def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nic
 
     event = DiscordEvent(
         channel_id=event_channel_id,
-        command_type=CommandType.COMMAND,
         command=DiscordCommand(
-            command_id=-1,
             command_name="guess",
             options={
                 'game-id': game_id,

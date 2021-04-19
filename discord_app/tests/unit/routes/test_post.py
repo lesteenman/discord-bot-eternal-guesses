@@ -5,13 +5,12 @@ import pytest
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_command import DiscordCommand
-from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType
+from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.error.discord_event_disallowed_error import DiscordEventDisallowedError
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.post import PostRoute
-from eternal_guesses.util.discord_messaging import DiscordMessaging
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.util.message_provider import MessageProvider, MessageProviderImpl
 from tests.fakes import FakeGamesRepository, FakeDiscordMessaging, FakeCommandAuthorizer, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
@@ -37,7 +36,7 @@ async def test_post_creates_channel_message():
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When we post a channel message for our game with an explicit channel
@@ -75,24 +74,13 @@ async def test_post_without_channel_uses_event_channel():
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When we post a channel message without an explicit target channel
-    event = DiscordEvent(
-        command_type=CommandType.COMMAND,
-        guild_id=guild_id,
-        channel_id=event_channel_id,
-        command=DiscordCommand(
-            command_id=-1,
-            command_name="manage",
-            subcommand_name="post",
-            options={
-                'game-id': game_id,
-            }
-        ),
-        member=DiscordMember()
-    )
+    event = _make_event(guild_id=guild_id,
+                        channel_id=event_channel_id,
+                        options={'game-id': game_id})
     await post_route.call(event)
 
     # Then a message for that game is posted in the channel we sent this command from
@@ -116,7 +104,7 @@ async def test_post_saves_message_id_to_game():
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=FakeMessageProvider(),
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     # When
@@ -153,7 +141,7 @@ async def test_post_invalid_game_id_sends_dm_error():
         games_repository=games_repository,
         discord_messaging=discord_messaging,
         message_provider=message_provider,
-        command_authorizer=FakeCommandAuthorizer(passes=True)
+        command_authorizer=FakeCommandAuthorizer(management=True)
     )
 
     discord_member = DiscordMember()
@@ -181,32 +169,17 @@ async def test_post_invalid_game_id_sends_dm_error():
 
 async def test_post_disallowed():
     # Given
-    event_channel = 101
-    event_role = 201
-
-    member = DiscordMember(roles=[event_role])
-
-    command_authorizer = FakeCommandAuthorizer(passes=False)
+    command_authorizer = FakeCommandAuthorizer(management=False)
 
     manage_route = PostRoute(
         games_repository=GamesRepository(),
-        discord_messaging=DiscordMessaging(),
-        message_provider=MessageProvider(),
+        discord_messaging=FakeDiscordMessaging(),
+        message_provider=MessageProviderImpl(),
         command_authorizer=command_authorizer
     )
 
     # When
-    event = DiscordEvent(
-        command_type=CommandType.COMMAND,
-        guild_id=-1,
-        command=DiscordCommand(
-            command_id=-1,
-            command_name="manage",
-            subcommand_name="post"
-        ),
-        member=member,
-        channel_id=event_channel
-    )
+    event = _make_event()
 
     # Then
     try:
@@ -225,13 +198,11 @@ def _make_event(guild_id: int = -1, options: typing.Dict = None, discord_member:
         discord_member = DiscordMember()
 
     return DiscordEvent(
-        command_type=CommandType.COMMAND,
         guild_id=guild_id,
         channel_id=channel_id,
         command=DiscordCommand(
-            command_id=-1,
             command_name="manage",
-            subcommand_name="does-not-matter",
+            subcommand_name="post",
             options=options,
         ),
         member=discord_member
