@@ -8,7 +8,7 @@ provider:
 
 functions:
   numpy:
-    handler: eternal_guesses.handler.handle_lambda
+    handler: eternal_guesses.api.handler.handle_lambda
 
 plugins:
   - serverless-python-requirements
