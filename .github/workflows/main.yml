@@ -68,7 +68,7 @@ jobs:
         run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
 
       - name: Pytest
-        run: cd discord_app && poetry run pytest --cov=eternal_guesses --cov-report=xml
+        run: cd discord_app && poetry run coverage run -m pytest && poetry run coverage xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
