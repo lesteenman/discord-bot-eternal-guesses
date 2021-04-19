@@ -2,7 +2,7 @@ import json
 
 from discord_interactions import InteractionType
 
-from eternal_guesses.api import handler
+from eternal_guesses import handler
 
 
 def test_ping():
