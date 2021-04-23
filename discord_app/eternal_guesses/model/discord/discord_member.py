@@ -13,6 +13,10 @@ class DiscordMember:
         self.roles = roles
         self.is_admin = is_admin
 
+    def __repr__(self):
+        return f"<DiscordMember username={self.username} user_id={self.user_id} nickname={self.nickname} " \
+               f"roles={self.roles} is_admin={self.is_admin}>"
+
 
 def _member_from_data(member_data: Dict) -> DiscordMember:
     return DiscordMember(

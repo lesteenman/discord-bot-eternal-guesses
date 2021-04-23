@@ -78,6 +78,9 @@ class MessageProvider(ABC):
     def game_post_created_message(self) -> str:
         raise NotImplementedError()
 
+    def bot_missing_access(self) -> str:
+        raise NotImplementedError()
+
 
 class MessageProviderImpl(MessageProvider):
     def game_post_embed(self, game: Game) -> discord.Embed:
@@ -105,7 +108,7 @@ class MessageProviderImpl(MessageProvider):
         if game.closed:
             footer = "Game closed."
         else:
-            footer = f"`/guess game-id:{game.game_id} guess:<your guess>`"
+            footer = f"/guess game-id:{game.game_id} guess:<your guess>"
 
         embed = discord.Embed(title=title, description=description, color=0x723EEA)
         embed.set_footer(text=footer)
@@ -209,3 +212,6 @@ class MessageProviderImpl(MessageProvider):
 
     def game_created(self, game) -> str:
         return f"Game {game.game_id} created."
+
+    def bot_missing_access(self) -> str:
+        return "The bot is missing permissions to perform this command. Please inform a server admin."

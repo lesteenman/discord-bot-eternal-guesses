@@ -15,6 +15,10 @@ class DiscordCommand:
             options = {}
         self.options = options
 
+    def __repr__(self):
+        return f"<DiscordCommand command_id={self.command_id} command_name={self.command_name} " \
+               f"subcommand_name={self.subcommand_name} options={self.options}>"
+
 
 def _command_from_data(event_data):
     if event_data['name'] == "guess":

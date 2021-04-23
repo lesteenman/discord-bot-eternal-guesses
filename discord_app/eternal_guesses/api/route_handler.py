@@ -1,5 +1,8 @@
 from abc import ABC
 
+import discord
+from loguru import logger as log
+
 from eternal_guesses.api.permission_set import PermissionSet
 from eternal_guesses.api.route_definition import RouteDefinition
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
@@ -31,7 +34,16 @@ class RouteHandlerImpl(RouteHandler):
             if not allowed:
                 return self._disallowed_admin_call(event.command)
 
-        return await route_definition.route.call(event)
+        try:
+            return await route_definition.route.call(event)
+        except discord.Forbidden as e:
+            log.error(f"discord.Forbidden while handling {event.command}")
+            log.opt(exception=True).exception(e)
+            return self._bot_disallowed()
+        except Exception as e:
+            log.error(f"Unexpected error occured while handling event {event}")
+            log.opt(exception=True).exception(e)
+            raise e
 
     def _disallowed_management_call(self, command: DiscordCommand) -> DiscordResponse:
         response = DiscordResponse.channel_message()
@@ -44,5 +56,12 @@ class RouteHandlerImpl(RouteHandler):
         response = DiscordResponse.channel_message()
         response.is_ephemeral = True
         response.content = self.message_provider.disallowed_admin_call(command)
+
+        return response
+
+    def _bot_disallowed(self):
+        response = DiscordResponse.channel_message()
+        response.is_ephemeral = True
+        response.content = self.message_provider.bot_missing_access()
 
         return response

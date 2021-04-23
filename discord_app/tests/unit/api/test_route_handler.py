@@ -1,5 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
+import aiohttp
+import discord
 import pytest
 
 from eternal_guesses.api.permission_set import PermissionSet
@@ -102,6 +104,40 @@ async def test_handle_disallowed_admin_call():
     assert response.response_type == ResponseType.CHANNEL_MESSAGE
     assert response.is_ephemeral
     assert response.content == message
+
+
+async def test_handle_raised_forbidden():
+    # Given
+    clientside_error_message = "The bot has insufficient permissions to do this."
+
+    message_provider = MagicMock(MessageProvider)
+    message_provider.bot_missing_access.return_value = clientside_error_message
+
+    route_handler = _route_handler(message_provider=message_provider)
+
+    event = DiscordEvent(
+        command=DiscordCommand(
+            command_name="ping",
+        )
+    )
+
+    mock_route = AsyncMock(Route)
+    mock_route.call.side_effect = discord.Forbidden(
+        MagicMock(aiohttp.ClientResponse),
+        "Missing Access."
+    )
+
+    route_definition = RouteDefinition(
+        route=mock_route,
+        command="ping",
+    )
+
+    # When
+    response = await route_handler.handle(event, route_definition)
+
+    # Then
+    assert response.is_ephemeral
+    assert response.content == clientside_error_message
 
 
 def _route_handler(command_authorizer: CommandAuthorizer = None,
