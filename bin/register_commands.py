@@ -254,27 +254,27 @@ def register(config: Dict):
     for command in commands:
         create_command(command, config)
 
-    global_commands = [{
-        "name": "guess",
-        "description": "Submit your guess!",
-        "options": [
-            {
-                "name": "game-id",
-                "description": "The ID of the Eternal Guess game",
-                "type": COMMAND_OPTION_TYPE_STRING,
-                "required": True,
-            },
-            {
-                "name": "guess",
-                "description": "Your guess",
-                "type": COMMAND_OPTION_TYPE_STRING,
-                "required": True,
-            }
-        ]
-    }]
-
-    for command in global_commands:
-        create_command(command, config)
+    # global_commands = [{
+    #     "name": "guess",
+    #     "description": "Submit your guess!",
+    #     "options": [
+    #         {
+    #             "name": "game-id",
+    #             "description": "The ID of the Eternal Guess game",
+    #             "type": COMMAND_OPTION_TYPE_STRING,
+    #             "required": True,
+    #         },
+    #         {
+    #             "name": "guess",
+    #             "description": "Your guess",
+    #             "type": COMMAND_OPTION_TYPE_STRING,
+    #             "required": True,
+    #         }
+    #     ]
+    # }]
+    #
+    # for command in global_commands:
+    #     create_command(command, config)
 
 
 def get_config():
