@@ -28,9 +28,13 @@ class RouterImpl(Router):
                  add_management_channel_route: Route,
                  remove_management_channel_route: Route,
                  add_management_role_route: Route,
-                 remove_management_role_route: Route):
+                 remove_management_role_route: Route,
+                 edit_guess_route: Route,
+                 delete_guess_route: Route):
         self.route_handler = route_handler
         self.list_games_route = list_games_route
+        self.edit_guess_route = edit_guess_route
+        self.delete_guess_route = delete_guess_route
         self.close_game_route = close_game_route
         self.post_route = post_route
         self.create_route = create_route
@@ -53,6 +57,10 @@ class RouterImpl(Router):
         self._register(RouteDefinition(self.close_game_route, 'manage', 'close',
                                        permission=PermissionSet.MANAGEMENT))
         self._register(RouteDefinition(self.list_games_route, 'manage', 'list-games',
+                                       permission=PermissionSet.MANAGEMENT))
+        self._register(RouteDefinition(self.edit_guess_route, 'manage', 'edit-guess',
+                                       permission=PermissionSet.MANAGEMENT))
+        self._register(RouteDefinition(self.delete_guess_route, 'manage', 'delete-guess',
                                        permission=PermissionSet.MANAGEMENT))
         self._register(RouteDefinition(self.create_route, 'create',
                                        permission=PermissionSet.MANAGEMENT))

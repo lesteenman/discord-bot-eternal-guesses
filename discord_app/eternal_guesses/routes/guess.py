@@ -1,26 +1,22 @@
 from datetime import datetime
 
-import discord
-from loguru import logger
-
-from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.discord_messaging import DiscordMessaging
+from eternal_guesses.util.game_post_manager import GamePostManager
 from eternal_guesses.util.message_provider import MessageProvider
 
 
 class GuessRoute(Route):
     def __init__(self,
                  games_repository: GamesRepository,
-                 discord_messaging: DiscordMessaging,
-                 message_provider: MessageProvider):
+                 message_provider: MessageProvider,
+                 game_post_manager: GamePostManager):
         self.games_repository = games_repository
-        self.discord_messaging = discord_messaging
         self.message_provider = message_provider
+        self.game_post_manager = game_post_manager
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
@@ -51,23 +47,7 @@ class GuessRoute(Route):
         game.guesses[int(user_id)] = game_guess
         self.games_repository.save(game)
 
-        await self._update_channel_messages(game)
+        await self.game_post_manager.update(game)
 
         guess_added_message = self.message_provider.guess_added(game_id, guess)
         return DiscordResponse.ephemeral_channel_message(content=guess_added_message)
-
-    async def _update_channel_messages(self, game: Game):
-        logger.info(f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
-        if game.channel_messages is not None:
-            new_embed = self.message_provider.game_post_embed(game)
-            for channel_message in game.channel_messages:
-                logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
-                             f"message_id={channel_message.message_id}, message='{new_embed}'")
-
-                try:
-                    await self.discord_messaging.update_channel_message(channel_message.channel_id,
-                                                                        channel_message.message_id,
-                                                                        embed=new_embed)
-                except discord.NotFound:
-                    game.channel_messages.remove(channel_message)
-                    self.games_repository.save(game)

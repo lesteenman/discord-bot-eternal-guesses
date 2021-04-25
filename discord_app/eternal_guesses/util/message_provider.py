@@ -15,6 +15,9 @@ class MessageProvider(ABC):
     def error_game_not_found(self, game_id: str) -> str:
         raise NotImplementedError()
 
+    def error_guess_not_found(self, game_id: str, member_id: int) -> str:
+        raise NotImplementedError()
+
     def guess_added(self, game_id: str, guess: str) -> str:
         raise NotImplementedError()
 
@@ -81,6 +84,12 @@ class MessageProvider(ABC):
     def bot_missing_access(self) -> str:
         raise NotImplementedError()
 
+    def guess_edited(self) -> str:
+        raise NotImplementedError()
+
+    def guess_deleted(self) -> str:
+        raise NotImplementedError()
+
 
 class MessageProviderImpl(MessageProvider):
     def game_post_embed(self, game: Game) -> discord.Embed:
@@ -117,6 +126,9 @@ class MessageProviderImpl(MessageProvider):
 
     def error_game_not_found(self, game_id: str) -> str:
         return f"No game found with id {game_id}."
+
+    def error_guess_not_found(self, game_id: str, member_id: str) -> str:
+        return f"No guess found by <@{member_id}> found for game {game_id}."
 
     def guess_added(self, game_id: str, guess: str) -> str:
         return f"Your guess '{guess}' for game '{game_id}' has been registered."
@@ -215,3 +227,9 @@ class MessageProviderImpl(MessageProvider):
 
     def bot_missing_access(self) -> str:
         return "The bot is missing permissions to perform this command. Please inform a server admin."
+
+    def guess_edited(self) -> str:
+        return "The guess has been edited."
+
+    def guess_deleted(self) -> str:
+        return "The guess has been deleted."

@@ -1,10 +1,9 @@
 from datetime import datetime
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 
 import discord
 import pytest
 
-from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent
@@ -12,9 +11,9 @@ from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes import guess
 from eternal_guesses.routes.guess import GuessRoute
-from eternal_guesses.util.discord_messaging import DiscordMessaging
+from eternal_guesses.util.game_post_manager import GamePostManager
 from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeDiscordMessaging, FakeGamesRepository, FakeMessageProvider
+from tests.fakes import FakeGamesRepository, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
 
@@ -42,11 +41,9 @@ async def test_guess_updates_game_guesses(mock_datetime):
     )
 
     fake_games_repository = FakeGamesRepository([existing_game])
-    fake_discord_messaging = FakeDiscordMessaging()
 
     guess_route = _route(
         games_repository=fake_games_repository,
-        discord_messaging=fake_discord_messaging,
     )
 
     # When we make a guess
@@ -76,8 +73,6 @@ async def test_guess_updates_channel_messages():
     # Given
     guild_id = 1001
     user_id = 12000
-    game_post_1 = ChannelMessage(channel_id=1000, message_id=5000)
-    game_post_2 = ChannelMessage(channel_id=1005, message_id=5005)
 
     post_embed = discord.Embed()
     message_provider = MagicMock(MessageProvider)
@@ -85,17 +80,16 @@ async def test_guess_updates_channel_messages():
 
     game = Game(
         guild_id=guild_id,
-        game_id='game-id',
-        channel_messages=[game_post_1, game_post_2]
+        game_id="game-1",
     )
 
     games_repository = FakeGamesRepository([game])
-    discord_messaging = FakeDiscordMessaging()
+    game_post_manager = MagicMock(GamePostManager)
 
     guess_route = _route(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
-        message_provider=message_provider
+        message_provider=message_provider,
+        game_post_manager=game_post_manager,
     )
 
     # When
@@ -103,53 +97,7 @@ async def test_guess_updates_channel_messages():
     await guess_route.call(event)
 
     # Then
-    update_channel_message_calls = discord_messaging.updated_channel_messages
-    assert len(update_channel_message_calls) == 2
-    assert {
-        'channel_id': game_post_1.channel_id,
-        'message_id': game_post_1.message_id,
-        'embed': post_embed,
-    } in update_channel_message_calls
-    assert {
-        'channel_id': game_post_2.channel_id,
-        'message_id': game_post_2.message_id,
-        'embed': post_embed,
-    } in update_channel_message_calls
-
-
-async def test_guess_channel_message_gone_silently_fails():
-    # Given
-    guild_id = 1001
-    user_id = 12000
-    game_id = 'game-id'
-    deleted_channel_message = ChannelMessage(channel_id=1000, message_id=5000)
-    other_channel_message = ChannelMessage(channel_id=1000, message_id=5001)
-
-    # We have a game with two channel messages
-    game = Game(
-        guild_id=guild_id,
-        game_id=game_id,
-        channel_messages=[deleted_channel_message, other_channel_message]
-    )
-    games_repository = FakeGamesRepository([game])
-
-    # And we will get a 'not found' error after updating one of those messages
-    discord_messaging = FakeDiscordMessaging()
-    discord_messaging.raise_404_on_update_of_message(deleted_channel_message.message_id)
-
-    guess_route = _route(
-        discord_messaging=discord_messaging,
-        games_repository=games_repository
-    )
-
-    # When we trigger an update
-    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
-    await guess_route.call(event)
-
-    # Then that channel message is removed from the game
-    updated_game = games_repository.get(guild_id=guild_id, game_id=game_id)
-    assert len(updated_game.channel_messages) == 1
-    assert updated_game.channel_messages[0].message_id == other_channel_message.message_id
+    game_post_manager.update.assert_called_with(game)
 
 
 async def test_guess_replies_with_ephemeral_message():
@@ -247,9 +195,8 @@ async def test_guess_duplicate_guess():
     message_provider = MagicMock(MessageProvider)
     message_provider.error_duplicate_guess.return_value = duplicate_guess_message
 
-    guess_route = GuessRoute(
+    guess_route = _route(
         games_repository=games_repository,
-        discord_messaging=FakeDiscordMessaging(),
         message_provider=message_provider
     )
 
@@ -297,9 +244,8 @@ async def test_guess_closed_game():
     message_provider = MagicMock(MessageProvider)
     message_provider.error_guess_on_closed_game.return_value = duplicate_guess_message
 
-    route = GuessRoute(
+    route = _route(
         games_repository=games_repository,
-        discord_messaging=FakeDiscordMessaging(),
         message_provider=message_provider,
     )
 
@@ -346,12 +292,9 @@ def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nic
     return event
 
 
-def _route(discord_messaging: DiscordMessaging = None,
-           games_repository: GamesRepository = None,
-           message_provider: MessageProvider = None):
-
-    if discord_messaging is None:
-        discord_messaging = FakeDiscordMessaging()
+def _route(games_repository: GamesRepository = None,
+           message_provider: MessageProvider = None,
+           game_post_manager: GamePostManager = None):
 
     if games_repository is None:
         games_repository = FakeGamesRepository([])
@@ -359,9 +302,12 @@ def _route(discord_messaging: DiscordMessaging = None,
     if message_provider is None:
         message_provider = FakeMessageProvider()
 
+    if game_post_manager is None:
+        game_post_manager = AsyncMock(GamePostManager, autospec=True)
+
     guess_route = GuessRoute(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
         message_provider=message_provider,
+        game_post_manager=game_post_manager,
     )
     return guess_route
