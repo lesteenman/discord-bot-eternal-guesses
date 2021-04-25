@@ -180,6 +180,50 @@ def register(config: Dict):
                                     "required": False,
                                 }
                             ]
+                        },
+                        {
+                            "name": "delete-guess",
+                            "description": "Delete a member's guess on a game.",
+                            "type": COMMAND_OPTION_TYPE_SUB_COMMAND,
+                            "options": [
+                                {
+                                    "name": "game-id",
+                                    "description": "The ID of the Eternal Guess game",
+                                    "type": COMMAND_OPTION_TYPE_STRING,
+                                    "required": True,
+                                },
+                                {
+                                    "name": "member",
+                                    "description": "The member whose guess to delete",
+                                    "type": COMMAND_OPTION_TYPE_USER,
+                                    "required": True,
+                                },
+                            ]
+                        },
+                        {
+                            "name": "edit-guess",
+                            "description": "Edit a member's guess on a game.",
+                            "type": COMMAND_OPTION_TYPE_SUB_COMMAND,
+                            "options": [
+                                {
+                                    "name": "game-id",
+                                    "description": "The ID of the Eternal Guess game",
+                                    "type": COMMAND_OPTION_TYPE_STRING,
+                                    "required": True,
+                                },
+                                {
+                                    "name": "member",
+                                    "description": "The member whose guess to change",
+                                    "type": COMMAND_OPTION_TYPE_USER,
+                                    "required": True,
+                                },
+                                {
+                                    "name": "guess",
+                                    "description": "The new guess",
+                                    "type": COMMAND_OPTION_TYPE_STRING,
+                                    "required": True,
+                                },
+                            ]
                         }
                     ]
                 },

@@ -3,7 +3,8 @@ from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
 from tests.integration.helpers import create_context, make_discord_create_event, \
-    make_discord_guess_event, make_discord_manage_post_event
+    make_discord_guess_event, make_discord_manage_post_event, make_discord_change_guess_event, \
+    make_discord_delete_guess_event
 
 
 def test_integration_full_flow():
@@ -59,6 +60,21 @@ def test_integration_full_flow():
     assert game.guesses[another_user_id].guess == guess
     assert len(game.guesses) == 2
 
+    # Change a member's guess as a management user
+    new_guess = "5600"
+    change_guess(guild_id=guild_id, game_id=game_id, guessing_user_id=user_id, new_guess=new_guess,
+                 channel_id=management_channel)
+
+    game = games_repository.get(guild_id, game_id)
+    assert game.guesses[user_id].guess == new_guess
+
+    # Delete a member's guess as a management user
+    delete_guess(guild_id=guild_id, game_id=game_id, guessing_user_id=user_id, channel_id=management_channel)
+
+    game = games_repository.get(guild_id, game_id)
+    assert user_id not in game.guesses
+    assert another_user_id in game.guesses
+
 
 def guess_on_game(guild_id: int, game_id: str, guess: str, user_id: int):
     response = handler.handle_lambda(
@@ -90,6 +106,28 @@ def post_channel_message(guild_id: int, game_id: str, channel_id: int):
             guild_id=guild_id,
             game_id=game_id,
             channel_id=channel_id),
+        create_context()
+    )
+
+    assert response['statusCode'] == 200
+
+
+def change_guess(guild_id: int, game_id: str, new_guess: str, guessing_user_id: int, channel_id: int):
+    response = handler.handle_lambda(
+        make_discord_change_guess_event(
+            guild_id=guild_id, game_id=game_id, member=guessing_user_id, new_guess=new_guess, channel_id=channel_id
+        ),
+        create_context()
+    )
+
+    assert response['statusCode'] == 200
+
+
+def delete_guess(guild_id: int, game_id: str, guessing_user_id: int, channel_id: int):
+    response = handler.handle_lambda(
+        make_discord_delete_guess_event(
+            guild_id=guild_id, game_id=game_id, member=guessing_user_id, channel_id=channel_id
+        ),
         create_context()
     )
 

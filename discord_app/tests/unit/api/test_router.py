@@ -63,6 +63,8 @@ def _router(
         remove_management_channel_route=None,
         add_management_role_route=None,
         remove_management_role_route=None,
+        edit_guess_route=None,
+        delete_guess_route=None,
 ):
     return RouterImpl(
         route_handler=route_handler,
@@ -77,4 +79,6 @@ def _router(
         remove_management_channel_route=remove_management_channel_route or Route(),
         add_management_role_route=add_management_role_route or Route(),
         remove_management_role_route=remove_management_role_route or Route(),
+        edit_guess_route=edit_guess_route or Route(),
+        delete_guess_route=delete_guess_route or Route(),
     )

@@ -9,6 +9,8 @@ from eternal_guesses.routes.add_management_channel import AddManagementChannelRo
 from eternal_guesses.routes.add_management_role import AddManagementRoleRoute
 from eternal_guesses.routes.close_game import CloseGameRoute
 from eternal_guesses.routes.create import CreateRoute
+from eternal_guesses.routes.delete_guess import DeleteGuessRoute
+from eternal_guesses.routes.edit_guess import EditGuessRoute
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.routes.guild_info import GuildInfoRoute
 from eternal_guesses.routes.list_games import ListGamesRoute
@@ -17,6 +19,7 @@ from eternal_guesses.routes.post import PostRoute
 from eternal_guesses.routes.remove_management_channel import RemoveManagementChannelRoute
 from eternal_guesses.routes.remove_management_role import RemoveManagementRoleRoute
 from eternal_guesses.util.discord_messaging import DiscordMessaging, DiscordMessagingImpl
+from eternal_guesses.util.game_post_manager import GamePostManager, GamePostManagerImpl
 from eternal_guesses.util.message_provider import MessageProviderImpl, MessageProvider
 
 
@@ -38,6 +41,12 @@ def _router() -> Router:
     message_provider = _message_provider()
     command_authorizer = _command_authorizer(configs_repository=configs_repository)
 
+    game_post_manager = GamePostManagerImpl(
+        games_repository=games_repository,
+        message_provider=message_provider,
+        discord_messaging=discord_messaging,
+    )
+
     route_handler = _route_handler(
         command_authorizer=command_authorizer,
         message_provider=message_provider,
@@ -51,7 +60,7 @@ def _router() -> Router:
     )
     guess_route = _guess_route(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
+        game_post_manager=game_post_manager,
         message_provider=message_provider
     )
     close_game_route = _close_game_route(
@@ -88,6 +97,16 @@ def _router() -> Router:
         configs_repository=configs_repository,
         message_provider=message_provider,
     )
+    edit_guess_route = _edit_guess_route(
+        games_repository=games_repository,
+        message_provider=message_provider,
+        game_post_manager=game_post_manager,
+    )
+    delete_guess_route = _delete_guess_route(
+        games_repository=games_repository,
+        message_provider=message_provider,
+        game_post_manager=game_post_manager,
+    )
 
     return RouterImpl(
         route_handler=route_handler,
@@ -102,6 +121,8 @@ def _router() -> Router:
         remove_management_channel_route=remove_management_channel_route,
         add_management_role_route=add_management_role_route,
         remove_management_role_route=remove_management_role_route,
+        edit_guess_route=edit_guess_route,
+        delete_guess_route=delete_guess_route,
     )
 
 
@@ -139,12 +160,12 @@ def _create_route(games_repository: GamesRepository,
 
 
 def _guess_route(games_repository: GamesRepository,
-                 discord_messaging: DiscordMessaging,
+                 game_post_manager: GamePostManager,
                  message_provider: MessageProvider):
     return GuessRoute(
         games_repository=games_repository,
-        discord_messaging=discord_messaging,
-        message_provider=message_provider
+        message_provider=message_provider,
+        game_post_manager=game_post_manager,
     )
 
 
@@ -209,6 +230,30 @@ def _remove_management_role_route(
     return RemoveManagementRoleRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
+    )
+
+
+def _edit_guess_route(
+        games_repository: GamesRepository,
+        message_provider: MessageProvider,
+        game_post_manager: GamePostManager,
+):
+    return EditGuessRoute(
+        games_repository=games_repository,
+        message_provider=message_provider,
+        game_post_manager=game_post_manager,
+    )
+
+
+def _delete_guess_route(
+        games_repository: GamesRepository,
+        message_provider: MessageProvider,
+        game_post_manager: GamePostManager,
+):
+    return DeleteGuessRoute(
+        games_repository=games_repository,
+        message_provider=message_provider,
+        game_post_manager=game_post_manager,
     )
 
 
