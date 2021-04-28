@@ -114,13 +114,12 @@ class MessageProviderImpl(MessageProvider):
             guesses = "None yet!"
         description = f"{description}{guesses}"
 
-        if game.closed:
-            footer = "Game closed."
-        else:
-            footer = f"/guess game-id:{game.game_id} guess:<your guess>"
-
         embed = discord.Embed(title=title, description=description, color=0x723EEA)
-        embed.set_footer(text=footer)
+
+        if game.closed:
+            embed.set_footer(text="Game closed.")
+        else:
+            embed.add_field(name="Place your guess", value=f"/guess game-id:{game.game_id} guess:1234")
 
         return embed
 
