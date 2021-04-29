@@ -27,6 +27,8 @@ class EternalGuessesTable(Model):
     guesses = UnicodeAttribute(null=True)
     title = UnicodeAttribute(null=True)
     description = UnicodeAttribute(null=True)
+    min_guess = NumberAttribute(null=True)
+    max_guess = NumberAttribute(null=True)
 
     # GuildConfig
     management_roles = ListAttribute(of=NumberAttribute, null=True)

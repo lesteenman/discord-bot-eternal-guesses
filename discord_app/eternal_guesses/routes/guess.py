@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
@@ -38,6 +39,11 @@ class GuessRoute(Route):
             error_message = self.message_provider.error_guess_on_closed_game(game_id)
             return DiscordResponse.ephemeral_channel_message(error_message)
 
+        if game.is_numeric():
+            if not self.validate_guess(game=game, guess=guess):
+                error_message = self.message_provider.invalid_guess(game)
+                return DiscordResponse.ephemeral_channel_message(error_message)
+
         game_guess = GameGuess()
         game_guess.user_id = user_id
         game_guess.user_nickname = user_nickname
@@ -51,3 +57,22 @@ class GuessRoute(Route):
 
         guess_added_message = self.message_provider.guess_added(game_id, guess)
         return DiscordResponse.ephemeral_channel_message(content=guess_added_message)
+
+    def validate_guess(self, game: Game, guess: str):
+        if not self.is_numeric(guess):
+            return False
+
+        if game.max_guess is not None and int(guess) > game.max_guess:
+            return False
+
+        if game.min_guess is not None and int(guess) < game.min_guess:
+            return False
+
+        return True
+
+    def is_numeric(self, guess: str):
+        try:
+            int(guess)
+            return True
+        except ValueError:
+            return False

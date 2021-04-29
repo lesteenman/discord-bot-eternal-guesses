@@ -26,6 +26,8 @@ class CreateRoute(Route):
         game_id = event.command.options.get('game-id')
         title = event.command.options.get('title')
         description = event.command.options.get('description')
+        min_guess = event.command.options.get('min')
+        max_guess = event.command.options.get('max')
 
         if game_id is None:
             game_id = self._generate_game_id(guild_id)
@@ -41,10 +43,12 @@ class CreateRoute(Route):
             game_id=game_id,
             title=title,
             description=description,
+            min_guess=min_guess,
+            max_guess=max_guess,
             created_by=event.member.user_id,
             create_datetime=datetime.now(),
             close_datetime=None,
-            closed=False
+            closed=False,
         )
         self.games_repository.save(game)
 
