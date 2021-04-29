@@ -11,10 +11,9 @@ from eternal_guesses.routes import create
 from eternal_guesses.routes.create import CreateRoute
 from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeDiscordMessaging
+from tests.fakes import FakeDiscordMessaging, FakeGamesRepository
 
 pytestmark = pytest.mark.asyncio
-
 
 GAME_CREATED_MESSAGE = "Game created."
 DUPLICATE_GAME_ID = "Duplicate game id."
@@ -178,7 +177,7 @@ async def test_create_sets_title_and_description():
     mock_games_repository = MagicMock(GamesRepositoryImpl, autospec=True)
     mock_games_repository.get.return_value = None
 
-    event = _make_event(description, title)
+    event = _make_event(description=description, title=title)
 
     # When
     create_route = _route(games_repository=mock_games_repository)
@@ -195,19 +194,53 @@ async def test_create_sets_title_and_description():
     assert response.content == GAME_CREATED_MESSAGE
 
 
+async def test_create_with_min_max():
+    # Given
+    min_guess = 1
+    max_guess = 20
+
+    guild_id = 1
+    game_id = 'game-with-min-max'
+
+    games_repository = FakeGamesRepository()
+
+    event = _make_event(guild_id=guild_id, game_id=game_id, min_guess=min_guess,
+                        max_guess=max_guess)
+
+    # When
+    create_route = _route(games_repository=games_repository)
+    response = await create_route.call(event)
+
+    # Then
+    saved_game = games_repository.get(guild_id, game_id)
+
+    assert saved_game.min_guess == min_guess
+    assert saved_game.max_guess == max_guess
+
+    assert response.is_ephemeral
+    assert response.content == GAME_CREATED_MESSAGE
+
+
 def _make_event(
-        description="",
-        title=""):
+        game_id: str = 'game-id',
+        guild_id: int = -1,
+        description: str = None,
+        title: str = None,
+        min_guess: int = None,
+        max_guess: int = None,
+):
     return DiscordEvent(
         command=DiscordCommand(
             command_name="create",
             options={
-                'game-id': 'game-id',
+                'game-id': game_id,
+                'min': min_guess,
+                'max': max_guess,
                 'title': title,
                 'description': description,
             }
         ),
-        guild_id=1000,
+        guild_id=guild_id,
         member=DiscordMember(),
     )
 

@@ -43,7 +43,7 @@ def make_discord_guess_event(guild_id: int, game_id: str, guess: str, user_id: i
 def make_discord_create_event(guild_id: int, game_id: str, game_title: str = None, game_description: str = None,
                               channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
                               member_nickname: str = DEFAULT_MEMBER_NICK, user_name: str = DEFAULT_USER_NAME,
-                              role_id: int = DEFAULT_ROLE_ID):
+                              role_id: int = DEFAULT_ROLE_ID, min_guess: int = None, max_guess: int = None):
     event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
                                   member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
 
@@ -64,6 +64,18 @@ def make_discord_create_event(guild_id: int, game_id: str, game_title: str = Non
         options.append({
             "name": "description",
             "value": game_description,
+        })
+
+    if min_guess is not None:
+        options.append({
+            "name": "min",
+            "value": min_guess,
+        })
+
+    if max_guess is not None:
+        options.append({
+            "name": "max",
+            "value": max_guess,
         })
 
     event_body['data'] = {

@@ -268,6 +268,133 @@ async def test_guess_closed_game():
     assert response.content == duplicate_guess_message
 
 
+async def test_guess_non_numerical_on_numeric_game():
+    # Given
+    guild_id = 1005
+    user_id = 13000
+    game_id = 'game-id'
+
+    response_message = "Guess must be a number"
+    message_provider = MagicMock(MessageProvider, autospec=True)
+    message_provider.invalid_guess.return_value = response_message
+
+    # And we have a game with a min and a max
+    game = Game(
+        guild_id=guild_id,
+        game_id=game_id,
+        min_guess=1,
+        max_guess=100
+    )
+
+    games_repository = FakeGamesRepository([game])
+    guess_route = _route(
+        games_repository=games_repository,
+        message_provider=message_provider,
+    )
+
+    # When
+    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
+    response = await guess_route.call(event)
+
+    # Then
+    assert response.is_ephemeral
+    assert response.content == response_message
+
+    # And the guess was not added
+    updated_game = games_repository.get(guild_id=guild_id, game_id=game_id)
+    assert len(updated_game.guesses) == 0
+
+
+async def test_guess_higher_than_max():
+    # Given
+    guild_id = 1005
+    user_id = 13000
+    game_id = 'game-id'
+
+    max_guess = 100
+
+    response_message = "Guess must be a number below 100"
+    message_provider = MagicMock(MessageProvider, autospec=True)
+    message_provider.invalid_guess.return_value = response_message
+
+    # And we have a game with a max
+    game = Game(
+        guild_id=guild_id,
+        game_id=game_id,
+        max_guess=max_guess,
+    )
+
+    games_repository = FakeGamesRepository([game])
+    guess_route = _route(
+        games_repository=games_repository,
+        message_provider=message_provider,
+    )
+
+    # When we guess higher than that
+    guess = "101"
+    event = _create_guess_event(
+        guild_id=guild_id,
+        game_id=game.game_id,
+        user_id=user_id,
+        user_nickname='nickname',
+        guess=guess,
+    )
+    response = await guess_route.call(event)
+
+    # Then
+    assert response.is_ephemeral
+    assert response.content == response_message
+
+    # And the guess was not added
+    updated_game = games_repository.get(guild_id=guild_id, game_id=game_id)
+    assert len(updated_game.guesses) == 0
+
+
+async def test_lower_than_min():
+    # Given
+    guild_id = 1005
+    user_id = 13000
+    game_id = 'game-id'
+
+    min_guess = -5
+
+    response_message = "Guess must be a number higher than -5"
+    message_provider = MagicMock(MessageProvider, autospec=True)
+    message_provider.invalid_guess.return_value = response_message
+
+    # And we have a game with a max
+    game = Game(
+        guild_id=guild_id,
+        game_id=game_id,
+        min_guess=min_guess,
+    )
+
+    games_repository = FakeGamesRepository([game])
+    guess_route = _route(
+        games_repository=games_repository,
+        message_provider=message_provider,
+    )
+
+    # When we guess lower than that
+    guess = "-6"
+    event = _create_guess_event(
+        guild_id=guild_id,
+        game_id=game.game_id,
+        user_id=user_id,
+        user_nickname='nickname',
+        guess=guess,
+    )
+    response = await guess_route.call(event)
+
+    # Then
+    assert response.is_ephemeral
+    assert response.content == response_message
+
+    # And the guess was not added
+    updated_game = games_repository.get(guild_id=guild_id, game_id=game_id)
+    assert len(updated_game.guesses) == 0
+
+
 def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nickname: str = 'nickname',
                         guess: str = 'not-relevant', event_channel_id: int = -1, member: DiscordMember = None):
     if member is None:
