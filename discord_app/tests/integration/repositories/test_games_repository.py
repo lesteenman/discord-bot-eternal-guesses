@@ -37,6 +37,7 @@ def test_get_minimal_game():
     # Then
     assert game.guild_id == retrieved_game.guild_id
     assert game.game_id == retrieved_game.game_id
+    assert not game.is_numeric()
 
 
 def test_get_game():
@@ -57,6 +58,8 @@ def test_get_game():
     closed = True
     title = 'A mockery of fools'
     description = 'A tale as old as time'
+    min_guess = 1
+    max_guess = 500
 
     game = Game(
         guild_id=guild_id,
@@ -67,6 +70,8 @@ def test_get_game():
         game_id=game_id,
         title=title,
         description=description,
+        min_guess=min_guess,
+        max_guess=max_guess,
         guesses={
             user_id: GameGuess(
                 user_id=user_id,
@@ -94,6 +99,10 @@ def test_get_game():
 
     assert retrieved_game.title == title
     assert retrieved_game.description == description
+
+    assert retrieved_game.min_guess == min_guess
+    assert retrieved_game.max_guess == max_guess
+    assert retrieved_game.is_numeric()
 
     assert user_id in retrieved_game.guesses
 

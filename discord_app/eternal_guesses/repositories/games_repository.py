@@ -6,8 +6,8 @@ from typing import Optional, List
 
 from pynamodb.exceptions import DoesNotExist
 
-from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.channel_message import ChannelMessage
+from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable, ChannelMessageMap
 
@@ -43,17 +43,11 @@ def _game_from_model(model: EternalGuessesTable) -> Game:
     if model.close_datetime is not None:
         close_datetime = datetime.fromisoformat(model.close_datetime)
 
-    closed = False
-    if model.closed is not None:
-        closed = model.closed
-
-    title = ""
-    if model.title is not None:
-        title = model.title
-
-    description = ""
-    if model.description is not None:
-        description = model.description
+    closed = model.closed or False
+    title = model.title or ""
+    description = model.description or ""
+    min_guess = model.min_guess
+    max_guess = model.max_guess
 
     channel_messages = []
     if model.channel_messages is not None:
@@ -69,12 +63,14 @@ def _game_from_model(model: EternalGuessesTable) -> Game:
         game_id=game_id,
         title=title,
         description=description,
+        min_guess=min_guess,
+        max_guess=max_guess,
         created_by=model.created_by,
         create_datetime=create_datetime,
         close_datetime=close_datetime,
         closed=closed,
         channel_messages=channel_messages,
-        guesses=guesses
+        guesses=guesses,
     )
 
 
@@ -142,6 +138,12 @@ class GamesRepositoryImpl(GamesRepository):
         if game.description:
             model.description = game.description
 
+        if game.min_guess:
+            model.min_guess = game.min_guess
+
+        if game.max_guess:
+            model.max_guess = game.max_guess
+
         if game.create_datetime is not None:
             model.create_datetime = game.create_datetime.isoformat()
 
@@ -149,15 +151,7 @@ class GamesRepositoryImpl(GamesRepository):
             model.close_datetime = game.close_datetime.isoformat()
 
         if game.guesses is not None:
-            guesses = {}
-            for user_id, game_guess in game.guesses.items():
-                guesses[user_id] = {
-                    'user_id': game_guess.user_id,
-                    'nickname': game_guess.nickname,
-                    'guess': game_guess.guess,
-                    'timestamp': game_guess.timestamp.isoformat(),
-                }
-            model.guesses = json.dumps(guesses)
+            model.guesses = json.dumps(self._guesses(game))
 
         if game.channel_messages is not None:
             channel_messages = []
@@ -166,3 +160,16 @@ class GamesRepositoryImpl(GamesRepository):
             model.channel_messages = channel_messages
 
         model.save()
+
+    def _guesses(self, game):
+        guesses = {}
+
+        for user_id, game_guess in game.guesses.items():
+            guesses[user_id] = {
+                'user_id': game_guess.user_id,
+                'nickname': game_guess.nickname,
+                'guess': game_guess.guess,
+                'timestamp': game_guess.timestamp.isoformat(),
+            }
+
+        return guesses

@@ -42,15 +42,15 @@ async def test_update_post():
     update_channel_message_calls = discord_messaging.updated_channel_messages
     assert len(update_channel_message_calls) == 2
     assert {
-               'channel_id': game_post_1.channel_id,
-               'message_id': game_post_1.message_id,
-               'embed': post_embed,
-           } in update_channel_message_calls
+        'channel_id': game_post_1.channel_id,
+        'message_id': game_post_1.message_id,
+        'embed': post_embed,
+    } in update_channel_message_calls
     assert {
-               'channel_id': game_post_2.channel_id,
-               'message_id': game_post_2.message_id,
-               'embed': post_embed,
-           } in update_channel_message_calls
+        'channel_id': game_post_2.channel_id,
+        'message_id': game_post_2.message_id,
+        'embed': post_embed,
+    } in update_channel_message_calls
 
 
 async def test_guess_channel_message_gone_silently_fails():

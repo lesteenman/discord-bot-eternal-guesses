@@ -90,6 +90,9 @@ class MessageProvider(ABC):
     def guess_deleted(self) -> str:
         raise NotImplementedError()
 
+    def invalid_guess(self, game: Game) -> str:
+        raise NotImplementedError()
+
 
 class MessageProviderImpl(MessageProvider):
     def game_post_embed(self, game: Game) -> discord.Embed:
@@ -105,7 +108,7 @@ class MessageProviderImpl(MessageProvider):
         description += "Guesses:\n\n"
 
         guess_list = []
-        for user_id, guess in sorted(game.guesses.items(), key=lambda i: i[1].guess):
+        for user_id, guess in _sorted_guesses(game):
             guess_list.append(f"<@{user_id}>: {guess.guess}")
 
         if len(guess_list) > 0:
@@ -232,3 +235,20 @@ class MessageProviderImpl(MessageProvider):
 
     def guess_deleted(self) -> str:
         return "The guess has been deleted."
+
+    def invalid_guess(self, game: Game) -> str:
+        if game.min_guess is not None and game.max_guess is not None:
+            return f"The guess must be a number between {game.min_guess} and {game.max_guess}"
+        elif game.min_guess is not None:
+            return f"The guess must be a number higher than {game.min_guess}"
+        elif game.max_guess is not None:
+            return f"The guess must be a number lower than {game.max_guess}"
+
+        raise NotImplementedError()
+
+
+def _sorted_guesses(game):
+    if game.is_numeric():
+        return sorted(game.guesses.items(), key=lambda i: int(i[1].guess))
+    else:
+        return sorted(game.guesses.items(), key=lambda i: i[1].guess)

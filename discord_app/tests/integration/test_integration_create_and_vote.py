@@ -29,6 +29,8 @@ def test_integration_full_flow():
                     game_id=game_id,
                     title=game_title,
                     description=game_description,
+                    min_guess=50,
+                    max_guess=5000,
                     channel_id=management_channel)
 
     game = games_repository.get(guild_id, game_id)
@@ -61,7 +63,7 @@ def test_integration_full_flow():
     assert len(game.guesses) == 2
 
     # Change a member's guess as a management user
-    new_guess = "5600"
+    new_guess = "4900"
     change_guess(guild_id=guild_id, game_id=game_id, guessing_user_id=user_id, new_guess=new_guess,
                  channel_id=management_channel)
 
@@ -75,6 +77,19 @@ def test_integration_full_flow():
     assert user_id not in game.guesses
     assert another_user_id in game.guesses
 
+    # Place a guess that's below the min
+    one_more_user_id = 102
+    guess_on_game(guild_id=guild_id, game_id=game_id, guess="49", user_id=one_more_user_id)
+
+    game = games_repository.get(guild_id, game_id)
+    assert one_more_user_id not in game.guesses
+
+    # Place a guess that's above the max
+    guess_on_game(guild_id=guild_id, game_id=game_id, guess="5001", user_id=one_more_user_id)
+
+    game = games_repository.get(guild_id, game_id)
+    assert one_more_user_id not in game.guesses
+
 
 def guess_on_game(guild_id: int, game_id: str, guess: str, user_id: int):
     response = handler.handle_lambda(
@@ -85,7 +100,8 @@ def guess_on_game(guild_id: int, game_id: str, guess: str, user_id: int):
     assert response['statusCode'] == 200
 
 
-def create_new_game(guild_id: int, game_id: str, title: str, description: str, channel_id: int):
+def create_new_game(guild_id: int, game_id: str, title: str, description: str, channel_id: int,
+                    min_guess: int, max_guess: int):
     response = handler.handle_lambda(
         make_discord_create_event(
             guild_id=guild_id,
@@ -93,6 +109,8 @@ def create_new_game(guild_id: int, game_id: str, title: str, description: str, c
             game_title=title,
             game_description=description,
             channel_id=channel_id,
+            min_guess=min_guess,
+            max_guess=max_guess,
         ),
         create_context()
     )

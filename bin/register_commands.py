@@ -127,6 +127,18 @@ def register(config: Dict):
                             "type": COMMAND_OPTION_TYPE_STRING,
                             "required": False,
                         },
+                        {
+                            "name": "min",
+                            "description": "The lowest guess allowed.",
+                            "type": COMMAND_OPTION_TYPE_INTEGER,
+                            "required": False,
+                        },
+                        {
+                            "name": "max",
+                            "description": "The highest guess allowed.",
+                            "type": COMMAND_OPTION_TYPE_INTEGER,
+                            "required": False,
+                        },
                     ],
                 },
                 {
