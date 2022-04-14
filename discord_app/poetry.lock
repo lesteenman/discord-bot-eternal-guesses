@@ -215,7 +215,7 @@ graph = ["objgraph (>=1.7.2)"]
 
 [[package]]
 name = "discord-interactions"
-version = "0.1.2"
+version = "0.3.0"
 description = "Useful tools for using the Discord Interactions API"
 category = "main"
 optional = false
@@ -966,7 +966,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "e2cb508ab9761b73df611e47fc0c6c18ba9fb8576320f68800bedfde9c093b68"
+content-hash = "148cf393f63f69b21e4d277d11ef26995a1f078d5cdc2bad34f7a6652ebfc01a"
 
 [metadata.files]
 aiohttp = [
@@ -1192,8 +1192,8 @@ dill = [
     {file = "dill-0.3.2.zip", hash = "sha256:6e12da0d8e49c220e8d6e97ee8882002e624f1160289ce85ec2cc0a5246b3a2e"},
 ]
 discord-interactions = [
-    {file = "discord-interactions-0.1.2.tar.gz", hash = "sha256:914eacd4a443a83f0bc65671b66874d0932c8e2062cdc4b4c7654feb87c553ab"},
-    {file = "discord_interactions-0.1.2-py3-none-any.whl", hash = "sha256:82f12d9e2d7e4fa48d082eff6c0acf6846dd2d7e9729dd97d01533903359f91b"},
+    {file = "discord-interactions-0.3.0.tar.gz", hash = "sha256:1b05dc7b85ffbaff0ebfd40c56655f3df15ca2aba4ed9bd1573388054de05814"},
+    {file = "discord_interactions-0.3.0-py3-none-any.whl", hash = "sha256:622798d4b233686c1f5f747789436b80fda21e1003bac20d0ff108cf678eb81b"},
 ]
 "discord.py" = [
     {file = "discord.py-1.7.3-py3-none-any.whl", hash = "sha256:c6f64db136de0e18e090f6752ea68bdd4ab0a61b82dfe7acecefa22d6477bb0c"},
