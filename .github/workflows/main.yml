@@ -31,7 +31,7 @@ jobs:
 
       - name: Load cached venv for discord-app
         id: cached-discord-app-poetry
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             discord_app/.venv
@@ -44,7 +44,7 @@ jobs:
 
       - name: Load cached venv for infra
         id: cached-infra-poetry
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: infra/.venv
           key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
@@ -55,7 +55,7 @@ jobs:
 
       - name: Load cached node modules
         id: cached-node-modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: node_modules/
           key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -135,7 +135,7 @@ jobs:
 
       - name: Load cached venv for infra
         id: cached-infra-poetry
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: infra/.venv
           key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
