@@ -7,3 +7,7 @@ class GameGuess:
         self.guess = guess
         self.nickname = nickname
         self.timestamp = timestamp
+
+    def __repr__(self):
+        return f"<GameGuess user_id={self.user_id}, guess={self.guess}, nickname={self.nickname}, " \
+               f"timestamp={self.timestamp}"

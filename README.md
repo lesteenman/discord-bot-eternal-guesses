@@ -10,6 +10,12 @@ Anyone in your server can place a guess - but only once!
 
 Eternal Guesses makes use of Discord slash-commands, which means the commands are auto-completed by your server.
 
+# Installing
+
+Invite the bot to your server by clicking the link below:
+
+https://discord.com/api/oauth2/authorize?client_id=800097006251933706&permissions=0&scope=bot
+
 # Usage
 
 ## Global commands
@@ -65,12 +71,6 @@ Adds a role to the list of management roles. Anyone with this role can run manag
 `/eternal-guess admin remove-management-role role:<role>`
 
 Removes a role from the list of management roles.
-
-# Installing
-
-Invite the bot to your server by clicking the link below:
-
-https://discord.com/api/oauth2/authorize?client_id=800097006251933706&permissions=0&scope=bot
 
 # Developing
 
