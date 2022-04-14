@@ -1,5 +1,5 @@
 service: discord-app
-frameworkVersion: ^2.21.1
+frameworkVersion: ^3.13.0
 
 provider:
   name: aws
