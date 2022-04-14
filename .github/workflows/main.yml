@@ -111,13 +111,13 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Restore the artifact for the discord-app
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: discord-app-package
           path: discord_app/.serverless/
 
       - name: Restore the artifact for the error-parser
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: error-parser-package
           path: error_parser_function/.serverless/
