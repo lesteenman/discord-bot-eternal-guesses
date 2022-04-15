@@ -83,7 +83,7 @@ jobs:
         run: cd discord_app/ && npx serverless package && cd ../
 
       - name: Create artifact for the discord-app bot
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: discord-app-package
           path: discord_app/.serverless/discord-app.zip
@@ -92,13 +92,13 @@ jobs:
         run: cd error_parser_function/ && npx serverless package && cd ../
 
       - name: Create artifact for the error-parser
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: error-parser-package
           path: error_parser_function/.serverless/error-parser.zip
 
       - name: Create artifact for the infra module
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: infra
           path: infra/
