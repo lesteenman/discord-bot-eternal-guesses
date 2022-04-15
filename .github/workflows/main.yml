@@ -71,7 +71,7 @@ jobs:
         run: cd discord_app && poetry run coverage run -m pytest && poetry run coverage xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: discord_app/coverage.xml
