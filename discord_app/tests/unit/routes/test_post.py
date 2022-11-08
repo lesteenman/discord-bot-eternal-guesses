@@ -10,7 +10,8 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.routes.post import PostRoute
 from eternal_guesses.util.message_provider import MessageProvider
-from tests.fakes import FakeGamesRepository, FakeDiscordMessaging, FakeMessageProvider
+from tests.fakes import FakeGamesRepository, FakeDiscordMessaging, \
+    FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
 
@@ -27,8 +28,10 @@ async def test_post_creates_channel_message():
 
     # And we have a mock message provider
     post_embed = discord.Embed()
+    post_view = discord.ui.View()
     message_provider = MagicMock(MessageProvider)
     message_provider.game_post_embed.return_value = post_embed
+    message_provider.game_post_view.return_value = post_view
 
     discord_messaging = FakeDiscordMessaging()
     post_route = PostRoute(
@@ -45,7 +48,11 @@ async def test_post_creates_channel_message():
     await post_route.call(event)
 
     # Then a message about that game is posted in the given channel
-    assert {'channel_id': channel_id, 'embed': post_embed} in discord_messaging.sent_channel_messages
+    assert {
+               'channel_id': channel_id,
+               'embed': post_embed,
+               'view': post_view
+           } in discord_messaging.sent_channel_messages
 
     # And the channel id is saved in the game
     saved_game = games_repository.get(guild_id, game_id)
@@ -63,8 +70,10 @@ async def test_post_without_channel_uses_event_channel():
     games_repository = FakeGamesRepository([game])
 
     post_embed = discord.Embed()
+    post_view = discord.ui.View()
     message_provider = MagicMock(MessageProvider)
     message_provider.game_post_embed.return_value = post_embed
+    message_provider.game_post_view.return_value = post_view
 
     discord_messaging = FakeDiscordMessaging()
 
@@ -81,7 +90,11 @@ async def test_post_without_channel_uses_event_channel():
     await post_route.call(event)
 
     # Then a message for that game is posted in the channel we sent this command from
-    assert {'channel_id': event_channel_id, 'embed': post_embed} in discord_messaging.sent_channel_messages
+    assert {
+               'channel_id': event_channel_id,
+               'embed': post_embed,
+               'view': post_view,
+           } in discord_messaging.sent_channel_messages
 
 
 async def test_post_saves_message_id_to_game():

@@ -1,4 +1,5 @@
 from eternal_guesses.model.discord import discord_event
+from eternal_guesses.model.discord.discord_component import ComponentType
 
 
 def test_from_ping_event():
@@ -491,3 +492,104 @@ def test_from_create_without_options_command_event():
     # Then
     command = event.command
     assert command.options == {}
+
+
+# https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-modal
+def test_from_modal_submit_event():
+    event_body = {
+        'type': 5,
+        'version': 1,
+        'channel_id': '1001',
+        'data': {
+            'components': [{
+                'components': [{
+                    'custom_id': 'test_input',
+                    'type': 4,
+                    'value': '500'
+                }],
+                'type': 1
+            }],
+            'custom_id': 'test_modal'
+        },
+        'guild_id': '2001',
+        'id': '3001',
+        "member": {
+            "deaf": False,
+            "is_pending": False,
+            "joined_at": "2021-01-16T20:21:19.053000+00:00",
+            "mute": False,
+            "nick": None,
+            "pending": False,
+            "permissions": "2147483647",
+            "premium_since": None,
+            "roles": [],
+            "user": {
+                "avatar": "abcdefghijklmop",
+                "discriminator": "5",
+                "id": "9001",
+                "public_flags": 0,
+                "username": "User-Name"
+            }
+        },
+        'token': 'whfjwhfukwynexfl823yflwf9wauf928fh82e',
+    }
+
+    # When
+    event = discord_event.from_event(event_body)
+
+    # Then
+    assert event.channel_id == 1001
+    assert event.guild_id == 2001
+
+    modal_submit = event.modal_submit
+    assert modal_submit.modal_custom_id == 'test_modal'
+    assert modal_submit.input_custom_id == 'test_input'
+    assert modal_submit.input_value == '500'
+
+
+def test_from_message_component_event():
+
+    event_body = {
+        'type': 3,
+        'version': 1,
+        'channel_id': '1001',
+        'data': {
+            'component_type': 2,
+            'custom_id': 'test_button_primary'
+        },
+        'guild_id': '2001',
+        'id': '3001',
+        'message': {
+            # Not used.
+        },
+        "member": {
+            "deaf": False,
+            "is_pending": False,
+            "joined_at": "2021-01-16T20:21:19.053000+00:00",
+            "mute": False,
+            "nick": None,
+            "pending": False,
+            "permissions": "2147483647",
+            "premium_since": None,
+            "roles": [],
+            "user": {
+                "avatar": "abcdefghijklmop",
+                "discriminator": "5",
+                "id": "9001",
+                "public_flags": 0,
+                "username": "User-Name"
+            }
+        },
+        'token': 'whfjwhfukwynexfl823yflwf9wauf928fh82e',
+    }
+
+    # When
+    event = discord_event.from_event(event_body)
+
+    # Then
+    assert event.channel_id == 1001
+    assert event.guild_id == 2001
+
+    component_action = event.component_action
+    assert component_action.component_custom_id == 'test_button_primary'
+    assert component_action.component_type == ComponentType.BUTTON

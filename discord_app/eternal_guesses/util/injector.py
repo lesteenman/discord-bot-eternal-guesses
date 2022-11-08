@@ -14,10 +14,15 @@ from eternal_guesses.routes.edit_guess import EditGuessRoute
 from eternal_guesses.routes.guess import GuessRoute
 from eternal_guesses.routes.guild_info import GuildInfoRoute
 from eternal_guesses.routes.list_games import ListGamesRoute
+from eternal_guesses.routes.message_with_buttons_test import \
+    MessageWithButtonsRoute
+from eternal_guesses.routes.modal_test import ModalTestRoute
 from eternal_guesses.routes.ping import PingRoute
 from eternal_guesses.routes.post import PostRoute
 from eternal_guesses.routes.remove_management_channel import RemoveManagementChannelRoute
 from eternal_guesses.routes.remove_management_role import RemoveManagementRoleRoute
+from eternal_guesses.routes.submit_guess import SubmitGuessRoute
+from eternal_guesses.routes.trigger_guess_modal import TriggerGuessModalRoute
 from eternal_guesses.util.discord_messaging import DiscordMessaging, DiscordMessagingImpl
 from eternal_guesses.util.game_post_manager import GamePostManager, GamePostManagerImpl
 from eternal_guesses.util.message_provider import MessageProviderImpl, MessageProvider
@@ -107,6 +112,21 @@ def _router() -> Router:
         message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
+    trigger_guess_modal_route = _trigger_guess_modal_route(
+        message_provider=message_provider,
+        games_repository=games_repository,
+    )
+    submit_guess_route = _submit_guess_route(
+        games_repository=games_repository,
+        game_post_manager=game_post_manager,
+        message_provider=message_provider,
+    )
+    modal_test_route = _modal_test_route(
+        game_post_manager=game_post_manager
+    )
+    message_with_buttons_route = _message_with_buttons_route(
+        game_post_manager=game_post_manager
+    )
 
     return RouterImpl(
         route_handler=route_handler,
@@ -123,6 +143,10 @@ def _router() -> Router:
         remove_management_role_route=remove_management_role_route,
         edit_guess_route=edit_guess_route,
         delete_guess_route=delete_guess_route,
+        trigger_guess_modal_route=trigger_guess_modal_route,
+        submit_guess_route=submit_guess_route,
+        modal_test_route=modal_test_route,
+        message_with_buttons_route=message_with_buttons_route,
     )
 
 
@@ -255,6 +279,33 @@ def _delete_guess_route(
         message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
+
+
+def _submit_guess_route(
+    games_repository: GamesRepository,
+    game_post_manager: GamePostManager,
+    message_provider: MessageProvider
+):
+    return SubmitGuessRoute(
+        games_repository=games_repository,
+        game_post_manager=game_post_manager,
+        message_provider=message_provider,
+    )
+
+
+def _trigger_guess_modal_route(message_provider, games_repository):
+    return TriggerGuessModalRoute(
+        message_provider=message_provider,
+        games_repository=games_repository,
+    )
+
+
+def _modal_test_route(game_post_manager):
+    return ModalTestRoute()
+
+
+def _message_with_buttons_route(game_post_manager):
+    return MessageWithButtonsRoute()
 
 
 def _games_repository() -> GamesRepository:

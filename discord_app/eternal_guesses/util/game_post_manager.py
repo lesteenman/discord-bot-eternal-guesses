@@ -31,14 +31,18 @@ class GamePostManagerImpl(GamePostManager):
         logger.info(f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
         if game.channel_messages is not None:
             new_embed = self.message_provider.game_post_embed(game)
+            view = self.message_provider.game_post_view(game)
             for channel_message in game.channel_messages:
                 logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
                              f"message_id={channel_message.message_id}, message='{new_embed}'")
 
                 try:
-                    await self.discord_messaging.update_channel_message(channel_message.channel_id,
-                                                                        channel_message.message_id,
-                                                                        embed=new_embed)
+                    await self.discord_messaging.update_channel_message(
+                        channel_id=channel_message.channel_id,
+                        message_id=channel_message.message_id,
+                        embed=new_embed,
+                        view=view,
+                    )
                 except discord.NotFound:
                     game.channel_messages.remove(channel_message)
                     self.games_repository.save(game)

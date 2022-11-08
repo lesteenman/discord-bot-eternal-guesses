@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import discord
+import discord.ui
 import pytest
 
 from eternal_guesses.model.data.channel_message import ChannelMessage
@@ -18,8 +19,10 @@ async def test_update_post():
     game_post_2 = ChannelMessage(channel_id=1005, message_id=5005)
 
     post_embed = discord.Embed()
+    post_view = discord.ui.View()
     message_provider = MagicMock(MessageProvider)
     message_provider.game_post_embed.return_value = post_embed
+    message_provider.game_post_view.return_value = post_view
 
     game = Game(
         game_id='game-id',
@@ -42,15 +45,17 @@ async def test_update_post():
     update_channel_message_calls = discord_messaging.updated_channel_messages
     assert len(update_channel_message_calls) == 2
     assert {
-        'channel_id': game_post_1.channel_id,
-        'message_id': game_post_1.message_id,
-        'embed': post_embed,
-    } in update_channel_message_calls
+               'channel_id': game_post_1.channel_id,
+               'message_id': game_post_1.message_id,
+               'embed': post_embed,
+               'view': post_view,
+           } in update_channel_message_calls
     assert {
-        'channel_id': game_post_2.channel_id,
-        'message_id': game_post_2.message_id,
-        'embed': post_embed,
-    } in update_channel_message_calls
+               'channel_id': game_post_2.channel_id,
+               'message_id': game_post_2.message_id,
+               'embed': post_embed,
+               'view': post_view,
+           } in update_channel_message_calls
 
 
 async def test_guess_channel_message_gone_silently_fails():

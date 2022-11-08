@@ -39,31 +39,40 @@ class FakeDiscordMessaging(DiscordMessaging):
         self.created_channel_message_id = 0
         self.deleted_messages = []
 
-    async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
+    async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None, view: discord.ui.View = None) -> int:
+        obj = {'channel_id': channel_id}
+
         if text is not None:
-            self.sent_channel_messages.append({'channel_id': channel_id, 'text': text})
-        elif embed is not None:
-            self.sent_channel_messages.append({'channel_id': channel_id, 'embed': embed})
+            obj['text'] = text
+
+        if embed is not None:
+            obj['embed'] = embed
+
+        if view is not None:
+            obj['view'] = view
+
+        self.sent_channel_messages.append(obj)
 
         return self.created_channel_message_id
 
     async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
-                                     embed: discord.Embed = None):
+                                     embed: discord.Embed = None, view: discord.ui.View = None):
         if message_id in self.deleted_messages:
             raise FakeNotFound()
         else:
+            obj = {
+                'channel_id': channel_id,
+                'message_id': message_id,
+            }
+
             if text is not None:
-                self.updated_channel_messages.append({
-                    'channel_id': channel_id,
-                    'message_id': message_id,
-                    'text': text,
-                })
-            elif embed is not None:
-                self.updated_channel_messages.append({
-                    'channel_id': channel_id,
-                    'message_id': message_id,
-                    'embed': embed,
-                })
+                obj['text'] = text
+            if embed is not None:
+                obj['embed'] = embed
+            if view is not None:
+                obj['view'] = view
+
+            self.updated_channel_messages.append(obj)
 
     async def send_dm(self, member: DiscordMember, text: str):
         self.sent_dms.append({'member': member, 'text': text})
@@ -121,6 +130,9 @@ class FakeConfigsRepository(ConfigsRepository):
 
 
 class FakeMessageProvider(MessageProvider):
+    def game_post_view(self, game: Game) -> discord.ui.View:
+        pass
+
     def game_post_embed(self, game: Game) -> discord.Embed:
         pass
 

@@ -1,4 +1,8 @@
 from enum import Enum
+from typing import List
+
+from eternal_guesses.model.discord.discord_component import DiscordComponent, \
+    ActionRow
 
 
 class ResponseType(Enum):
@@ -6,14 +10,29 @@ class ResponseType(Enum):
     # ACKNOWLEDGE = 2  # TODO: Deprecated!
     CHANNEL_MESSAGE = 4
     DEFERRED_CHANNEL_MESSAGE = 5
+    DEFERRED_UPDATE_MESSAGE = 6
+    UPDATE_MESSAGE = 7
+    APPLICATION_COMMAND_AUTOCOMPLETE_RESULT = 8
+    MODAL = 9
 
 
 class DiscordResponse(object):
-    def __init__(self, response_type: ResponseType, content: str = None, allow_role_mentions: bool = False,
-                 allow_user_mentions: bool = False):
+    def __init__(
+        self,
+        response_type: ResponseType,
+        content: str = None,
+        allow_role_mentions: bool = False,
+        allow_user_mentions: bool = False,
+        custom_id: str = None,
+        title: str = None,
+        action_rows: List[ActionRow] = None
+    ):
         self.response_type = response_type
         self.content = content
         self.flags = 0
+        self.custom_id = custom_id
+        self.title = title
+        self.action_rows = action_rows
 
         self.allowed_mention_types = []
         if allow_user_mentions:
@@ -26,6 +45,17 @@ class DiscordResponse(object):
             return {
                 'type': self.response_type.value
             }
+        elif self.response_type == ResponseType.MODAL:
+            data = {
+                'custom_id': self.custom_id,
+                'title': self.title,
+                'components': [c.json() for c in self.action_rows],
+            }
+
+            return {
+                'type': self.response_type.value,
+                'data': data,
+            }
         else:
             data = {
                 'flags': self.flags,
@@ -36,6 +66,9 @@ class DiscordResponse(object):
 
             if self.content:
                 data['content'] = self.content
+
+            if self.action_rows:
+                data['components'] = [c.json() for c in self.action_rows]
 
             return {
                 'type': self.response_type.value,
@@ -68,6 +101,17 @@ class DiscordResponse(object):
     def deferred_channel_message(cls):
         return DiscordResponse(
             response_type=ResponseType.DEFERRED_CHANNEL_MESSAGE
+        )
+
+    @classmethod
+    def modal(cls, custom_id: str, title: str, components: List[DiscordComponent]):
+        return DiscordResponse(
+            response_type=ResponseType.MODAL,
+            custom_id=custom_id,
+            title=title,
+            action_rows=[ActionRow(
+                components=components,
+            )],
         )
 
     @property

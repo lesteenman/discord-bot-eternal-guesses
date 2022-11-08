@@ -5,12 +5,14 @@ import discord
 import pytest
 
 from eternal_guesses.api.permission_set import PermissionSet
-from eternal_guesses.api.route_definition import RouteDefinition
+from eternal_guesses.api.route_definition import RouteDefinition, \
+    ApplicationCommandDefinition
 from eternal_guesses.api.route_handler import RouteHandlerImpl
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
-from eternal_guesses.model.discord.discord_response import DiscordResponse, ResponseType
+from eternal_guesses.model.discord.discord_response import DiscordResponse, \
+    ResponseType
 from eternal_guesses.routes.route import Route
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeCommandAuthorizer
@@ -33,7 +35,7 @@ async def test_handle():
     mock_route = AsyncMock(Route)
     mock_route.call.return_value = response
 
-    route_definition = RouteDefinition(
+    route_definition = ApplicationCommandDefinition(
         route=mock_route,
         command="ping",
     )
@@ -60,7 +62,7 @@ async def test_handle_disallowed_management_call():
     )
 
     event = DiscordEvent()
-    route_definition = RouteDefinition(
+    route_definition = ApplicationCommandDefinition(
         route=AsyncMock(Route),
         command="create",
         permission=PermissionSet.MANAGEMENT,
@@ -90,7 +92,7 @@ async def test_handle_disallowed_admin_call():
     )
 
     event = DiscordEvent()
-    route_definition = RouteDefinition(
+    route_definition = ApplicationCommandDefinition(
         route=AsyncMock(Route),
         command="admin",
         subcommand="info",
@@ -127,7 +129,7 @@ async def test_handle_raised_forbidden():
         "Missing Access."
     )
 
-    route_definition = RouteDefinition(
+    route_definition = ApplicationCommandDefinition(
         route=mock_route,
         command="ping",
     )

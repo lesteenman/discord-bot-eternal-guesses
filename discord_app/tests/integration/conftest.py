@@ -68,18 +68,29 @@ def fixed_authorization_result(mocker):
 @pytest.fixture(autouse=True)
 def stub_discord_messaging(mocker):
     class SilentDiscordMessaging(DiscordMessaging):
-        async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
-            logger.info(f"[stub send_channel_emssage] channel_id={channel_id}, text={text}")
+        async def send_channel_message(
+            self, channel_id: int, text: str = None,
+            embed: discord.Embed = None, view: discord.ui.View = None
+        ) -> int:
+            logger.info(
+                f"[stub send_channel_message] channel_id={channel_id}, text={text}, embed={embed}, view={view}"
+            )
             return 1
 
-        async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
-                                         embed: discord.Embed = None):
-            logger.info(f"[stub update_channel_emssage] channel_id={channel_id}, message_id={message_id} text={text},"
-                        f"embed={embed}")
+        async def update_channel_message(
+            self, channel_id: int, message_id: int, text: str = None,
+            embed: discord.Embed = None, view: discord.ui.View = None
+        ):
+            logger.info(
+                f"[stub update_channel_emssage] channel_id={channel_id}, message_id={message_id} text={text},"
+                f"embed={embed}, view={view}"
+            )
             pass
 
         async def send_dm(self, member: DiscordMember, text: str):
-            logger.info(f"[stub send_dm] member_id={member.user_id} text={text}")
+            logger.info(
+                f"[stub send_dm] member_id={member.user_id} text={text}"
+            )
             pass
 
     silent_discord_messaging = SilentDiscordMessaging()

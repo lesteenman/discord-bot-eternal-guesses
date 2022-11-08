@@ -2,6 +2,7 @@ from abc import ABC
 from typing import List
 
 import discord
+from discord import ButtonStyle
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
@@ -9,6 +10,9 @@ from eternal_guesses.model.discord.discord_command import DiscordCommand
 
 
 class MessageProvider(ABC):
+    def game_post_view(self, game: Game) -> discord.ui.View:
+        raise NotImplementedError()
+
     def game_post_embed(self, game: Game) -> discord.Embed:
         raise NotImplementedError()
 
@@ -93,8 +97,26 @@ class MessageProvider(ABC):
     def invalid_guess(self, game: Game) -> str:
         raise NotImplementedError()
 
+    def modal_input_label_guess_value(self, game: Game) -> str:
+        raise NotImplementedError()
+
+    def modal_title_place_guess(self, game: Game) -> str:
+        raise NotImplementedError()
+
 
 class MessageProviderImpl(MessageProvider):
+    def game_post_view(self, game: Game) -> discord.ui.View:
+        view = discord.ui.View()
+
+        make_guess_button = discord.ui.Button(
+            style=ButtonStyle.secondary,
+            label="Guess!",
+            custom_id=f"button_trigger_guess_modal_{game.game_id}"
+        )
+        view.add_item(make_guess_button)
+
+        return view
+
     def game_post_embed(self, game: Game) -> discord.Embed:
         if game.title:
             title = game.title
@@ -245,6 +267,19 @@ class MessageProviderImpl(MessageProvider):
             return f"The guess must be a number lower than {game.max_guess}"
 
         raise NotImplementedError()
+
+    def modal_input_label_guess_value(self, game: Game) -> str:
+        if game.min_guess is not None and game.max_guess is not None:
+            return f"Your guess ({game.min_guess} - {game.max_guess})"
+        elif game.min_guess is not None:
+            return f"Your guess (at least {game.min_guess})"
+        elif game.max_guess is not None:
+            return f"Your guess (at most {game.max_guess})"
+
+        return "Your guess"
+
+    def modal_title_place_guess(self, game: Game):
+        return f"Guess for '{game.game_id}'"
 
 
 def _sorted_guesses(game):

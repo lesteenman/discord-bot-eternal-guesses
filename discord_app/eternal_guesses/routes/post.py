@@ -35,7 +35,12 @@ class PostRoute(Route):
             return DiscordResponse.ephemeral_channel_message(error_message)
 
         embed = self.message_provider.game_post_embed(game)
-        message_id = await self.discord_messaging.send_channel_message(channel_id, embed=embed)
+        view = self.message_provider.game_post_view(game)
+        message_id = await self.discord_messaging.send_channel_message(
+            channel_id=channel_id,
+            embed=embed,
+            view=view,
+        )
 
         if game.channel_messages is None:
             game.channel_messages = []

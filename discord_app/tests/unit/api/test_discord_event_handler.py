@@ -2,11 +2,12 @@ import json
 from typing import Dict, Optional
 from unittest.mock import patch
 
-from eternal_guesses.authorization.api_authorizer import AuthorizationResult, ApiAuthorizer
 from eternal_guesses.api.discord_event_handler import DiscordEventHandler
-from eternal_guesses.model.discord.discord_event import DiscordEvent, CommandType
-from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.api.router import Router
+from eternal_guesses.authorization.api_authorizer import AuthorizationResult, \
+    ApiAuthorizer
+from eternal_guesses.model.discord.discord_event import DiscordEvent
+from eternal_guesses.model.lambda_response import LambdaResponse
 
 
 class _TestAuthorizer(ApiAuthorizer):
@@ -84,7 +85,7 @@ def test_discord_event(mock_from_event):
 
     event_body = {'type': 1}
 
-    discord_event = DiscordEvent(CommandType.COMMAND)
+    discord_event = DiscordEvent()
     mock_from_event.return_value = discord_event
 
     event = {

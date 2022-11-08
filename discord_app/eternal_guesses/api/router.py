@@ -2,10 +2,14 @@ import typing
 from abc import ABC
 
 from eternal_guesses.api.permission_set import PermissionSet
-from eternal_guesses.api.route_definition import RouteDefinition
+from eternal_guesses.api.route_definition import RouteDefinition, \
+    ApplicationCommandDefinition, ComponentActionRouteDefinition, \
+    ModalSubmitRouteDefinition
 from eternal_guesses.api.route_handler import RouteHandler
+from eternal_guesses.model.discord.discord_component import ComponentType
 from eternal_guesses.model.discord.discord_event import DiscordEvent
-from eternal_guesses.model.error.unkonwn_event_exception import UnknownEventException
+from eternal_guesses.model.error.unkonwn_event_exception import \
+    UnknownEventException
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.routes.route import Route
 
@@ -16,21 +20,28 @@ class Router(ABC):
 
 
 class RouterImpl(Router):
-    def __init__(self,
-                 route_handler: RouteHandler,
-                 close_game_route: Route,
-                 list_games_route: Route,
-                 post_route: Route,
-                 create_route: Route,
-                 guess_route: Route,
-                 ping_route: Route,
-                 guild_info_route: Route,
-                 add_management_channel_route: Route,
-                 remove_management_channel_route: Route,
-                 add_management_role_route: Route,
-                 remove_management_role_route: Route,
-                 edit_guess_route: Route,
-                 delete_guess_route: Route):
+    def __init__(
+        self,
+        route_handler: RouteHandler,
+        close_game_route: Route,
+        list_games_route: Route,
+        post_route: Route,
+        create_route: Route,
+        guess_route: Route,
+        ping_route: Route,
+        guild_info_route: Route,
+        add_management_channel_route: Route,
+        remove_management_channel_route: Route,
+        add_management_role_route: Route,
+        remove_management_role_route: Route,
+        edit_guess_route: Route,
+        delete_guess_route: Route,
+        submit_guess_route: Route,
+        trigger_guess_modal_route: Route,
+        modal_test_route: Route,
+        message_with_buttons_route: Route,
+    ):
+        self.submit_guess_route = submit_guess_route
         self.route_handler = route_handler
         self.list_games_route = list_games_route
         self.edit_guess_route = edit_guess_route
@@ -45,35 +56,84 @@ class RouterImpl(Router):
         self.remove_management_channel_route = remove_management_channel_route
         self.add_management_role_route = add_management_role_route
         self.remove_management_role_route = remove_management_role_route
+        self.modal_test_route = modal_test_route
+        self.trigger_guess_modal_route = trigger_guess_modal_route
+        self.message_with_buttons_route = message_with_buttons_route
 
         self.routes = []
         self._register_routes()
 
     def _register_routes(self):
-        self._register(RouteDefinition(self.ping_route, 'ping'))
-        self._register(RouteDefinition(self.guess_route, 'guess'))
-        self._register(RouteDefinition(self.post_route, 'manage', 'post',
-                                       permission=PermissionSet.MANAGEMENT))
-        self._register(RouteDefinition(self.close_game_route, 'manage', 'close',
-                                       permission=PermissionSet.MANAGEMENT))
-        self._register(RouteDefinition(self.list_games_route, 'manage', 'list-games',
-                                       permission=PermissionSet.MANAGEMENT))
-        self._register(RouteDefinition(self.edit_guess_route, 'manage', 'edit-guess',
-                                       permission=PermissionSet.MANAGEMENT))
-        self._register(RouteDefinition(self.delete_guess_route, 'manage', 'delete-guess',
-                                       permission=PermissionSet.MANAGEMENT))
-        self._register(RouteDefinition(self.create_route, 'create',
-                                       permission=PermissionSet.MANAGEMENT))
-        self._register(RouteDefinition(self.guild_info_route, 'admin', 'info',
-                                       permission=PermissionSet.MANAGEMENT))
-        self._register(RouteDefinition(self.add_management_channel_route, 'admin', 'add-management-channel',
-                                       permission=PermissionSet.ADMIN))
-        self._register(RouteDefinition(self.remove_management_channel_route, 'admin', 'remove-management-channel',
-                                       permission=PermissionSet.ADMIN))
-        self._register(RouteDefinition(self.add_management_role_route, 'admin', 'add-management-role',
-                                       permission=PermissionSet.ADMIN))
-        self._register(RouteDefinition(self.remove_management_role_route, 'admin', 'remove-management-role',
-                                       permission=PermissionSet.ADMIN))
+        routes = [
+            ComponentActionRouteDefinition(
+                self.trigger_guess_modal_route,
+                component_type=ComponentType.BUTTON,
+                custom_id_starts_with="button_trigger_guess_modal_"
+            ),
+            ModalSubmitRouteDefinition(
+                self.submit_guess_route,
+                custom_id_starts_with="modal_submit_guess_"
+            ),
+            ApplicationCommandDefinition(self.ping_route, 'ping'),
+            ApplicationCommandDefinition(self.guess_route, 'guess'),
+            ApplicationCommandDefinition(
+                self.post_route, 'manage', 'post',
+                permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.close_game_route, 'manage', 'close',
+                permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.list_games_route, 'manage', 'list-games',
+                permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.edit_guess_route, 'manage', 'edit-guess',
+                permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.delete_guess_route, 'manage', 'delete-guess',
+                permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.create_route, 'create', permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.guild_info_route, 'admin', 'info',
+                permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.add_management_channel_route, 'admin',
+                'add-management-channel', permission=PermissionSet.ADMIN
+            ),
+            ApplicationCommandDefinition(
+                self.remove_management_channel_route, 'admin',
+                'remove-management-channel', permission=PermissionSet.ADMIN
+            ),
+            ApplicationCommandDefinition(
+                self.add_management_role_route, 'admin', 'add-management-role',
+                permission=PermissionSet.ADMIN
+            ),
+            ApplicationCommandDefinition(
+                self.remove_management_role_route, 'admin',
+                'remove-management-role', permission=PermissionSet.ADMIN
+            ),
+            ApplicationCommandDefinition(
+                self.modal_test_route, command='modal',
+                permission=PermissionSet.MANAGEMENT
+            ),
+            ApplicationCommandDefinition(
+                self.message_with_buttons_route, command='message-with-buttons',
+                permission=PermissionSet.MANAGEMENT
+            ),
+        ]
+
+        for r in routes:
+            self._register(r)
+
+    def _register_actions(self):
+        pass
 
     def _register(self, definition: RouteDefinition):
         self.routes.append(definition)
@@ -87,9 +147,19 @@ class RouterImpl(Router):
         discord_response = await self.route_handler.handle(event, route)
         return LambdaResponse.success(discord_response.json())
 
-    def find_matching_route(self, event: DiscordEvent) -> typing.Optional[RouteDefinition]:
+    def find_matching_route(self, event: DiscordEvent) -> typing.Optional[
+        RouteDefinition]:
         for route in self.routes:
-            if route.matches(event.command):
-                return route
+            if event.command is not None:
+                if route.matches_command(event.command):
+                    return route
+
+            elif event.component_action is not None:
+                if route.matches_component_action(event.component_action):
+                    return route
+
+            elif event.modal_submit is not None:
+                if route.matches_modal_submit(event.modal_submit):
+                    return route
 
         return None

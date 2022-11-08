@@ -95,15 +95,18 @@ async def test_close_updates_channel_messages():
     # Then the channel messages are updated
     assert len(discord_messaging.updated_channel_messages) == 2
 
-    assert {'channel_id': channel_message_1.channel_id,
-            'message_id': channel_message_1.message_id,
-            'embed': post_embed,
-            } in discord_messaging.updated_channel_messages
+    # Both messages should not have a view (no buttons)
+    assert {
+               'channel_id': channel_message_1.channel_id,
+               'message_id': channel_message_1.message_id,
+               'embed': post_embed,
+           } in discord_messaging.updated_channel_messages
 
-    assert {'channel_id': channel_message_2.channel_id,
-            'message_id': channel_message_2.message_id,
-            'embed': post_embed,
-            } in discord_messaging.updated_channel_messages
+    assert {
+               'channel_id': channel_message_2.channel_id,
+               'message_id': channel_message_2.message_id,
+               'embed': post_embed,
+           } in discord_messaging.updated_channel_messages
 
 
 async def test_close_already_closed_game():

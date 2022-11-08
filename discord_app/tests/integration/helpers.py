@@ -1,7 +1,8 @@
 import json
 from typing import Dict, List
 
-from eternal_guesses.model.discord.discord_event import CommandType
+from eternal_guesses.model.discord.discord_component import ComponentType
+from eternal_guesses.model.discord.discord_event import InteractionType
 
 # DEFAULT_GUILD_ID = 100
 # DEFAULT_GAME_ID = 200
@@ -35,6 +36,74 @@ def make_discord_guess_event(guild_id: int, game_id: str, guess: str, user_id: i
                 "value": guess
             }
         ]
+    }
+
+    return _make_event(event_body)
+
+
+def make_discord_button_event(
+    guild_id: int,
+    custom_id: str,
+    user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    channel_id: int = DEFAULT_CHANNEL_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+):
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False,
+        event_type=InteractionType.MESSAGE_COMPONENT,
+    )
+    event_body['data'] = {
+        "component_type": ComponentType.BUTTON.value,
+        "custom_id": custom_id,
+    }
+
+    return _make_event(event_body)
+
+
+def make_discord_modal_event(
+    guild_id: int,
+    modal_custom_id: str,
+    input_custom_id: str,
+    input_value: str,
+    user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    channel_id: int = DEFAULT_CHANNEL_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+):
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False,
+        event_type=InteractionType.MODAL_SUBMIT,
+    )
+    event_body['data'] = {
+        "custom_id": modal_custom_id,
+        "components": [
+            {
+                'type': ComponentType.ACTION_ROW.value,
+                'components': [
+                    {
+                        "type": ComponentType.TEXT_INPUT.value,
+                        "custom_id": input_custom_id,
+                        "value": input_value,
+                    }
+                ]
+            }
+
+        ],
     }
 
     return _make_event(event_body)
@@ -450,7 +519,7 @@ def _make_event(body: Dict) -> Dict:
 
 
 def _base_event_body(guild_id: int, channel_id: int, user_id: int, member_nickname: str, user_name: str, role_id: int,
-                     is_admin: bool):
+                     is_admin: bool, event_type: InteractionType=InteractionType.APPLICATION_COMMAND):
     return {
         "channel_id": channel_id,
         "guild_id": guild_id,
@@ -464,6 +533,6 @@ def _base_event_body(guild_id: int, channel_id: int, user_id: int, member_nickna
             is_admin=is_admin
         ),
         "token": "whfjwhfukwynexfl823yflwf9wauf928fh82e",
-        "type": CommandType.COMMAND.value,
+        "type": event_type.value,
         "version": 1
     }

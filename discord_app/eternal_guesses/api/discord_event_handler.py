@@ -2,6 +2,8 @@ import asyncio
 import json
 from typing import Dict
 
+from loguru import logger
+
 from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, AuthorizationResult
 from eternal_guesses.model.discord import discord_event
 from eternal_guesses.api.router import Router
@@ -21,4 +23,5 @@ class DiscordEventHandler:
             response = asyncio.get_event_loop() \
                 .run_until_complete(self.router.route(event))
 
+        logger.debug(f"Response from the webhook: {response.json()}")
         return response.json()

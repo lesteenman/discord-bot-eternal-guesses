@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import pprint
 from typing import Dict
 
 import requests
@@ -44,7 +45,7 @@ def create_guild_command(command: Dict, config: Dict, guild_name: str):
 
     response = requests.post(url, headers=headers, json=command)
     print(response.text)
-    if response.status_code > 201:
+    if response.status_code >= 300:
         raise Exception(f"unexpected status_code {response.status_code} received: '{response.text}'")
 
 
@@ -60,7 +61,7 @@ def delete_command(command_id: int, config: Dict):
     }
 
     response = requests.delete(url, headers=headers)
-    if response.status_code > 201:
+    if response.status_code >= 300:
         raise Exception(f"unexpected status_code {response.status_code} received: '{response.text}'")
 
 
@@ -75,13 +76,25 @@ def create_command(command: Dict, config: Dict):
     }
 
     response = requests.post(url, headers=headers, json=command)
-    print(response.text)
-    if response.status_code > 201:
+    pprint.pprint(response.text)
+    if response.status_code >= 300:
         raise Exception(f"unexpected status_code {response.status_code} received: '{response.text}'")
 
 
 def register(config: Dict):
     commands = [
+        # {
+        #     "name": "modal",
+        #     "description": "Test a modal",
+        #     # "type": COMMAND_OPTION_TYPE_SUB_COMMAND,
+        #     # "options": [],
+        # },
+        # {
+        #     "name": "message-with-buttons",
+        #     "description": "Test a message with buttons",
+        #     # "type": COMMAND_OPTION_TYPE_SUB_COMMAND,
+        #     # "options": [],
+        # },
         {
             "name": "guess",
             "description": "Submit your guess!",
