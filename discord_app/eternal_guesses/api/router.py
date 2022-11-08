@@ -147,8 +147,8 @@ class RouterImpl(Router):
         discord_response = await self.route_handler.handle(event, route)
         return LambdaResponse.success(discord_response.json())
 
-    def find_matching_route(self, event: DiscordEvent) -> typing.Optional[
-        RouteDefinition]:
+    def find_matching_route(self, event: DiscordEvent) \
+            -> typing.Optional[RouteDefinition]:
         for route in self.routes:
             if event.command is not None:
                 if route.matches_command(event.command):

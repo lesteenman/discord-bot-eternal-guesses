@@ -5,8 +5,7 @@ import discord
 import pytest
 
 from eternal_guesses.api.permission_set import PermissionSet
-from eternal_guesses.api.route_definition import RouteDefinition, \
-    ApplicationCommandDefinition
+from eternal_guesses.api.route_definition import ApplicationCommandDefinition
 from eternal_guesses.api.route_handler import RouteHandlerImpl
 from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.discord.discord_command import DiscordCommand
@@ -30,7 +29,9 @@ async def test_handle():
         )
     )
 
-    response = DiscordResponse.ephemeral_channel_message("You handled it very well!")
+    response = DiscordResponse.ephemeral_channel_message(
+        "You handled it very well!"
+    )
 
     mock_route = AsyncMock(Route)
     mock_route.call.return_value = response
@@ -142,8 +143,10 @@ async def test_handle_raised_forbidden():
     assert response.content == clientside_error_message
 
 
-def _route_handler(command_authorizer: CommandAuthorizer = None,
-                   message_provider: MessageProvider = None):
+def _route_handler(
+    command_authorizer: CommandAuthorizer = None,
+    message_provider: MessageProvider = None
+):
     if command_authorizer is None:
         command_authorizer = FakeCommandAuthorizer()
 

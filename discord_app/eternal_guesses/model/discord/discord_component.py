@@ -42,7 +42,7 @@ class DiscordComponent(object):
         return {**data, **self.fields}
 
     @classmethod
-    def text_input(cls, custom_id: str, label: str, paragraph: bool=False):
+    def text_input(cls, custom_id: str, label: str, paragraph: bool = False):
         return DiscordComponent(
             type=ComponentType.TEXT_INPUT,
             fields={

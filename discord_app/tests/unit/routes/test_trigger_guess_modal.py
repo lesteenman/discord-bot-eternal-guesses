@@ -7,6 +7,7 @@ from eternal_guesses.model.discord.discord_component import ComponentType
 from eternal_guesses.model.discord.discord_component_action import \
     DiscordComponentAction
 from eternal_guesses.model.discord.discord_event import DiscordEvent
+from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord.discord_response import ResponseType
 from eternal_guesses.routes.trigger_guess_modal import TriggerGuessModalRoute
 from eternal_guesses.util.message_provider import MessageProvider
@@ -18,6 +19,7 @@ pytestmark = pytest.mark.asyncio
 async def test_call_returns_modal_response():
     # Given
     event = DiscordEvent(
+        member=DiscordMember(user_id=1),
         component_action=DiscordComponentAction(
             component_type=ComponentType.BUTTON,
             component_custom_id="button_trigger_guess_modal_my_testing_game_id"

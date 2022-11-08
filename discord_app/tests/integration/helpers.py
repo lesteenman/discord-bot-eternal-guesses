@@ -17,12 +17,25 @@ def create_context() -> Dict:
     return {}
 
 
-def make_discord_guess_event(guild_id: int, game_id: str, guess: str, user_id: int = DEFAULT_USER_ID,
-                             role_id: int = DEFAULT_ROLE_ID,
-                             channel_id: int = DEFAULT_CHANNEL_ID, member_nickname: str = DEFAULT_MEMBER_NICK,
-                             user_name: str = DEFAULT_USER_NAME):
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+def make_discord_guess_event(
+    guild_id: int,
+    game_id: str,
+    guess: str,
+    user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    channel_id: int = DEFAULT_CHANNEL_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+):
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "guess",
@@ -109,12 +122,28 @@ def make_discord_modal_event(
     return _make_event(event_body)
 
 
-def make_discord_create_event(guild_id: int, game_id: str, game_title: str = None, game_description: str = None,
-                              channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
-                              member_nickname: str = DEFAULT_MEMBER_NICK, user_name: str = DEFAULT_USER_NAME,
-                              role_id: int = DEFAULT_ROLE_ID, min_guess: int = None, max_guess: int = None):
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+def make_discord_create_event(
+    guild_id: int,
+    game_id: str,
+    game_title: str = None,
+    game_description: str = None,
+    channel_id: int = DEFAULT_CHANNEL_ID,
+    user_id: int = DEFAULT_USER_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME,
+    role_id: int = DEFAULT_ROLE_ID,
+    min_guess: int = None,
+    max_guess: int = None
+):
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
 
     options = [
         {
@@ -124,28 +153,36 @@ def make_discord_create_event(guild_id: int, game_id: str, game_title: str = Non
     ]
 
     if game_title is not None:
-        options.append({
-            "name": "title",
-            "value": game_title,
-        })
+        options.append(
+            {
+                "name": "title",
+                "value": game_title,
+            }
+        )
 
     if game_description is not None:
-        options.append({
-            "name": "description",
-            "value": game_description,
-        })
+        options.append(
+            {
+                "name": "description",
+                "value": game_description,
+            }
+        )
 
     if min_guess is not None:
-        options.append({
-            "name": "min",
-            "value": min_guess,
-        })
+        options.append(
+            {
+                "name": "min",
+                "value": min_guess,
+            }
+        )
 
     if max_guess is not None:
-        options.append({
-            "name": "max",
-            "value": max_guess,
-        })
+        options.append(
+            {
+                "name": "max",
+                "value": max_guess,
+            }
+        )
 
     event_body['data'] = {
         "id": "2001",
@@ -161,16 +198,25 @@ def make_discord_create_event(guild_id: int, game_id: str, game_title: str = Non
     return _make_event(event_body)
 
 
-def make_discord_admin_event(guild_id: int, subcommand: str = None, options: List = None,
-                             role_id: int = DEFAULT_ROLE_ID,
-                             channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
-                             member_nickname: str = DEFAULT_MEMBER_NICK,
-                             user_name: str = DEFAULT_USER_NAME) -> Dict:
+def make_discord_admin_event(
+    guild_id: int, subcommand: str = None, options: List = None,
+    role_id: int = DEFAULT_ROLE_ID,
+    channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
     if options is None:
         options = []
 
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
 
     event_body['data'] = {
         "id": "1234",
@@ -191,12 +237,24 @@ def make_discord_admin_event(guild_id: int, subcommand: str = None, options: Lis
     return _make_event(event_body)
 
 
-def make_discord_manage_post_event(guild_id: int, game_id: str, channel_id: int, user_id: int = DEFAULT_USER_ID,
-                                   role_id: int = DEFAULT_ROLE_ID,
-                                   member_nickname: str = DEFAULT_MEMBER_NICK,
-                                   user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+def make_discord_manage_post_event(
+    guild_id: int,
+    game_id: str,
+    channel_id: int,
+    user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -226,14 +284,18 @@ def make_discord_manage_post_event(guild_id: int, game_id: str, channel_id: int,
     return _make_event(event_body)
 
 
-def make_discord_admin_add_channel_event(guild_id: int, new_management_channel_id: int, is_admin: bool,
-                                         channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
-                                         role_id: int = DEFAULT_ROLE_ID,
-                                         member_nickname: str = DEFAULT_MEMBER_NICK,
-                                         user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
-                                  is_admin=is_admin)
+def make_discord_admin_add_channel_event(
+    guild_id: int, new_management_channel_id: int, is_admin: bool,
+    channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+        member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+        is_admin=is_admin
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -259,14 +321,18 @@ def make_discord_admin_add_channel_event(guild_id: int, new_management_channel_i
     return _make_event(event_body)
 
 
-def make_discord_admin_remove_channel_event(guild_id: int, management_channel_id: int, is_admin: bool,
-                                            channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
-                                            role_id: int = DEFAULT_ROLE_ID,
-                                            member_nickname: str = DEFAULT_MEMBER_NICK,
-                                            user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
-                                  is_admin=is_admin)
+def make_discord_admin_remove_channel_event(
+    guild_id: int, management_channel_id: int, is_admin: bool,
+    channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+        member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+        is_admin=is_admin
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -292,14 +358,18 @@ def make_discord_admin_remove_channel_event(guild_id: int, management_channel_id
     return _make_event(event_body)
 
 
-def make_discord_admin_add_role_event(guild_id: int, new_management_role: int, is_admin: bool,
-                                      channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
-                                      role_id: int = DEFAULT_ROLE_ID,
-                                      member_nickname: str = DEFAULT_MEMBER_NICK,
-                                      user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
-                                  is_admin=is_admin)
+def make_discord_admin_add_role_event(
+    guild_id: int, new_management_role: int, is_admin: bool,
+    channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+        member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+        is_admin=is_admin
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -325,14 +395,18 @@ def make_discord_admin_add_role_event(guild_id: int, new_management_role: int, i
     return _make_event(event_body)
 
 
-def make_discord_admin_remove_role_event(guild_id: int, management_role: int, is_admin: bool,
-                                         channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
-                                         role_id: int = DEFAULT_ROLE_ID,
-                                         member_nickname: str = DEFAULT_MEMBER_NICK,
-                                         user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
-                                  is_admin=is_admin)
+def make_discord_admin_remove_role_event(
+    guild_id: int, management_role: int, is_admin: bool,
+    channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+        member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+        is_admin=is_admin
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -358,14 +432,18 @@ def make_discord_admin_remove_role_event(guild_id: int, management_role: int, is
     return _make_event(event_body)
 
 
-def make_discord_admin_info(guild_id: int, is_admin: bool,
-                            channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
-                            role_id: int = DEFAULT_ROLE_ID,
-                            member_nickname: str = DEFAULT_MEMBER_NICK,
-                            user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id,
-                                  is_admin=is_admin)
+def make_discord_admin_info(
+    guild_id: int, is_admin: bool,
+    channel_id: int = DEFAULT_CHANNEL_ID, user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id, channel_id=channel_id, user_id=user_id,
+        member_nickname=member_nickname, user_name=user_name, role_id=role_id,
+        is_admin=is_admin
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -385,12 +463,21 @@ def make_discord_admin_info(guild_id: int, is_admin: bool,
     return _make_event(event_body)
 
 
-def make_discord_manage_list_event(guild_id: int, channel_id: int, user_id: int = DEFAULT_USER_ID,
-                                   role_id: int = DEFAULT_ROLE_ID,
-                                   member_nickname: str = DEFAULT_MEMBER_NICK,
-                                   user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+def make_discord_manage_list_event(
+    guild_id: int, channel_id: int, user_id: int = DEFAULT_USER_ID,
+    role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -410,12 +497,21 @@ def make_discord_manage_list_event(guild_id: int, channel_id: int, user_id: int 
     return _make_event(event_body)
 
 
-def make_discord_change_guess_event(guild_id: int, game_id: str, new_guess: str, member: int, channel_id: int,
-                                    user_id: int = DEFAULT_USER_ID, role_id: int = DEFAULT_ROLE_ID,
-                                    member_nickname: str = DEFAULT_MEMBER_NICK,
-                                    user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+def make_discord_change_guess_event(
+    guild_id: int, game_id: str, new_guess: str, member: int, channel_id: int,
+    user_id: int = DEFAULT_USER_ID, role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -449,12 +545,21 @@ def make_discord_change_guess_event(guild_id: int, game_id: str, new_guess: str,
     return _make_event(event_body)
 
 
-def make_discord_delete_guess_event(guild_id: int, game_id: str, member: int, channel_id: int,
-                                    user_id: int = DEFAULT_USER_ID, role_id: int = DEFAULT_ROLE_ID,
-                                    member_nickname: str = DEFAULT_MEMBER_NICK,
-                                    user_name: str = DEFAULT_USER_NAME) -> Dict:
-    event_body = _base_event_body(guild_id=guild_id, channel_id=channel_id, user_id=user_id,
-                                  member_nickname=member_nickname, user_name=user_name, role_id=role_id, is_admin=False)
+def make_discord_delete_guess_event(
+    guild_id: int, game_id: str, member: int, channel_id: int,
+    user_id: int = DEFAULT_USER_ID, role_id: int = DEFAULT_ROLE_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME
+) -> Dict:
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
     event_body['data'] = {
         "id": "2001",
         "name": "eternal-guess",
@@ -484,7 +589,13 @@ def make_discord_delete_guess_event(guild_id: int, game_id: str, member: int, ch
     return _make_event(event_body)
 
 
-def _create_member(user_id: int, member_nickname: str, user_name: str, role_id: int, is_admin: bool) -> Dict:
+def _create_member(
+    user_id: int,
+    member_nickname: str,
+    user_name: str,
+    role_id: int,
+    is_admin: bool
+) -> Dict:
     permissions = 0
     if is_admin:
         permissions = permissions | 0x8
@@ -518,8 +629,16 @@ def _make_event(body: Dict) -> Dict:
     }
 
 
-def _base_event_body(guild_id: int, channel_id: int, user_id: int, member_nickname: str, user_name: str, role_id: int,
-                     is_admin: bool, event_type: InteractionType=InteractionType.APPLICATION_COMMAND):
+def _base_event_body(
+    guild_id: int,
+    channel_id: int,
+    user_id: int,
+    member_nickname: str,
+    user_name: str,
+    role_id: int,
+    is_admin: bool,
+    event_type: InteractionType = InteractionType.APPLICATION_COMMAND
+):
     return {
         "channel_id": channel_id,
         "guild_id": guild_id,

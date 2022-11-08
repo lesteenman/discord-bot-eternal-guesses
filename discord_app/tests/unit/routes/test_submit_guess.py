@@ -423,10 +423,11 @@ def _create_submit_event(
     return event
 
 
-def _route(games_repository: GamesRepository = None,
+def _route(
+    games_repository: GamesRepository = None,
     message_provider: MessageProvider = None,
-    game_post_manager: GamePostManager = None):
-
+    game_post_manager: GamePostManager = None
+):
     if games_repository is None:
         games_repository = FakeGamesRepository([])
 

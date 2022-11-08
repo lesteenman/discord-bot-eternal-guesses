@@ -39,8 +39,16 @@ class FakeDiscordMessaging(DiscordMessaging):
         self.created_channel_message_id = 0
         self.deleted_messages = []
 
-    async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None, view: discord.ui.View = None) -> int:
-        obj = {'channel_id': channel_id}
+    async def send_channel_message(
+        self,
+        channel_id: int,
+        text: str = None,
+        embed: discord.Embed = None,
+        view: discord.ui.View = None
+    ) -> int:
+        obj = {
+            'channel_id': channel_id
+        }
 
         if text is not None:
             obj['text'] = text
@@ -55,8 +63,10 @@ class FakeDiscordMessaging(DiscordMessaging):
 
         return self.created_channel_message_id
 
-    async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
-                                     embed: discord.Embed = None, view: discord.ui.View = None):
+    async def update_channel_message(
+        self, channel_id: int, message_id: int, text: str = None,
+        embed: discord.Embed = None, view: discord.ui.View = None
+    ):
         if message_id in self.deleted_messages:
             raise FakeNotFound()
         else:
@@ -75,7 +85,12 @@ class FakeDiscordMessaging(DiscordMessaging):
             self.updated_channel_messages.append(obj)
 
     async def send_dm(self, member: DiscordMember, text: str):
-        self.sent_dms.append({'member': member, 'text': text})
+        self.sent_dms.append(
+            {
+                'member': member,
+                'text': text
+            }
+        )
 
     def raise_404_on_update_of_message(self, message_id):
         self.deleted_messages.append(message_id)
@@ -107,7 +122,12 @@ class FakeGamesRepository(GamesRepository):
 
 
 class FakeConfigsRepository(ConfigsRepository):
-    def __init__(self, guild_id: int, management_channels: List[int] = None, management_roles: List[int] = None):
+    def __init__(
+        self,
+        guild_id: int,
+        management_channels: List[int] = None,
+        management_roles: List[int] = None
+    ):
         if management_channels is None:
             management_channels = []
 
@@ -188,7 +208,11 @@ class FakeMessageProvider(MessageProvider):
         self.message = None
         self.expected_config = None
 
-    def expect_channel_admin_info_call(self, expected_config: GuildConfig, message: str):
+    def expect_channel_admin_info_call(
+        self,
+        expected_config: GuildConfig,
+        message: str
+    ):
         self.expected_config = expected_config
         self.message = message
 

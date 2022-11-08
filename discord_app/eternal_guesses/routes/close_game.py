@@ -7,10 +7,12 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class CloseGameRoute(Route):
-    def __init__(self,
-                 games_repository: GamesRepository,
-                 discord_messaging: DiscordMessaging,
-                 message_provider: MessageProvider):
+    def __init__(
+        self,
+        games_repository: GamesRepository,
+        discord_messaging: DiscordMessaging,
+        message_provider: MessageProvider
+    ):
         self.games_repository = games_repository
         self.discord_messaging = discord_messaging
         self.message_provider = message_provider
@@ -34,7 +36,7 @@ class CloseGameRoute(Route):
                 channel_id=message.channel_id,
                 message_id=message.message_id,
                 embed=embed,
-                view=None, # Remove the buttons
+                view=None,  # Remove the buttons
             )
 
         game_closed_message = self.message_provider.game_closed(game)

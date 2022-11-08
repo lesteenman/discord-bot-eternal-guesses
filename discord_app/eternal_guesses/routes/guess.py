@@ -10,6 +10,7 @@ from eternal_guesses.util.game_post_manager import GamePostManager
 from eternal_guesses.util.message_provider import MessageProvider
 
 
+# Deprecated; Should be removed once the component-based flow has been thoroughly tested.
 class GuessRoute(Route):
     def __init__(self,
                  games_repository: GamesRepository,

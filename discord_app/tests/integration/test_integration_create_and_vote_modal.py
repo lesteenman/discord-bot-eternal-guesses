@@ -116,9 +116,10 @@ def click_guess_button(guild_id: int, game_id: str, user_id: int):
     assert response['statusCode'] == 200
 
     body = json.loads(response['body'])
-    assert body['type'] == ResponseType.MODAL.value
-    assert game_id in body['data']['title']
-    assert body['data']['custom_id'].endswith(game_id)
+    assert body['type'] in [ResponseType.MODAL.value, ResponseType.CHANNEL_MESSAGE.value]
+    if body['type'] == ResponseType.MODAL.value:
+        assert game_id in body['data']['title']
+        assert body['data']['custom_id'].endswith(game_id)
 
 
 def submit_guess_modal(guild_id: int, game_id: str, user_id: int, guess: str):
