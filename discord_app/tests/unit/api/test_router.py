@@ -168,4 +168,5 @@ def _router(
         action_post_game_route=Route(),
         action_trigger_delete_guess_route=Route(),
         action_trigger_edit_guess_route=Route(),
+        submit_create_route=Route(),
     )

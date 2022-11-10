@@ -5,11 +5,7 @@ from eternal_guesses import event_handler
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import \
     ConfigsRepositoryImpl
-from tests.integration.helpers import make_discord_manage_list_event, \
-    make_discord_admin_add_channel_event, make_discord_admin_add_role_event, \
-    make_discord_admin_info, \
-    make_discord_admin_remove_channel_event, \
-    make_discord_admin_remove_role_event
+from tests.integration import discord_events
 
 
 def test_integration_channel_permissions(eternal_guesses_table):
@@ -61,7 +57,7 @@ def test_integration_channel_permissions(eternal_guesses_table):
 
 def add_management_channel(guild_id, channel_id):
     response = event_handler.handle(
-        make_discord_admin_add_channel_event(guild_id=guild_id, new_management_channel_id=channel_id, is_admin=True),
+        discord_events.make_discord_admin_add_channel_event(guild_id=guild_id, new_management_channel_id=channel_id, is_admin=True),
     )
 
     assert response['statusCode'] == 200
@@ -70,7 +66,7 @@ def add_management_channel(guild_id, channel_id):
 
 def remove_management_channel(guild_id, management_channel_id: int):
     response = event_handler.handle(
-        make_discord_admin_remove_channel_event(guild_id=guild_id, management_channel_id=management_channel_id,
+        discord_events.make_discord_admin_remove_channel_event(guild_id=guild_id, management_channel_id=management_channel_id,
                                                 is_admin=True),
     )
 
@@ -80,7 +76,7 @@ def remove_management_channel(guild_id, management_channel_id: int):
 
 def admin_info(guild_id: int, channel_id: int, role_id: int, is_admin: bool):
     response = event_handler.handle(
-        make_discord_admin_info(guild_id=guild_id, channel_id=channel_id, role_id=role_id, is_admin=is_admin),
+        discord_events.make_discord_admin_info(guild_id=guild_id, channel_id=channel_id, role_id=role_id, is_admin=is_admin),
     )
 
     assert response['statusCode'] == 200
@@ -89,7 +85,7 @@ def admin_info(guild_id: int, channel_id: int, role_id: int, is_admin: bool):
 
 def add_management_role(guild_id, management_role):
     response = event_handler.handle(
-        make_discord_admin_add_role_event(guild_id=guild_id, new_management_role=management_role, is_admin=True),
+        discord_events.make_discord_admin_add_role_event(guild_id=guild_id, new_management_role=management_role, is_admin=True),
     )
 
     assert response['statusCode'] == 200
@@ -98,7 +94,7 @@ def add_management_role(guild_id, management_role):
 
 def remove_management_role(guild_id, management_role):
     response = event_handler.handle(
-        make_discord_admin_remove_role_event(guild_id=guild_id, management_role=management_role, is_admin=True),
+        discord_events.make_discord_admin_remove_role_event(guild_id=guild_id, management_role=management_role, is_admin=True),
     )
 
     assert response['statusCode'] == 200
@@ -112,7 +108,7 @@ def get_guild_config(eternal_guesses_table, guild_id) -> GuildConfig:
 
 def manage_list_games(guild_id, channel_id, role_id) -> dict:
     response = event_handler.handle(
-        make_discord_manage_list_event(guild_id=guild_id, channel_id=channel_id, role_id=role_id),
+        discord_events.make_discord_manage_list_event(guild_id=guild_id, channel_id=channel_id, role_id=role_id),
     )
 
     assert response['statusCode'] == 200

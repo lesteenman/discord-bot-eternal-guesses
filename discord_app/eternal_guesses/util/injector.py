@@ -40,6 +40,7 @@ from eternal_guesses.routes.commands.remove_management_channel import \
 from eternal_guesses.routes.commands.remove_management_role import \
     RemoveManagementRoleRoute
 from eternal_guesses.routes.modal_submits.modal_test import ModalTestRoute
+from eternal_guesses.routes.modal_submits.submit_create import SubmitCreateRoute
 from eternal_guesses.routes.modal_submits.submit_guess import SubmitGuessRoute
 from eternal_guesses.util import app_config
 from eternal_guesses.util.discord_messaging import DiscordMessaging, \
@@ -150,11 +151,6 @@ def _router() -> Router:
         message_provider=message_provider,
         games_repository=games_repository,
     )
-    submit_guess_route = _submit_guess_route(
-        games_repository=games_repository,
-        game_post_manager=game_post_manager,
-        message_provider=message_provider,
-    )
     modal_test_route = _modal_test_route(
         game_post_manager=game_post_manager
     )
@@ -162,6 +158,15 @@ def _router() -> Router:
         game_post_manager=game_post_manager
     )
     manage_game_route = _manage_game_route(
+        games_repository=games_repository,
+        message_provider=message_provider,
+    )
+    submit_guess_route = _submit_guess_route(
+        games_repository=games_repository,
+        game_post_manager=game_post_manager,
+        message_provider=message_provider,
+    )
+    submit_create_route = _submit_create_route(
         games_repository=games_repository,
         message_provider=message_provider,
     )
@@ -182,13 +187,14 @@ def _router() -> Router:
         edit_guess_route=edit_guess_route,
         delete_guess_route=delete_guess_route,
         trigger_guess_modal_route=trigger_guess_modal_route,
-        submit_guess_route=submit_guess_route,
         modal_test_route=modal_test_route,
         message_with_buttons_route=message_with_buttons_route,
         manage_game_route=manage_game_route,
         action_post_game_route=action_post_game_route,
         action_trigger_edit_guess_route=action_trigger_edit_guess_route,
         action_trigger_delete_guess_route=action_trigger_delete_guess_route,
+        submit_guess_route=submit_guess_route,
+        submit_create_route=submit_create_route,
     )
 
 
@@ -331,6 +337,13 @@ def _submit_guess_route(
     return SubmitGuessRoute(
         games_repository=games_repository,
         game_post_manager=game_post_manager,
+        message_provider=message_provider,
+    )
+
+
+def _submit_create_route(games_repository, message_provider):
+    return SubmitCreateRoute(
+        games_repository=games_repository,
         message_provider=message_provider,
     )
 

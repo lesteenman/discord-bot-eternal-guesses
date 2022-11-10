@@ -13,7 +13,7 @@ from eternal_guesses.model.discord.discord_modal_submit import \
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.modal_submits import submit_guess
 from eternal_guesses.routes.modal_submits.submit_guess import SubmitGuessRoute
-from eternal_guesses.util.custom_id_generator import CustomIdGenerator
+from eternal_guesses.util.component_ids import ComponentIds
 from eternal_guesses.util.game_post_manager import GamePostManager
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository, FakeMessageProvider
@@ -413,9 +413,9 @@ def _create_submit_event(
     event = DiscordEvent(
         channel_id=event_channel_id,
         modal_submit=DiscordModalSubmit(
-            modal_custom_id=f"modal_submit_guess_{game_id}",
+            modal_custom_id=ComponentIds.submit_guess_modal_id(game_id),
             inputs={
-                CustomIdGenerator.guess_modal_input_guess: guess,
+                ComponentIds.submit_guess_input_value: guess,
             },
         ),
         member=member,

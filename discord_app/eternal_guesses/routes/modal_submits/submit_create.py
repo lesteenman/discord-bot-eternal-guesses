@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 from eternal_guesses.model.data.game import Game
@@ -5,7 +6,7 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.custom_id_generator import CustomIdGenerator
+from eternal_guesses.util.component_ids import ComponentIds
 from eternal_guesses.util.message_provider import MessageProvider
 
 
@@ -16,11 +17,21 @@ class SubmitCreateRoute(Route):
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
-        game_id = self.input_value(event, CustomIdGenerator.submit_create_game_id)
-        title = event.command.options.get('title')
-        description = event.command.options.get('description')
-        min_guess = event.command.options.get('min')
-        max_guess = event.command.options.get('max')
+
+        inputs = event.modal_submit.inputs
+
+        game_id = self.normalize(inputs[ComponentIds.submit_create_input_game_id])
+
+        title = inputs[ComponentIds.submit_create_input_title]
+        description = inputs[ComponentIds.submit_create_input_description]
+
+        min_guess = inputs[ComponentIds.submit_create_input_min_value]
+        if min_guess is not None:
+            min_guess = int(min_guess)
+
+        max_guess = inputs[ComponentIds.submit_create_input_max_value]
+        if max_guess is not None:
+            max_guess = int(max_guess)
 
         existing_game = self.games_repository.get(guild_id, game_id)
         if existing_game is not None:
@@ -45,7 +56,8 @@ class SubmitCreateRoute(Route):
         game_created_message = self.message_provider.game_created(game)
         return DiscordResponse.ephemeral_channel_message(game_created_message)
 
-    def input_value(self, event, submit_create_game_id):
-        for c in event.modal_submit.input_value:
-            pass
+    def normalize(self, game_id):
+        game_id = re.sub(r"[^a-z0-9-]", "-", game_id.lower())
+        game_id = re.sub(r"-+", "-", game_id)
+        return game_id
 

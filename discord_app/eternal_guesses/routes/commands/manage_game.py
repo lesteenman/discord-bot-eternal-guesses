@@ -5,7 +5,7 @@ from eternal_guesses.model.discord.discord_response import DiscordResponse, \
     ResponseType
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.custom_id_generator import CustomIdGenerator
+from eternal_guesses.util.component_ids import ComponentIds
 from eternal_guesses.util.message_provider import MessageProvider
 
 
@@ -35,19 +35,19 @@ class ManageGameRoute(Route):
             ActionRow(
                 components=[
                     DiscordComponent.button(
-                        custom_id=f"action-manage_game-close-{game_id}",
+                        custom_id=ComponentIds.component_button_close_game_id(game_id),
                         label="Close",
                     ),
                     DiscordComponent.button(
-                        custom_id=CustomIdGenerator.trigger_post_game_action(game_id),
+                        custom_id=ComponentIds.component_button_post_game_id(game_id),
                         label="Post",
                     ),
                     DiscordComponent.button(
-                        custom_id=f"action-manage_game-edit_guess-{game_id}",
+                        custom_id=ComponentIds.component_button_edit_guess_id(game_id),
                         label="Edit Guess",
                     ),
                     DiscordComponent.button(
-                        custom_id=f"action-manage_game-delete_guess-{game_id}",
+                        custom_id=ComponentIds.component_button_delete_guess_id(game_id),
                         label="Delete Guess",
                     ),
                 ]

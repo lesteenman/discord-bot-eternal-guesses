@@ -7,7 +7,7 @@ from discord import ButtonStyle
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord.discord_command import DiscordCommand
-from eternal_guesses.util.custom_id_generator import CustomIdGenerator
+from eternal_guesses.util.component_ids import ComponentIds
 
 
 class MessageProvider(ABC):
@@ -112,7 +112,7 @@ class MessageProviderImpl(MessageProvider):
         make_guess_button = discord.ui.Button(
             style=ButtonStyle.secondary,
             label="Guess!",
-            custom_id=CustomIdGenerator.trigger_guess_modal_action(game.game_id),
+            custom_id=ComponentIds.component_button_guess_id(game.game_id),
         )
         view.add_item(make_guess_button)
 

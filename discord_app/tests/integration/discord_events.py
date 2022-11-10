@@ -13,50 +13,10 @@ DEFAULT_USER_NAME = "default-username"
 DEFAULT_MEMBER_NICK = "default-nickname"
 
 
-def create_context() -> Dict:
-    return {}
-
-
-def make_discord_guess_event(
+def component_action(
     guild_id: int,
-    game_id: str,
-    guess: str,
-    user_id: int = DEFAULT_USER_ID,
-    role_id: int = DEFAULT_ROLE_ID,
-    channel_id: int = DEFAULT_CHANNEL_ID,
-    member_nickname: str = DEFAULT_MEMBER_NICK,
-    user_name: str = DEFAULT_USER_NAME
-):
-    event_body = _base_event_body(
-        guild_id=guild_id,
-        channel_id=channel_id,
-        user_id=user_id,
-        member_nickname=member_nickname,
-        user_name=user_name,
-        role_id=role_id,
-        is_admin=False
-    )
-    event_body['data'] = {
-        "id": "2001",
-        "name": "guess",
-        "options": [
-            {
-                "name": "game-id",
-                "value": game_id
-            },
-            {
-                "name": "guess",
-                "value": guess
-            }
-        ]
-    }
-
-    return _make_event(event_body)
-
-
-def make_discord_button_event(
-    guild_id: int,
-    custom_id: str,
+    component_custom_id: str,
+    component_type: ComponentType,
     user_id: int = DEFAULT_USER_ID,
     role_id: int = DEFAULT_ROLE_ID,
     channel_id: int = DEFAULT_CHANNEL_ID,
@@ -74,18 +34,17 @@ def make_discord_button_event(
         event_type=InteractionType.MESSAGE_COMPONENT,
     )
     event_body['data'] = {
-        "component_type": ComponentType.BUTTON.value,
-        "custom_id": custom_id,
+        "custom_id": component_custom_id,
+        "component_type": component_type.value,
     }
 
     return _make_event(event_body)
 
 
-def make_discord_modal_event(
+def modal_submit_event(
     guild_id: int,
     modal_custom_id: str,
-    input_custom_id: str,
-    input_value: str,
+    inputs: dict[str, str],
     user_id: int = DEFAULT_USER_ID,
     role_id: int = DEFAULT_ROLE_ID,
     channel_id: int = DEFAULT_CHANNEL_ID,
@@ -110,30 +69,25 @@ def make_discord_modal_event(
                 'components': [
                     {
                         "type": ComponentType.TEXT_INPUT.value,
-                        "custom_id": input_custom_id,
-                        "value": input_value,
+                        "custom_id": k,
+                        "value": v,
                     }
                 ]
-            }
-
+            } for k, v in inputs.items()
         ],
     }
 
     return _make_event(event_body)
 
 
-def make_discord_create_event(
+def application_command(
+    command_name: str,
     guild_id: int,
-    game_id: str,
-    game_title: str = None,
-    game_description: str = None,
     channel_id: int = DEFAULT_CHANNEL_ID,
     user_id: int = DEFAULT_USER_ID,
     member_nickname: str = DEFAULT_MEMBER_NICK,
     user_name: str = DEFAULT_USER_NAME,
     role_id: int = DEFAULT_ROLE_ID,
-    min_guess: int = None,
-    max_guess: int = None
 ):
     event_body = _base_event_body(
         guild_id=guild_id,
@@ -145,54 +99,35 @@ def make_discord_create_event(
         is_admin=False
     )
 
-    options = [
-        {
-            "name": "game-id",
-            "value": game_id
-        }
-    ]
+    event_body['data'] = {
+        "id": "2001",
+        "name": command_name,
+    }
 
-    if game_title is not None:
-        options.append(
-            {
-                "name": "title",
-                "value": game_title,
-            }
-        )
+    return _make_event(event_body)
 
-    if game_description is not None:
-        options.append(
-            {
-                "name": "description",
-                "value": game_description,
-            }
-        )
 
-    if min_guess is not None:
-        options.append(
-            {
-                "name": "min",
-                "value": min_guess,
-            }
-        )
-
-    if max_guess is not None:
-        options.append(
-            {
-                "name": "max",
-                "value": max_guess,
-            }
-        )
+def make_discord_create_event(
+    guild_id: int,
+    channel_id: int = DEFAULT_CHANNEL_ID,
+    user_id: int = DEFAULT_USER_ID,
+    member_nickname: str = DEFAULT_MEMBER_NICK,
+    user_name: str = DEFAULT_USER_NAME,
+    role_id: int = DEFAULT_ROLE_ID,
+):
+    event_body = _base_event_body(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        user_id=user_id,
+        member_nickname=member_nickname,
+        user_name=user_name,
+        role_id=role_id,
+        is_admin=False
+    )
 
     event_body['data'] = {
         "id": "2001",
-        "name": "eternal-guess",
-        "options": [
-            {
-                "name": "create",
-                "options": options,
-            }
-        ]
+        "name": "create-game",
     }
 
     return _make_event(event_body)

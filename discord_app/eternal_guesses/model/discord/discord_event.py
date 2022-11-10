@@ -79,7 +79,8 @@ def from_application_command_event(event_source):
         channel_id=channel_id,
         guild_id=guild_id,
         command=command,
-        member=member
+        member=member,
+        event_type=InteractionType.APPLICATION_COMMAND,
     )
 
 
@@ -132,14 +133,22 @@ def from_modal_submit_event(event_source):
     channel_id = int(event_source['channel_id'])
     guild_id = int(event_source['guild_id'])
     member = _member_from_data(event_source['member'])
-    action_row = event_source['data']['components'][0]
-    input_components = action_row['components']
+
+    custom_id = event_source['data']['custom_id']
+    action_rows = event_source['data']['components']
+
+    inputs = {}
+    for row in action_rows:
+        component = row['components'][0]
+        inputs[component['custom_id']] = component['value']
+
     return DiscordEvent(
         channel_id=channel_id,
         guild_id=guild_id,
         member=member,
+        event_type=InteractionType.MODAL_SUBMIT,
         modal_submit=DiscordModalSubmit(
-            modal_custom_id=event_source['data']['custom_id'],
-            inputs={i['custom_id']: i['value'] for i in input_components}
+            modal_custom_id=custom_id,
+            inputs=inputs,
         )
     )

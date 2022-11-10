@@ -5,7 +5,7 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.custom_id_generator import CustomIdGenerator
+from eternal_guesses.util.component_ids import ComponentIds
 from eternal_guesses.util.message_provider import MessageProvider
 
 
@@ -23,7 +23,7 @@ class ActionGameGuessRoute(Route):
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         component_action = event.component_action
         game_id = re.search(
-            CustomIdGenerator.trigger_guess_modal_action_game_id_regex,
+            ComponentIds.component_button_guess_regex,
             component_action.component_custom_id
         ).group(1)
 
@@ -38,11 +38,11 @@ class ActionGameGuessRoute(Route):
             return DiscordResponse.ephemeral_channel_message(error_message)
 
         return DiscordResponse.modal(
-            custom_id=f"modal_submit_guess_{game_id}",
+            custom_id=ComponentIds.submit_guess_modal_id(game_id),
             title=self.message_provider.modal_title_place_guess(game),
             components=[
                 DiscordComponent.text_input(
-                    custom_id=CustomIdGenerator.guess_modal_input_guess,
+                    custom_id=ComponentIds.submit_guess_input_value,
                     label=self.message_provider.modal_input_label_guess_value(
                         game
                     )

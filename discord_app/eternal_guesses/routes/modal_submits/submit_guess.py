@@ -7,7 +7,7 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.custom_id_generator import CustomIdGenerator
+from eternal_guesses.util.component_ids import ComponentIds
 from eternal_guesses.util.game_post_manager import GamePostManager
 from eternal_guesses.util.message_provider import MessageProvider
 
@@ -29,8 +29,8 @@ class SubmitGuessRoute(Route):
         user_nickname = event.member.nickname
 
         modal_id = event.modal_submit.modal_custom_id
-        game_id = re.search(r"modal_submit_guess_(.*)", modal_id).group(1)
-        guess = event.modal_submit.inputs[CustomIdGenerator.guess_modal_input_guess]
+        game_id = re.search(ComponentIds.submit_guess_modal_regex, modal_id).group(1)
+        guess = event.modal_submit.inputs[ComponentIds.submit_guess_input_value]
 
         game = self.games_repository.get(guild_id, game_id)
         if game is None:

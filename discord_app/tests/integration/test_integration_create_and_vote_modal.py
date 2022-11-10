@@ -2,16 +2,13 @@ import json
 
 from eternal_guesses import event_handler
 from eternal_guesses.model.data.guild_config import GuildConfig
+from eternal_guesses.model.discord.discord_component import ComponentType
 from eternal_guesses.model.discord.discord_response import ResponseType
 from eternal_guesses.repositories.configs_repository import \
     ConfigsRepositoryImpl
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
-from eternal_guesses.util.custom_id_generator import CustomIdGenerator
-from tests.integration.helpers import make_discord_create_event, \
-    make_discord_manage_post_event, \
-    make_discord_change_guess_event, \
-    make_discord_delete_guess_event, make_discord_button_event, \
-    make_discord_modal_event
+from eternal_guesses.util.component_ids import ComponentIds
+from tests.integration import discord_events
 
 
 def test_integration_full_flow(eternal_guesses_table):
@@ -104,14 +101,13 @@ def guess_on_game(guild_id: int, game_id: str, guess: str, user_id: int):
 
 
 def click_guess_button(guild_id: int, game_id: str, user_id: int):
-    event = make_discord_button_event(
-            guild_id=guild_id,
-            custom_id=f"button_trigger_guess_modal_{game_id}",
-            user_id=user_id
-        )
-    response = event_handler.handle(
-        event,
+    event = discord_events.component_action(
+        guild_id=guild_id,
+        component_custom_id=ComponentIds.component_button_guess_id(game_id),
+        component_type=ComponentType.BUTTON,
+        user_id=user_id,
     )
+    response = event_handler.handle(event)
 
     assert response['statusCode'] == 200
 
@@ -124,12 +120,13 @@ def click_guess_button(guild_id: int, game_id: str, user_id: int):
 
 def submit_guess_modal(guild_id: int, game_id: str, user_id: int, guess: str):
     response = event_handler.handle(
-        make_discord_modal_event(
+        discord_events.modal_submit_event(
             guild_id=guild_id,
-            modal_custom_id=f"modal_submit_guess_{game_id}",
-            input_custom_id=CustomIdGenerator.guess_modal_input_guess,
-            input_value=guess,
-            user_id=user_id
+            user_id=user_id,
+            modal_custom_id=ComponentIds.submit_guess_modal_id(game_id),
+            inputs={
+                ComponentIds.submit_guess_input_value: guess
+            },
         ),
     )
 
@@ -138,24 +135,38 @@ def submit_guess_modal(guild_id: int, game_id: str, user_id: int, guess: str):
 
 def create_new_game(guild_id: int, game_id: str, title: str, description: str, channel_id: int,
                     min_guess: int, max_guess: int):
-    response = event_handler.handle(
-        make_discord_create_event(
-            guild_id=guild_id,
-            game_id=game_id,
-            game_title=title,
-            game_description=description,
-            channel_id=channel_id,
-            min_guess=min_guess,
-            max_guess=max_guess,
-        ),
+    trigger_modal_event = discord_events.application_command(
+        command_name="create-game",
+        guild_id=guild_id,
+        channel_id=channel_id,
     )
 
+    response = event_handler.handle(trigger_modal_event)
+    assert response['statusCode'] == 200
+
+    body = json.loads(response['body'])
+    assert body['type'] == ResponseType.MODAL.value
+
+    submit_modal_event = discord_events.modal_submit_event(
+        guild_id=guild_id,
+        channel_id=channel_id,
+        modal_custom_id=ComponentIds.submit_create_modal_id,
+        inputs={
+            ComponentIds.submit_create_input_game_id: game_id,
+            ComponentIds.submit_create_input_title: title,
+            ComponentIds.submit_create_input_description: description,
+            ComponentIds.submit_create_input_min_value: min_guess,
+            ComponentIds.submit_create_input_max_value: max_guess,
+        }
+    )
+
+    response = event_handler.handle(submit_modal_event)
     assert response['statusCode'] == 200
 
 
 def post_channel_message(guild_id: int, game_id: str, channel_id: int):
     response = event_handler.handle(
-        make_discord_manage_post_event(
+        discord_events.make_discord_manage_post_event(
             guild_id=guild_id,
             game_id=game_id,
             channel_id=channel_id),
@@ -166,7 +177,7 @@ def post_channel_message(guild_id: int, game_id: str, channel_id: int):
 
 def change_guess(guild_id: int, game_id: str, new_guess: str, guessing_user_id: int, channel_id: int):
     response = event_handler.handle(
-        make_discord_change_guess_event(
+        discord_events.make_discord_change_guess_event(
             guild_id=guild_id, game_id=game_id, member=guessing_user_id, new_guess=new_guess, channel_id=channel_id
         ),
     )
@@ -176,7 +187,7 @@ def change_guess(guild_id: int, game_id: str, new_guess: str, guessing_user_id: 
 
 def delete_guess(guild_id: int, game_id: str, guessing_user_id: int, channel_id: int):
     response = event_handler.handle(
-        make_discord_delete_guess_event(
+        discord_events.make_discord_delete_guess_event(
             guild_id=guild_id, game_id=game_id, member=guessing_user_id, channel_id=channel_id
         ),
     )
