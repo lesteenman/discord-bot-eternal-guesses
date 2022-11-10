@@ -6,13 +6,11 @@ import pytest
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.model.discord.discord_event import DiscordEvent
+from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.model.discord.discord_modal_submit import \
-    DiscordModalSubmit
 from eternal_guesses.repositories.games_repository import GamesRepository
-from eternal_guesses.routes import submit_guess
-from eternal_guesses.routes.submit_guess import SubmitGuessRoute
+from eternal_guesses.routes.commands import guess
+from eternal_guesses.routes.commands.guess import GuessRoute
 from eternal_guesses.util.game_post_manager import GamePostManager
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository, FakeMessageProvider
@@ -20,7 +18,7 @@ from tests.fakes import FakeGamesRepository, FakeMessageProvider
 pytestmark = pytest.mark.asyncio
 
 
-@patch.object(submit_guess, 'datetime', autospec=True)
+@patch.object(guess, 'datetime', autospec=True)
 async def test_guess_updates_game_guesses(mock_datetime):
     # Given
     game_id = 'game-id'
@@ -44,19 +42,19 @@ async def test_guess_updates_game_guesses(mock_datetime):
 
     fake_games_repository = FakeGamesRepository([existing_game])
 
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=fake_games_repository,
     )
 
     # When we make a guess
-    event = _create_submit_event(
+    event = _create_guess_event(
         guild_id=guild_id,
         game_id=game_id,
         user_id=user_id,
         user_nickname=user_nickname,
         guess=guess_answer
     )
-    await submit_guess_route.call(event)
+    await guess_route.call(event)
 
     # Then
     saved_game = fake_games_repository.get(guild_id, game_id)
@@ -88,15 +86,15 @@ async def test_guess_updates_channel_messages():
     games_repository = FakeGamesRepository([game])
     game_post_manager = MagicMock(GamePostManager)
 
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=games_repository,
         message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
 
     # When
-    event = _create_submit_event(guild_id, game.game_id, user_id, 'nickname')
-    await submit_guess_route.call(event)
+    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
+    await guess_route.call(event)
 
     # Then
     game_post_manager.update.assert_called_with(game)
@@ -115,14 +113,14 @@ async def test_guess_replies_with_ephemeral_message():
     game = Game(guild_id=guild_id, game_id=game_id)
     fake_games_repository = FakeGamesRepository([game])
 
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=fake_games_repository,
         message_provider=message_provider,
     )
 
     # When
-    event = _create_submit_event(guild_id, game.game_id, user_id, 'nickname')
-    response = await submit_guess_route.call(event)
+    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
+    response = await guess_route.call(event)
 
     # Then
     assert response.is_ephemeral
@@ -143,13 +141,13 @@ async def test_guess_game_does_not_exist():
     message_provider = MagicMock(MessageProvider)
     message_provider.error_game_not_found.return_value = error_message
 
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=fake_games_repository,
         message_provider=message_provider,
     )
 
     # When
-    event = _create_submit_event(
+    event = _create_guess_event(
         guild_id=guild_id,
         game_id=game_id,
         user_id=user_id,
@@ -157,7 +155,7 @@ async def test_guess_game_does_not_exist():
         user_nickname='nickname',
         member=member,
     )
-    response = await submit_guess_route.call(event)
+    response = await guess_route.call(event)
 
     # Then
     assert len(fake_games_repository.get_all(guild_id=guild_id)) == 0
@@ -197,13 +195,13 @@ async def test_guess_duplicate_guess():
     message_provider = MagicMock(MessageProvider)
     message_provider.error_duplicate_guess.return_value = duplicate_guess_message
 
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=games_repository,
         message_provider=message_provider
     )
 
     # When we guess '42' as the same user
-    event = _create_submit_event(
+    event = _create_guess_event(
         guild_id=guild_id,
         user_id=guessing_user_id,
         game_id=game_id,
@@ -211,7 +209,7 @@ async def test_guess_duplicate_guess():
         event_channel_id=event_channel_id,
         member=member,
     )
-    response = await submit_guess_route.call(event)
+    response = await guess_route.call(event)
 
     # Then no new guess is added
     saved_game = games_repository.get(guild_id, existing_game.game_id)
@@ -252,7 +250,7 @@ async def test_guess_closed_game():
     )
 
     # When
-    event = _create_submit_event(
+    event = _create_guess_event(
         guild_id=guild_id,
         game_id=game_id,
         user_id=guessing_user_id,
@@ -289,14 +287,14 @@ async def test_guess_non_numerical_on_numeric_game():
     )
 
     games_repository = FakeGamesRepository([game])
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=games_repository,
         message_provider=message_provider,
     )
 
     # When
-    event = _create_submit_event(guild_id, game.game_id, user_id, 'nickname')
-    response = await submit_guess_route.call(event)
+    event = _create_guess_event(guild_id, game.game_id, user_id, 'nickname')
+    response = await guess_route.call(event)
 
     # Then
     assert response.is_ephemeral
@@ -327,21 +325,21 @@ async def test_guess_higher_than_max():
     )
 
     games_repository = FakeGamesRepository([game])
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=games_repository,
         message_provider=message_provider,
     )
 
     # When we guess higher than that
     guess = "101"
-    event = _create_submit_event(
+    event = _create_guess_event(
         guild_id=guild_id,
         game_id=game.game_id,
         user_id=user_id,
         user_nickname='nickname',
         guess=guess,
     )
-    response = await submit_guess_route.call(event)
+    response = await guess_route.call(event)
 
     # Then
     assert response.is_ephemeral
@@ -372,21 +370,21 @@ async def test_lower_than_min():
     )
 
     games_repository = FakeGamesRepository([game])
-    submit_guess_route = _route(
+    guess_route = _route(
         games_repository=games_repository,
         message_provider=message_provider,
     )
 
     # When we guess lower than that
     guess = "-6"
-    event = _create_submit_event(
+    event = _create_guess_event(
         guild_id=guild_id,
         game_id=game.game_id,
         user_id=user_id,
         user_nickname='nickname',
         guess=guess,
     )
-    response = await submit_guess_route.call(event)
+    response = await guess_route.call(event)
 
     # Then
     assert response.is_ephemeral
@@ -397,12 +395,8 @@ async def test_lower_than_min():
     assert len(updated_game.guesses) == 0
 
 
-def _create_submit_event(
-    guild_id: int, game_id: str, user_id: int = -1,
-    user_nickname: str = 'nickname',
-    guess: str = 'not-relevant', event_channel_id: int = -1,
-    member: DiscordMember = None
-):
+def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nickname: str = 'nickname',
+                        guess: str = 'not-relevant', event_channel_id: int = -1, member: DiscordMember = None):
     if member is None:
         member = DiscordMember(
             user_id=user_id,
@@ -411,10 +405,12 @@ def _create_submit_event(
 
     event = DiscordEvent(
         channel_id=event_channel_id,
-        modal_submit=DiscordModalSubmit(
-            modal_custom_id=f"modal_submit_guess_{game_id}",
-            input_custom_id=f"modal_input_guess_value_{game_id}",
-            input_value=guess,
+        command=DiscordCommand(
+            command_name="guess",
+            options={
+                'game-id': game_id,
+                'guess': guess,
+            }
         ),
         member=member,
         guild_id=guild_id,
@@ -423,11 +419,10 @@ def _create_submit_event(
     return event
 
 
-def _route(
-    games_repository: GamesRepository = None,
-    message_provider: MessageProvider = None,
-    game_post_manager: GamePostManager = None
-):
+def _route(games_repository: GamesRepository = None,
+           message_provider: MessageProvider = None,
+           game_post_manager: GamePostManager = None):
+
     if games_repository is None:
         games_repository = FakeGamesRepository([])
 
@@ -437,9 +432,9 @@ def _route(
     if game_post_manager is None:
         game_post_manager = AsyncMock(GamePostManager, autospec=True)
 
-    submit_guess_route = SubmitGuessRoute(
+    guess_route = GuessRoute(
         games_repository=games_repository,
         message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
-    return submit_guess_route
+    return guess_route

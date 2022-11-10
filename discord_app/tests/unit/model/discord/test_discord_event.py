@@ -543,8 +543,7 @@ def test_from_modal_submit_event():
 
     modal_submit = event.modal_submit
     assert modal_submit.modal_custom_id == 'test_modal'
-    assert modal_submit.input_custom_id == 'test_input'
-    assert modal_submit.input_value == '500'
+    assert modal_submit.inputs['test_input'] == '500'
 
 
 def test_from_message_component_event():

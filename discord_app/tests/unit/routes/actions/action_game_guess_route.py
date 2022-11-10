@@ -9,7 +9,8 @@ from eternal_guesses.model.discord.discord_component_action import \
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord.discord_response import ResponseType
-from eternal_guesses.routes.trigger_guess_modal import TriggerGuessModalRoute
+from eternal_guesses.routes.actions.action_game_guess import \
+    ActionGameGuessRoute
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository
 
@@ -34,10 +35,10 @@ async def test_call_returns_modal_response():
     message_provider.modal_input_label_guess_value.return_value = modal_input_label
     message_provider.modal_title_place_guess.return_value = modal_title
 
-    test_game = Game()
+    test_game = Game(game_id="my_testing_game_id")
     games_repository = FakeGamesRepository([test_game])
 
-    route = TriggerGuessModalRoute(
+    route = ActionGameGuessRoute(
         message_provider=message_provider,
         games_repository=games_repository,
     )

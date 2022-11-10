@@ -1,31 +1,50 @@
 from eternal_guesses.api.discord_event_handler import DiscordEventHandler
 from eternal_guesses.api.route_handler import RouteHandlerImpl
 from eternal_guesses.api.router import Router, RouterImpl
-from eternal_guesses.authorization.api_authorizer import ApiAuthorizerImpl, ApiAuthorizer
-from eternal_guesses.authorization.command_authorizer import CommandAuthorizer, CommandAuthorizerImpl
-from eternal_guesses.repositories.configs_repository import ConfigsRepository, ConfigsRepositoryImpl
-from eternal_guesses.repositories.games_repository import GamesRepositoryImpl, GamesRepository
-from eternal_guesses.routes.add_management_channel import AddManagementChannelRoute
-from eternal_guesses.routes.add_management_role import AddManagementRoleRoute
-from eternal_guesses.routes.close_game import CloseGameRoute
-from eternal_guesses.routes.create import CreateRoute
-from eternal_guesses.routes.delete_guess import DeleteGuessRoute
-from eternal_guesses.routes.edit_guess import EditGuessRoute
-from eternal_guesses.routes.guess import GuessRoute
-from eternal_guesses.routes.guild_info import GuildInfoRoute
-from eternal_guesses.routes.list_games import ListGamesRoute
-from eternal_guesses.routes.message_with_buttons_test import \
+from eternal_guesses.authorization.api_authorizer import ApiAuthorizerImpl, \
+    ApiAuthorizer
+from eternal_guesses.authorization.command_authorizer import CommandAuthorizer, \
+    CommandAuthorizerImpl
+from eternal_guesses.repositories.configs_repository import ConfigsRepository, \
+    ConfigsRepositoryImpl
+from eternal_guesses.repositories.games_repository import GamesRepositoryImpl, \
+    GamesRepository
+from eternal_guesses.routes.actions.action_game_guess import \
+    ActionGameGuessRoute
+from eternal_guesses.routes.actions.action_manage_game_delete_guess import \
+    ActionManageGameDeleteGuessRoute
+from eternal_guesses.routes.actions.action_manage_game_edit_guess import \
+    ActionManageGameEditGuessRoute
+from eternal_guesses.routes.actions.action_manage_game_post import \
+    ActionManageGamePostRoute
+from eternal_guesses.routes.commands.add_management_channel import \
+    AddManagementChannelRoute
+from eternal_guesses.routes.commands.add_management_role import \
+    AddManagementRoleRoute
+from eternal_guesses.routes.commands.close_game import CloseGameRoute
+from eternal_guesses.routes.commands.create import CreateRoute
+from eternal_guesses.routes.commands.delete_guess import DeleteGuessRoute
+from eternal_guesses.routes.commands.edit_guess import EditGuessRoute
+from eternal_guesses.routes.commands.guess import GuessRoute
+from eternal_guesses.routes.commands.guild_info import GuildInfoRoute
+from eternal_guesses.routes.commands.list_games import ListGamesRoute
+from eternal_guesses.routes.commands.manage_game import ManageGameRoute
+from eternal_guesses.routes.commands.message_with_buttons_test import \
     MessageWithButtonsRoute
-from eternal_guesses.routes.modal_test import ModalTestRoute
-from eternal_guesses.routes.ping import PingRoute
-from eternal_guesses.routes.post import PostRoute
-from eternal_guesses.routes.remove_management_channel import RemoveManagementChannelRoute
-from eternal_guesses.routes.remove_management_role import RemoveManagementRoleRoute
-from eternal_guesses.routes.submit_guess import SubmitGuessRoute
-from eternal_guesses.routes.trigger_guess_modal import TriggerGuessModalRoute
-from eternal_guesses.util.discord_messaging import DiscordMessaging, DiscordMessagingImpl
-from eternal_guesses.util.game_post_manager import GamePostManager, GamePostManagerImpl
-from eternal_guesses.util.message_provider import MessageProviderImpl, MessageProvider
+from eternal_guesses.routes.commands.ping import PingRoute
+from eternal_guesses.routes.commands.post import PostRoute
+from eternal_guesses.routes.commands.remove_management_channel import \
+    RemoveManagementChannelRoute
+from eternal_guesses.routes.commands.remove_management_role import \
+    RemoveManagementRoleRoute
+from eternal_guesses.routes.modal_submits.modal_test import ModalTestRoute
+from eternal_guesses.routes.modal_submits.submit_guess import SubmitGuessRoute
+from eternal_guesses.util.discord_messaging import DiscordMessaging, \
+    DiscordMessagingImpl
+from eternal_guesses.util.game_post_manager import GamePostManager, \
+    GamePostManagerImpl
+from eternal_guesses.util.message_provider import MessageProviderImpl, \
+    MessageProvider
 
 
 def discord_event_handler():
@@ -112,7 +131,16 @@ def _router() -> Router:
         message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
-    trigger_guess_modal_route = _trigger_guess_modal_route(
+    trigger_guess_modal_route = _action_game_guess_route(
+        message_provider=message_provider,
+        games_repository=games_repository,
+    )
+    action_post_game_route = _action_manage_game_post_route()
+    action_trigger_edit_guess_route = _action_manage_game_edit_guess_route(
+        message_provider=message_provider,
+        games_repository=games_repository,
+    )
+    action_trigger_delete_guess_route = _action_manage_game_edit_guess_route(
         message_provider=message_provider,
         games_repository=games_repository,
     )
@@ -126,6 +154,10 @@ def _router() -> Router:
     )
     message_with_buttons_route = _message_with_buttons_route(
         game_post_manager=game_post_manager
+    )
+    manage_game_route = _manage_game_route(
+        games_repository=games_repository,
+        message_provider=message_provider,
     )
 
     return RouterImpl(
@@ -147,6 +179,10 @@ def _router() -> Router:
         submit_guess_route=submit_guess_route,
         modal_test_route=modal_test_route,
         message_with_buttons_route=message_with_buttons_route,
+        manage_game_route=manage_game_route,
+        action_post_game_route=action_post_game_route,
+        action_trigger_edit_guess_route=action_trigger_edit_guess_route,
+        action_trigger_delete_guess_route=action_trigger_delete_guess_route,
     )
 
 
@@ -293,8 +329,33 @@ def _submit_guess_route(
     )
 
 
-def _trigger_guess_modal_route(message_provider, games_repository):
-    return TriggerGuessModalRoute(
+def _action_game_guess_route(message_provider, games_repository):
+    return ActionGameGuessRoute(
+        message_provider=message_provider,
+        games_repository=games_repository,
+    )
+
+
+def _manage_game_route(message_provider, games_repository):
+    return ManageGameRoute(
+        message_provider=message_provider,
+        games_repository=games_repository,
+    )
+
+
+def _action_manage_game_post_route():
+    return ActionManageGamePostRoute()
+
+
+def _action_manage_game_delete_guess_route(message_provider, games_repository):
+    return ActionManageGameDeleteGuessRoute(
+        message_provider=message_provider,
+        games_repository=games_repository,
+    )
+
+
+def _action_manage_game_edit_guess_route(message_provider, games_repository):
+    return ActionManageGameEditGuessRoute(
         message_provider=message_provider,
         games_repository=games_repository,
     )

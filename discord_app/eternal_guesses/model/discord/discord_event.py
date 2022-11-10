@@ -42,8 +42,17 @@ class DiscordEvent:
         self.event_type = event_type
 
     def __repr__(self):
-        return f"<DiscordEvent command={self.command} member={self.member} guild_id={self.guild_id} " \
-               f"channel_id={self.channel_id} type={self.event_type}>"
+        if self.event_type == InteractionType.APPLICATION_COMMAND:
+            return f"<DiscordEvent command={self.command} member={self.member} guild_id={self.guild_id} " \
+                   f"channel_id={self.channel_id} type={self.event_type}>"
+
+        if self.event_type == InteractionType.MODAL_SUBMIT:
+            return f"<DiscordEvent modal_submit={self.modal_submit} member={self.member} guild_id={self.guild_id} " \
+                   f"channel_id={self.channel_id} type={self.event_type}>"
+
+        if self.event_type == InteractionType.MESSAGE_COMPONENT:
+            return f"<DiscordEvent message_component={self.component_action} member={self.member} guild_id={self.guild_id} " \
+                   f"channel_id={self.channel_id} type={self.event_type}>"
 
 
 def from_event(event_source: Dict) -> DiscordEvent:
@@ -84,17 +93,31 @@ def from_message_component_event(event_source):
     channel_id = int(event_source['channel_id'])
     guild_id = int(event_source['guild_id'])
     member = _member_from_data(event_source['member'])
+
+    component_type = ComponentType.from_value(
+        event_source['data']['component_type']
+    )
+
+    if component_type == ComponentType.BUTTON:
+        component_action = DiscordComponentAction(
+            component_custom_id=event_source['data']['custom_id'],
+            component_type=ComponentType.BUTTON,
+        )
+    elif component_type == ComponentType.STRING_SELECT:
+        component_action = DiscordComponentAction(
+            component_custom_id=event_source['data']['custom_id'],
+            component_type=ComponentType.BUTTON,
+            values=event_source['data']['values'],
+        )
+    else:
+        raise NotImplementedError(f"Not implemented: component interaction of type {component_type}")
+
     return DiscordEvent(
         guild_id=guild_id,
         member=member,
         channel_id=channel_id,
         event_type=InteractionType.MESSAGE_COMPONENT,
-        component_action=DiscordComponentAction(
-            component_custom_id=event_source['data']['custom_id'],
-            component_type=ComponentType.from_value(
-                event_source['data']['component_type']
-            ),
-        ),
+        component_action=component_action,
     )
 
 
@@ -110,14 +133,13 @@ def from_modal_submit_event(event_source):
     guild_id = int(event_source['guild_id'])
     member = _member_from_data(event_source['member'])
     action_row = event_source['data']['components'][0]
-    input_component = action_row['components'][0]
+    input_components = action_row['components']
     return DiscordEvent(
         channel_id=channel_id,
         guild_id=guild_id,
         member=member,
         modal_submit=DiscordModalSubmit(
             modal_custom_id=event_source['data']['custom_id'],
-            input_custom_id=input_component['custom_id'],
-            input_value=input_component['value'],
+            inputs={i['custom_id']: i['value'] for i in input_components}
         )
     )

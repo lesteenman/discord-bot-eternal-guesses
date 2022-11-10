@@ -1,8 +1,7 @@
 import json
 
-from discord_interactions import InteractionType
-
-from eternal_guesses import handler
+from eternal_guesses import event_handler
+from eternal_guesses.model.discord.discord_event import InteractionType
 
 
 def test_ping():
@@ -11,14 +10,14 @@ def test_ping():
         'body': json.dumps({
             "id": "00000001",
             "token": "some-token-abcde1234567890",
-            "type": InteractionType.PING,
+            "type": InteractionType.PING.value,
             "version": 1
         }),
         'headers': {},
     }
 
     # When
-    response = handler.handle_lambda(event, {})
+    response = event_handler.handle(event)
 
     # Then
     assert response['statusCode'] == 200

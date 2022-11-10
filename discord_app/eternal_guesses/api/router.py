@@ -12,6 +12,7 @@ from eternal_guesses.model.error.unkonwn_event_exception import \
     UnknownEventException
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.routes.route import Route
+from eternal_guesses.util.custom_id_generator import CustomIdGenerator
 
 
 class Router(ABC):
@@ -40,6 +41,10 @@ class RouterImpl(Router):
         trigger_guess_modal_route: Route,
         modal_test_route: Route,
         message_with_buttons_route: Route,
+        manage_game_route: Route,
+        action_post_game_route: Route,
+        action_trigger_edit_guess_route: Route,
+        action_trigger_delete_guess_route: Route,
     ):
         self.submit_guess_route = submit_guess_route
         self.route_handler = route_handler
@@ -59,6 +64,10 @@ class RouterImpl(Router):
         self.modal_test_route = modal_test_route
         self.trigger_guess_modal_route = trigger_guess_modal_route
         self.message_with_buttons_route = message_with_buttons_route
+        self.manage_game_route = manage_game_route
+        self.action_trigger_delete_guess_route = action_trigger_delete_guess_route
+        self.action_trigger_edit_guess_route = action_trigger_edit_guess_route
+        self.action_post_game_route = action_post_game_route
 
         self.routes = []
         self._register_routes()
@@ -68,7 +77,22 @@ class RouterImpl(Router):
             ComponentActionRouteDefinition(
                 self.trigger_guess_modal_route,
                 component_type=ComponentType.BUTTON,
-                custom_id_starts_with="button_trigger_guess_modal_"
+                custom_id_starts_with=CustomIdGenerator.trigger_guess_modal_action_prefix,
+            ),
+            ComponentActionRouteDefinition(
+                self.action_post_game_route,
+                component_type=ComponentType.BUTTON,
+                custom_id_starts_with="action-manage_game-post-",
+            ),
+            ComponentActionRouteDefinition(
+                self.action_trigger_delete_guess_route,
+                component_type=ComponentType.BUTTON,
+                custom_id_starts_with="action-manage_game-delete_guess-",
+            ),
+            ComponentActionRouteDefinition(
+                self.action_trigger_edit_guess_route,
+                component_type=ComponentType.BUTTON,
+                custom_id_starts_with="action-manage_game-edit_guess-",
             ),
             ModalSubmitRouteDefinition(
                 self.submit_guess_route,
@@ -76,6 +100,7 @@ class RouterImpl(Router):
             ),
             ApplicationCommandDefinition(self.ping_route, 'ping'),
             ApplicationCommandDefinition(self.guess_route, 'guess'),
+            ApplicationCommandDefinition(self.manage_game_route, 'manage-game'),
             ApplicationCommandDefinition(
                 self.post_route, 'manage', 'post',
                 permission=PermissionSet.MANAGEMENT

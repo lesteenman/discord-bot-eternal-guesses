@@ -3,7 +3,9 @@ from abc import ABC
 from enum import Enum
 from typing import Dict
 
-import discord_interactions
+from loguru import logger
+from nacl.signing import VerifyKey
+
 from eternal_guesses.model.lambda_response import LambdaResponse
 
 
@@ -24,10 +26,20 @@ class ApiAuthorizerImpl(ApiAuthorizer):
         signature = headers['x-signature-ed25519']
         timestamp = headers['x-signature-timestamp']
 
-        result = discord_interactions.verify_key(
+        result = self.verify_key(
             body, signature, timestamp, os.environ.get('DISCORD_PUBLIC_KEY'))
         if result:
             return AuthorizationResult.PASS, None
         else:
             return AuthorizationResult.FAIL, LambdaResponse.unauthorized(
                 "could not verify authorization")
+
+    def verify_key(self, body, signature, timestamp, public_key):
+        message = timestamp.encode() + body
+        try:
+            vk = VerifyKey(bytes.fromhex(public_key))
+            vk.verify(message, bytes.fromhex(signature))
+            return True
+        except Exception as ex:
+            logger.exception(ex)
+        return False

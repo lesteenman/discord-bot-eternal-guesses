@@ -7,6 +7,7 @@ from discord import ButtonStyle
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord.discord_command import DiscordCommand
+from eternal_guesses.util.custom_id_generator import CustomIdGenerator
 
 
 class MessageProvider(ABC):
@@ -111,7 +112,7 @@ class MessageProviderImpl(MessageProvider):
         make_guess_button = discord.ui.Button(
             style=ButtonStyle.secondary,
             label="Guess!",
-            custom_id=f"button_trigger_guess_modal_{game.game_id}"
+            custom_id=CustomIdGenerator.trigger_guess_modal_action(game.game_id),
         )
         view.add_item(make_guess_button)
 
@@ -143,8 +144,8 @@ class MessageProviderImpl(MessageProvider):
 
         if game.closed:
             embed.set_footer(text="Game closed.")
-        else:
-            embed.add_field(name="Place your guess", value=f"/guess game-id:{game.game_id} guess:1234")
+        # else:
+        #     embed.add_field(name="Place your guess", value=f"/guess game-id:{game.game_id} guess:1234")
 
         return embed
 

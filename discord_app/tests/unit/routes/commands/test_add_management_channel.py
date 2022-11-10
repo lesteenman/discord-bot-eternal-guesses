@@ -6,7 +6,7 @@ import pytest
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.routes.add_management_channel import AddManagementChannelRoute
+from eternal_guesses.routes.commands.add_management_channel import AddManagementChannelRoute
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeConfigsRepository
 

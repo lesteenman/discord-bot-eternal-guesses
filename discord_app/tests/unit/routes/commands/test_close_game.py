@@ -8,7 +8,7 @@ from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.routes.close_game import CloseGameRoute
+from eternal_guesses.routes.commands.close_game import CloseGameRoute
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeDiscordMessaging, FakeGamesRepository
 

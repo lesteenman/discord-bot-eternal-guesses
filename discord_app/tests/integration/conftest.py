@@ -1,17 +1,20 @@
+import os
 from typing import Dict
 
 import discord
 import docker
 import opnieuw
 import pytest
-from eternal_guesses.util.discord_messaging import DiscordMessaging
 from loguru import logger
-from pynamodb.exceptions import TableError
 
-from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, AuthorizationResult
+from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, \
+    AuthorizationResult
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.lambda_response import LambdaResponse
 from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
+from eternal_guesses.util.discord_messaging import DiscordMessaging
+
+# from pynamodb.exceptions import TableError
 
 REGION = "eu-west-1"
 TABLE_NAME = "eternal-guesses-test"
@@ -57,8 +60,7 @@ def create_test_database():
 @pytest.fixture(autouse=True)
 def fixed_authorization_result(mocker):
     class PassingTestAuthorizer(ApiAuthorizer):
-        @staticmethod
-        def authorize(event: Dict) -> (AuthorizationResult, LambdaResponse):
+        def authorize(self, event: Dict) -> (AuthorizationResult, LambdaResponse):
             return AuthorizationResult.PASS, None
 
     test_authorizer = PassingTestAuthorizer()
@@ -95,3 +97,8 @@ def stub_discord_messaging(mocker):
 
     silent_discord_messaging = SilentDiscordMessaging()
     mocker.patch('eternal_guesses.util.injector._discord_messaging', return_value=silent_discord_messaging)
+
+
+@pytest.fixture(autouse=True)
+def disable_xray():
+    os.environ['AWS_XRAY_SDK_ENABLED'] = 'false'

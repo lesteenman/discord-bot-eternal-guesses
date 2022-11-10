@@ -7,8 +7,8 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl, GamesRepository
-from eternal_guesses.routes import create
-from eternal_guesses.routes.create import CreateRoute
+from eternal_guesses.routes.commands import create
+from eternal_guesses.routes.commands.create import CreateRoute
 from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeDiscordMessaging, FakeGamesRepository
@@ -38,7 +38,9 @@ async def test_create_generated_id(mock_id_generator, mock_datetime):
     event = DiscordEvent(
         command=DiscordCommand(
             command_name="create",
-            options={}
+            options={
+                'description': 'This game will get a generated ID'
+            }
         ),
         guild_id=guild_id,
         member=DiscordMember()

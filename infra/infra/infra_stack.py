@@ -1,7 +1,7 @@
 from aws_cdk import (Stack, Duration, aws_lambda, aws_apigateway, aws_dynamodb,
                      aws_sns, aws_logs, aws_logs_destinations)
 from aws_cdk.aws_dynamodb import ITable
-from aws_cdk.aws_lambda import Function, Runtime
+from aws_cdk.aws_lambda import Function, Runtime, Tracing
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from aws_cdk.aws_sns import Topic
 from constructs import Construct
@@ -57,7 +57,8 @@ class InfraStack(Stack):
             entry="../discord_app",
             index="eternal_guesses/handler.py",
             handler="handle_lambda",
-            environment=environment
+            environment=environment,
+            tracing=Tracing.ACTIVE,
         )
 
     def grant_table_readwrite_permissions(self, dynamodb_table: ITable, function: Function):

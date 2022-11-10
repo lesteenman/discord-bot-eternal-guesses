@@ -7,7 +7,7 @@ from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.routes.list_games import ListGamesRoute
+from eternal_guesses.routes.commands.list_games import ListGamesRoute
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository
 

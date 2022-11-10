@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import List
 
+import discord
+
 from eternal_guesses.model.discord.discord_component import DiscordComponent, \
     ActionRow
 
@@ -25,7 +27,8 @@ class DiscordResponse(object):
         allow_user_mentions: bool = False,
         custom_id: str = None,
         title: str = None,
-        action_rows: List[ActionRow] = None
+        action_rows: List[ActionRow] = None,
+        embed: discord.Embed = None,
     ):
         self.response_type = response_type
         self.content = content
@@ -33,6 +36,7 @@ class DiscordResponse(object):
         self.custom_id = custom_id
         self.title = title
         self.action_rows = action_rows
+        self.embed = embed
 
         self.allowed_mention_types = []
         if allow_user_mentions:
@@ -66,6 +70,9 @@ class DiscordResponse(object):
 
             if self.content:
                 data['content'] = self.content
+
+            if self.embed:
+                data['embeds'] = [self.embed.to_dict()]
 
             if self.action_rows:
                 data['components'] = [c.json() for c in self.action_rows]
@@ -110,8 +117,8 @@ class DiscordResponse(object):
             custom_id=custom_id,
             title=title,
             action_rows=[ActionRow(
-                components=components,
-            )],
+                components=[c],
+            ) for c in components],
         )
 
     @property

@@ -60,8 +60,9 @@ async def test_handle_modal_submit_action():
     event = DiscordEvent(
         modal_submit=DiscordModalSubmit(
             modal_custom_id="modal_submit_guess_game_id",
-            input_custom_id="modal_input_guess_value_game_id",
-            input_value="500",
+            inputs={
+                "modal_input_guess_value_game_id": "500"
+            }
         )
     )
 
@@ -163,4 +164,8 @@ def _router(
         message_with_buttons_route=Route(),
         submit_guess_route=submit_guess_route or Route(),
         trigger_guess_modal_route=trigger_guess_modal_route or Route(),
+        manage_game_route=Route(),
+        action_post_game_route=Route(),
+        action_trigger_delete_guess_route=Route(),
+        action_trigger_edit_guess_route=Route(),
     )

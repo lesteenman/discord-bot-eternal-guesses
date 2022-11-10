@@ -5,7 +5,7 @@ import pytest
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.routes.guild_info import GuildInfoRoute
+from eternal_guesses.routes.commands.guild_info import GuildInfoRoute
 from tests.fakes import FakeMessageProvider, FakeConfigsRepository
 
 pytestmark = pytest.mark.asyncio

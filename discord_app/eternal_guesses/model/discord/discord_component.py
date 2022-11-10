@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 
 class ComponentType(Enum):
@@ -29,6 +30,24 @@ class ButtonStyle(Enum):
     LINK = 5
 
 
+@dataclass
+class DiscordSelectOption:
+    label: str
+    value: str
+    description: Optional[str]
+
+    def json(self):
+        j = {
+            "label": self.label,
+            "value": self.value,
+        }
+
+        if self.description is not None:
+            j['description'] = self.description
+
+        return j
+
+
 class DiscordComponent(object):
     def __init__(self, type: ComponentType, fields: dict):
         self.type = type
@@ -42,18 +61,19 @@ class DiscordComponent(object):
         return {**data, **self.fields}
 
     @classmethod
-    def text_input(cls, custom_id: str, label: str, paragraph: bool = False):
+    def text_input(cls, custom_id: str, label: str, paragraph: bool = False, required: bool = True):
         return DiscordComponent(
             type=ComponentType.TEXT_INPUT,
             fields={
                 "custom_id": custom_id,
                 "label": label,
                 "style": (2 if paragraph else 1),
+                "required": required,
             }
         )
 
     @classmethod
-    def button(cls, custom_id: str, label: str, style: ButtonStyle):
+    def button(cls, custom_id: str, label: str, style: ButtonStyle = ButtonStyle.SECONDARY):
         return DiscordComponent(
             type=ComponentType.BUTTON,
             fields={
@@ -71,6 +91,27 @@ class DiscordComponent(object):
                 "label": label,
                 "url": url,
                 "style": ButtonStyle.LINK.value,
+            }
+        )
+
+    @classmethod
+    def string_select(cls, placeholder: str, custom_id: str, options: List[DiscordSelectOption]):
+        return DiscordComponent(
+            type=ComponentType.STRING_SELECT,
+            fields={
+                "custom_id": custom_id,
+                "placeholder": placeholder,
+                "options": [o.json() for o in options]
+            }
+        )
+
+    @classmethod
+    def channel_select(cls, placeholder, custom_id):
+        return DiscordComponent(
+            type=ComponentType.CHANNEL_SELECT,
+            fields={
+                "custom_id": custom_id,
+                "placeholder": placeholder,
             }
         )
 

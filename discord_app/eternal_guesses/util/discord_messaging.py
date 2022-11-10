@@ -80,8 +80,8 @@ class DiscordMessagingImpl(DiscordMessaging):
 
     @contextlib.asynccontextmanager
     async def _discord_client(self) -> discord.Client:
-        intents = Intents.none()
-        intents.webhooks = True
+        intents = Intents.default()
+        # intents.webhooks = True
         client = discord.Client(intents=intents)
 
         await client.login(app_config.discord_bot_token)

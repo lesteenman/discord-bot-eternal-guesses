@@ -96,6 +96,18 @@ def register(config: Dict):
         #     # "options": [],
         # },
         {
+            "name": "manage-game",
+            "description": "Manage a guessing game",
+            "options": [
+                {
+                    "name": "game-id",
+                    "description": "The ID of the Eternal Guess game",
+                    "type": COMMAND_OPTION_TYPE_STRING,
+                    "required": True
+                }
+            ]
+        },
+        {
             "name": "guess",
             "description": "Submit your guess!",
             "options": [

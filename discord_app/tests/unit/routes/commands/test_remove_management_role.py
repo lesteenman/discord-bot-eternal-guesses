@@ -5,31 +5,29 @@ import pytest
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.routes.remove_management_channel import RemoveManagementChannelRoute
+from eternal_guesses.routes.commands.remove_management_role import RemoveManagementRoleRoute
 from tests.fakes import FakeConfigsRepository, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio
 
 
-async def test_remove_management_channel():
+async def test_remove_management_role():
     # Given
     guild_id = 1001
-    management_channel = 9500
+    role = 6050
 
-    # We have a management channel
-    configs_repository = FakeConfigsRepository(guild_id=guild_id, management_channels=[management_channel])
+    # The role is a management_role
+    configs_repository = FakeConfigsRepository(guild_id=guild_id, management_roles=[role])
 
     # And we remove it
     event = _make_event(
         guild_id=guild_id,
-        options={
-            'channel': management_channel
-        },
+        options={'role': role}
     )
 
-    route = RemoveManagementChannelRoute(
-        configs_repository=configs_repository,
+    route = RemoveManagementRoleRoute(
         message_provider=FakeMessageProvider(),
+        configs_repository=configs_repository,
     )
 
     # When
@@ -37,29 +35,27 @@ async def test_remove_management_channel():
 
     # Then
     guild_config = configs_repository.get(guild_id)
-    assert management_channel not in guild_config.management_channels
+    assert role not in guild_config.management_roles
 
     assert response.is_ephemeral
 
 
-async def test_remove_invalid_management_channel():
+async def test_remove_invalid_management_role():
     # Given
     guild_id = 1001
-    channel_to_remove = 9500
-    other_channel = 9510
+    management_role = 6060
+    role_to_remove = 6050
 
-    # We have a management channel
-    configs_repository = FakeConfigsRepository(guild_id=guild_id, management_channels=[other_channel])
+    # We have a management role
+    configs_repository = FakeConfigsRepository(guild_id=guild_id, management_roles=[management_role])
 
-    # And we try to remove a channel that's not a management channel
+    # And we remove another role
     event = _make_event(
         guild_id=guild_id,
-        options={
-            'channel': channel_to_remove
-        }
+        options={'role': role_to_remove}
     )
 
-    route = RemoveManagementChannelRoute(
+    route = RemoveManagementRoleRoute(
         message_provider=FakeMessageProvider(),
         configs_repository=configs_repository,
     )
@@ -69,8 +65,8 @@ async def test_remove_invalid_management_channel():
 
     # Then
     guild_config = configs_repository.get(guild_id)
-    assert channel_to_remove not in guild_config.management_channels
-    assert other_channel in guild_config.management_channels
+    assert role_to_remove not in guild_config.management_roles
+    assert management_role in guild_config.management_roles
 
     assert response.is_ephemeral
 
@@ -81,9 +77,8 @@ def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent
 
     return DiscordEvent(
         command=DiscordCommand(
-            command_id=-1,
             command_name="admin",
-            subcommand_name="remove-management-channel",
+            subcommand_name="remove-management-role",
             options=options
         ),
         guild_id=guild_id,

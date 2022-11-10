@@ -3,6 +3,7 @@ from datetime import datetime
 from loguru import logger
 
 from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.discord.discord_component import DiscordComponent
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
@@ -28,6 +29,9 @@ class CreateRoute(Route):
         description = event.command.options.get('description')
         min_guess = event.command.options.get('min')
         max_guess = event.command.options.get('max')
+
+        if all([o is None for o in [game_id, title, description, min_guess, max_guess]]):
+            return self.create_modal()
 
         if game_id is None:
             game_id = self._generate_game_id(guild_id)
@@ -67,3 +71,34 @@ class CreateRoute(Route):
             return game_id
         else:
             return self._generate_game_id(guild_id, attempt + 1)
+
+    def create_modal(self):
+        return DiscordResponse.modal(
+            custom_id=f"modal_create_game",
+            title="Create new game",
+            components=[
+                DiscordComponent.text_input(
+                    custom_id=f"modal_create_game_id",
+                    label="Game Identifier",
+                ),
+                DiscordComponent.text_input(
+                    custom_id=f"modal_create_game_title",
+                    label="Game Title",
+                ),
+                DiscordComponent.text_input(
+                    custom_id=f"modal_create_game_description",
+                    label="Description",
+                    paragraph=True,
+                ),
+                DiscordComponent.text_input(
+                    custom_id=f"modal_create_game_min_value",
+                    label="Min guess (optional)",
+                    required=False,
+                ),
+                DiscordComponent.text_input(
+                    custom_id=f"modal_create_game_max_value",
+                    label="Max guess (optional)",
+                    required=False,
+                ),
+            ]
+        )
