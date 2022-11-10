@@ -1,6 +1,7 @@
 import os
 import typing
 
+
 def discord_public_key() -> str:
     return os.getenv('DISCORD_PUBLIC_KEY')
 

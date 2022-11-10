@@ -50,7 +50,10 @@ def _game_from_model(model: dict) -> Game:
 
     channel_messages = []
     if 'channel_messages' in model:
-        channel_messages = list(_channel_message_from_model(message_model) for message_model in model['channel_messages'])
+        channel_messages = list(
+            _channel_message_from_model(message_model) for message_model in
+            model['channel_messages']
+        )
 
     guesses = {}
     if 'guesses' in model:
@@ -161,7 +164,12 @@ class GamesRepositoryImpl(GamesRepository):
         if game.channel_messages is not None:
             channel_messages = []
             for message in game.channel_messages:
-                channel_messages.append({'message_id': message.message_id, 'channel_id': message.channel_id})
+                channel_messages.append(
+                    {
+                        'message_id': message.message_id,
+                        'channel_id': message.channel_id
+                    }
+                )
             model['channel_messages'] = channel_messages
 
         self.table.put_item(

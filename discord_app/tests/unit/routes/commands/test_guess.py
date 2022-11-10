@@ -6,7 +6,8 @@ import pytest
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.model.discord.discord_event import DiscordCommand, DiscordEvent
+from eternal_guesses.model.discord.discord_event import DiscordCommand, \
+    DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.commands import guess
@@ -395,8 +396,15 @@ async def test_lower_than_min():
     assert len(updated_game.guesses) == 0
 
 
-def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nickname: str = 'nickname',
-                        guess: str = 'not-relevant', event_channel_id: int = -1, member: DiscordMember = None):
+def _create_guess_event(
+    guild_id: int,
+    game_id: str,
+    user_id: int = -1,
+    user_nickname: str = 'nickname',
+    guess: str = 'not-relevant',
+    event_channel_id: int = -1,
+    member: DiscordMember = None
+):
     if member is None:
         member = DiscordMember(
             user_id=user_id,
@@ -419,10 +427,11 @@ def _create_guess_event(guild_id: int, game_id: str, user_id: int = -1, user_nic
     return event
 
 
-def _route(games_repository: GamesRepository = None,
-           message_provider: MessageProvider = None,
-           game_post_manager: GamePostManager = None):
-
+def _route(
+    games_repository: GamesRepository = None,
+    message_provider: MessageProvider = None,
+    game_post_manager: GamePostManager = None
+):
     if games_repository is None:
         games_repository = FakeGamesRepository([])
 

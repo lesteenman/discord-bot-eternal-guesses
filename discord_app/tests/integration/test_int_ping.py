@@ -7,12 +7,14 @@ from eternal_guesses.model.discord.discord_event import InteractionType
 def test_ping():
     # Given
     event = {
-        'body': json.dumps({
-            "id": "00000001",
-            "token": "some-token-abcde1234567890",
-            "type": InteractionType.PING.value,
-            "version": 1
-        }),
+        'body': json.dumps(
+            {
+                "id": "00000001",
+                "token": "some-token-abcde1234567890",
+                "type": InteractionType.PING.value,
+                "version": 1
+            }
+        ),
         'headers': {},
     }
 
@@ -22,4 +24,6 @@ def test_ping():
     # Then
     assert response['statusCode'] == 200
     assert response['headers']['Content-Type'] == 'application/json'
-    assert json.loads(response['body']) == {'type': 1}
+    assert json.loads(response['body']) == {
+        'type': 1
+    }

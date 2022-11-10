@@ -6,9 +6,11 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class AddManagementChannelRoute(Route):
-    def __init__(self,
-                 message_provider: MessageProvider,
-                 configs_repository: ConfigsRepository):
+    def __init__(
+        self,
+        message_provider: MessageProvider,
+        configs_repository: ConfigsRepository
+    ):
         self.message_provider = message_provider
         self.configs_repository = configs_repository
 
@@ -17,7 +19,9 @@ class AddManagementChannelRoute(Route):
 
         channel = int(event.command.options['channel'])
         if channel in guild_config.management_channels:
-            text = self.message_provider.error_duplicate_management_channel(channel)
+            text = self.message_provider.error_duplicate_management_channel(
+                channel
+            )
             return DiscordResponse.ephemeral_channel_message(text)
 
         guild_config.management_channels.append(channel)

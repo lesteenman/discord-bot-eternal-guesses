@@ -21,7 +21,10 @@ async def test_admin_info():
 
     static_message = "admin-info"
     message_provider = FakeMessageProvider()
-    message_provider.expect_channel_admin_info_call(expected_config=guild_config, message=static_message)
+    message_provider.expect_channel_admin_info_call(
+        expected_config=guild_config,
+        message=static_message
+    )
 
     route = GuildInfoRoute(
         message_provider=message_provider,
@@ -38,7 +41,10 @@ async def test_admin_info():
     assert response.content == static_message
 
 
-def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent:
+def _make_event(
+    guild_id: int = -1,
+    options: typing.Dict = None
+) -> DiscordEvent:
     if options is None:
         options = {}
 

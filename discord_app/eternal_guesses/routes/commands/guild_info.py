@@ -8,9 +8,11 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class GuildInfoRoute(Route):
-    def __init__(self,
-                 message_provider: MessageProvider,
-                 configs_repository: ConfigsRepository):
+    def __init__(
+        self,
+        message_provider: MessageProvider,
+        configs_repository: ConfigsRepository
+    ):
         self.message_provider = message_provider
         self.configs_repository = configs_repository
 
@@ -19,5 +21,7 @@ class GuildInfoRoute(Route):
 
         guild_config = self.configs_repository.get(guild_id=event.guild_id)
 
-        message = self.message_provider.channel_admin_info(guild_config=guild_config)
+        message = self.message_provider.channel_admin_info(
+            guild_config=guild_config
+        )
         return DiscordResponse.ephemeral_channel_message(message)

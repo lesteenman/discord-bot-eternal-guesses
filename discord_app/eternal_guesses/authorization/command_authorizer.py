@@ -25,18 +25,26 @@ class CommandAuthorizerImpl(CommandAuthorizer):
         if event.member.is_admin:
             return True
 
-        logger.debug(f"channel check: checking if {event.channel_id} is in {guild_config.management_channels}")
+        logger.debug(
+            f"channel check: checking if {event.channel_id} is in {guild_config.management_channels}"
+        )
         logger.debug(f"type of event.channel_id: {type(event.channel_id)}")
         for channel in guild_config.management_channels:
-            logger.debug(f"type of guild_config.management_channels[]: {type(channel)}")
+            logger.debug(
+                f"type of guild_config.management_channels[]: {type(channel)}"
+            )
         if event.channel_id in guild_config.management_channels:
             return True
 
-        logger.debug(f"roles check: checking if any of {event.member.roles} is in {guild_config.management_roles}")
+        logger.debug(
+            f"roles check: checking if any of {event.member.roles} is in {guild_config.management_roles}"
+        )
         for role in event.member.roles:
             logger.debug(f"type of event.member.roles[]: {type(role)}")
         for role in guild_config.management_roles:
-            logger.debug(f"type of guild_config.management_roles[]: {type(role)}")
+            logger.debug(
+                f"type of guild_config.management_roles[]: {type(role)}"
+            )
         for role in event.member.roles:
             if role in guild_config.management_roles:
                 return True

@@ -43,16 +43,25 @@ class DiscordEvent:
 
     def __repr__(self):
         if self.event_type == InteractionType.APPLICATION_COMMAND:
-            return f"<DiscordEvent command={self.command} member={self.member} guild_id={self.guild_id} " \
-                   f"channel_id={self.channel_id} type={self.event_type}>"
+            return f"<DiscordEvent command={self.command} " \
+                   f"member={self.member} " \
+                   f"guild_id={self.guild_id} " \
+                   f"channel_id={self.channel_id} " \
+                   f"type={self.event_type}>"
 
         if self.event_type == InteractionType.MODAL_SUBMIT:
-            return f"<DiscordEvent modal_submit={self.modal_submit} member={self.member} guild_id={self.guild_id} " \
-                   f"channel_id={self.channel_id} type={self.event_type}>"
+            return f"<DiscordEvent modal_submit={self.modal_submit} " \
+                   f"member={self.member} " \
+                   f"guild_id={self.guild_id} " \
+                   f"channel_id={self.channel_id} " \
+                   f"type={self.event_type}>"
 
         if self.event_type == InteractionType.MESSAGE_COMPONENT:
-            return f"<DiscordEvent message_component={self.component_action} member={self.member} guild_id={self.guild_id} " \
-                   f"channel_id={self.channel_id} type={self.event_type}>"
+            return f"<DiscordEvent message_component={self.component_action} " \
+                   f"member={self.member} " \
+                   f"guild_id={self.guild_id} " \
+                   f"channel_id={self.channel_id} " \
+                   f"type={self.event_type}>"
 
 
 def from_event(event_source: Dict) -> DiscordEvent:
@@ -111,7 +120,9 @@ def from_message_component_event(event_source):
             values=event_source['data']['values'],
         )
     else:
-        raise NotImplementedError(f"Not implemented: component interaction of type {component_type}")
+        raise NotImplementedError(
+            f"Not implemented: component interaction of type {component_type}"
+        )
 
     return DiscordEvent(
         guild_id=guild_id,

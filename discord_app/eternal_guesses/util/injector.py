@@ -70,7 +70,9 @@ def _router() -> Router:
     discord_messaging = _discord_messaging()
     message_provider = _message_provider()
 
-    command_authorizer = _command_authorizer(configs_repository=configs_repository)
+    command_authorizer = _command_authorizer(
+        configs_repository=configs_repository
+    )
 
     game_post_manager = GamePostManagerImpl(
         games_repository=games_repository,
@@ -198,8 +200,10 @@ def _router() -> Router:
     )
 
 
-def _route_handler(command_authorizer: CommandAuthorizer,
-                   message_provider: MessageProvider):
+def _route_handler(
+    command_authorizer: CommandAuthorizer,
+    message_provider: MessageProvider
+):
     return RouteHandlerImpl(
         command_authorizer=command_authorizer,
         message_provider=message_provider,
@@ -211,9 +215,10 @@ def _ping_route():
 
 
 def _post_route(
-        games_repository: GamesRepository,
-        discord_messaging: DiscordMessaging,
-        message_provider: MessageProvider):
+    games_repository: GamesRepository,
+    discord_messaging: DiscordMessaging,
+    message_provider: MessageProvider
+):
     return PostRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
@@ -221,9 +226,11 @@ def _post_route(
     )
 
 
-def _create_route(games_repository: GamesRepository,
-                  discord_messaging: DiscordMessaging,
-                  message_provider: MessageProvider,):
+def _create_route(
+    games_repository: GamesRepository,
+    discord_messaging: DiscordMessaging,
+    message_provider: MessageProvider
+):
     return CreateRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
@@ -231,9 +238,11 @@ def _create_route(games_repository: GamesRepository,
     )
 
 
-def _guess_route(games_repository: GamesRepository,
-                 game_post_manager: GamePostManager,
-                 message_provider: MessageProvider):
+def _guess_route(
+    games_repository: GamesRepository,
+    game_post_manager: GamePostManager,
+    message_provider: MessageProvider
+):
     return GuessRoute(
         games_repository=games_repository,
         message_provider=message_provider,
@@ -241,9 +250,11 @@ def _guess_route(games_repository: GamesRepository,
     )
 
 
-def _close_game_route(games_repository: GamesRepository,
-                      discord_messaging: DiscordMessaging,
-                      message_provider: MessageProvider):
+def _close_game_route(
+    games_repository: GamesRepository,
+    discord_messaging: DiscordMessaging,
+    message_provider: MessageProvider
+):
     return CloseGameRoute(
         games_repository=games_repository,
         discord_messaging=discord_messaging,
@@ -251,8 +262,10 @@ def _close_game_route(games_repository: GamesRepository,
     )
 
 
-def _list_games_route(games_repository: GamesRepository,
-                      message_provider: MessageProvider):
+def _list_games_route(
+    games_repository: GamesRepository,
+    message_provider: MessageProvider
+):
     return ListGamesRoute(
         games_repository=games_repository,
         message_provider=message_provider,
@@ -260,8 +273,9 @@ def _list_games_route(games_repository: GamesRepository,
 
 
 def _guild_info_route(
-        message_provider: MessageProvider,
-        configs_repository: ConfigsRepository):
+    message_provider: MessageProvider,
+    configs_repository: ConfigsRepository
+):
     return GuildInfoRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
@@ -269,9 +283,9 @@ def _guild_info_route(
 
 
 def _add_management_channel_route_route(
-        message_provider: MessageProvider,
-        configs_repository: ConfigsRepository):
-
+    message_provider: MessageProvider,
+    configs_repository: ConfigsRepository
+):
     return AddManagementChannelRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
@@ -279,8 +293,9 @@ def _add_management_channel_route_route(
 
 
 def _remove_management_channel_route(
-        message_provider: MessageProvider,
-        configs_repository: ConfigsRepository):
+    message_provider: MessageProvider,
+    configs_repository: ConfigsRepository
+):
     return RemoveManagementChannelRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
@@ -288,8 +303,9 @@ def _remove_management_channel_route(
 
 
 def _add_management_role_route(
-        message_provider: MessageProvider,
-        configs_repository: ConfigsRepository):
+    message_provider: MessageProvider,
+    configs_repository: ConfigsRepository
+):
     return AddManagementRoleRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
@@ -297,8 +313,9 @@ def _add_management_role_route(
 
 
 def _remove_management_role_route(
-        message_provider: MessageProvider,
-        configs_repository: ConfigsRepository):
+    message_provider: MessageProvider,
+    configs_repository: ConfigsRepository
+):
     return RemoveManagementRoleRoute(
         message_provider=message_provider,
         configs_repository=configs_repository,
@@ -306,9 +323,9 @@ def _remove_management_role_route(
 
 
 def _edit_guess_route(
-        games_repository: GamesRepository,
-        message_provider: MessageProvider,
-        game_post_manager: GamePostManager,
+    games_repository: GamesRepository,
+    message_provider: MessageProvider,
+    game_post_manager: GamePostManager,
 ):
     return EditGuessRoute(
         games_repository=games_repository,
@@ -318,9 +335,9 @@ def _edit_guess_route(
 
 
 def _delete_guess_route(
-        games_repository: GamesRepository,
-        message_provider: MessageProvider,
-        game_post_manager: GamePostManager,
+    games_repository: GamesRepository,
+    message_provider: MessageProvider,
+    game_post_manager: GamePostManager,
 ):
     return DeleteGuessRoute(
         games_repository=games_repository,
@@ -412,5 +429,7 @@ def _message_provider() -> MessageProvider:
     return MessageProviderImpl()
 
 
-def _command_authorizer(configs_repository: ConfigsRepository) -> CommandAuthorizer:
+def _command_authorizer(
+    configs_repository: ConfigsRepository
+) -> CommandAuthorizer:
     return CommandAuthorizerImpl(configs_repository=configs_repository)

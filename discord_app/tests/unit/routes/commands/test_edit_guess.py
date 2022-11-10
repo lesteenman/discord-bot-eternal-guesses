@@ -150,8 +150,12 @@ async def test_edit_guess_game_does_not_exist():
     assert response.content == game_not_found_message
 
 
-def _make_event(guild_id: int = -1, options: typing.Dict = None, discord_member: DiscordMember = None,
-                channel_id: int = -1):
+def _make_event(
+    guild_id: int = -1,
+    options: typing.Dict = None,
+    discord_member: DiscordMember = None,
+    channel_id: int = -1
+):
     if options is None:
         options = {}
 
@@ -170,7 +174,11 @@ def _make_event(guild_id: int = -1, options: typing.Dict = None, discord_member:
     )
 
 
-def _route(games_repository=None, message_provider=None, game_post_manager=None):
+def _route(
+    games_repository=None,
+    message_provider=None,
+    game_post_manager=None
+):
     if games_repository is None:
         games_repository = FakeGamesRepository()
 

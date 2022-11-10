@@ -166,15 +166,21 @@ async def test_create_with_min_max():
     assert response.content == GAME_CREATED_MESSAGE
 
 
-@pytest.mark.parametrize("entered_game_id,expected_game_id", [
-    ('identifier', 'identifier'),
-    ('Identifier', 'identifier'),
-    ('IDENTIFIER', 'identifier'),
-    ('this-is-my-game-id', 'this-is-my-game-id'),
-    ('add_in underscores@spaces#and()other*chars', 'add-in-underscores-spaces-and-other-chars'),
-    ('multiple--dashes---are--singled', 'multiple-dashes-are-singled'),
-])
-async def test_game_id_is_normalized_to_lower_kebab_case(entered_game_id, expected_game_id):
+@pytest.mark.parametrize(
+    "entered_game_id,expected_game_id", [
+        ('identifier', 'identifier'),
+        ('Identifier', 'identifier'),
+        ('IDENTIFIER', 'identifier'),
+        ('this-is-my-game-id', 'this-is-my-game-id'),
+        ('add_in underscores@spaces#and()other*chars',
+         'add-in-underscores-spaces-and-other-chars'),
+        ('multiple--dashes---are--singled', 'multiple-dashes-are-singled'),
+    ]
+)
+async def test_game_id_is_normalized_to_lower_kebab_case(
+    entered_game_id,
+    expected_game_id
+):
     # Given
     guild_id = 1002
     games_repository = FakeGamesRepository()

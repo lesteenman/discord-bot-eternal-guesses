@@ -86,7 +86,10 @@ def test_get_game(eternal_guesses_table):
             )
         },
         channel_messages=[
-            ChannelMessage(channel_id=message_channel_id, message_id=message_message_id)
+            ChannelMessage(
+                channel_id=message_channel_id,
+                message_id=message_message_id
+            )
         ]
     )
 
@@ -163,7 +166,10 @@ def test_get_all_games(eternal_guesses_table):
         created_by=game_1_created_by,
         create_datetime=game_1_create_datetime,
         channel_messages=[
-            ChannelMessage(channel_id=game_1_channel_message_channel_id, message_id=game_1_channel_message_message_id),
+            ChannelMessage(
+                channel_id=game_1_channel_message_channel_id,
+                message_id=game_1_channel_message_message_id
+            ),
         ]
     )
 
@@ -209,8 +215,10 @@ def test_get_all_games(eternal_guesses_table):
     assert game_1.guesses == {}
 
     assert len(game_1.channel_messages) == 1
-    assert game_1.channel_messages[0].channel_id == game_1_channel_message_channel_id
-    assert game_1.channel_messages[0].message_id == game_1_channel_message_message_id
+    assert game_1.channel_messages[
+               0].channel_id == game_1_channel_message_channel_id
+    assert game_1.channel_messages[
+               0].message_id == game_1_channel_message_message_id
 
     assert game_2 is not None
     assert game_2.guild_id == guild_id

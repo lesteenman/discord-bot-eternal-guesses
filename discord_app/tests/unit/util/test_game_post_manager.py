@@ -75,7 +75,9 @@ async def test_guess_channel_message_gone_silently_fails():
 
     # And we will get a 'not found' error after updating one of those messages
     discord_messaging = FakeDiscordMessaging()
-    discord_messaging.raise_404_on_update_of_message(deleted_channel_message.message_id)
+    discord_messaging.raise_404_on_update_of_message(
+        deleted_channel_message.message_id
+    )
 
     game_post_manager = _game_post_manager(
         games_repository=games_repository,
@@ -88,10 +90,15 @@ async def test_guess_channel_message_gone_silently_fails():
     # Then that channel message is removed from the game
     updated_game = games_repository.get(guild_id=guild_id, game_id=game_id)
     assert len(updated_game.channel_messages) == 1
-    assert updated_game.channel_messages[0].message_id == other_channel_message.message_id
+    assert updated_game.channel_messages[
+               0].message_id == other_channel_message.message_id
 
 
-def _game_post_manager(games_repository=None, message_provider=None, discord_messaging=None):
+def _game_post_manager(
+    games_repository=None,
+    message_provider=None,
+    discord_messaging=None
+):
     if games_repository is None:
         games_repository = FakeGamesRepository()
 

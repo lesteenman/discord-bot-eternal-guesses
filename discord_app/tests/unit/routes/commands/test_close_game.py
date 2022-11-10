@@ -6,7 +6,8 @@ import pytest
 
 from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.model.discord.discord_event import DiscordEvent, DiscordCommand
+from eternal_guesses.model.discord.discord_event import DiscordEvent, \
+    DiscordCommand
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.routes.commands.close_game import CloseGameRoute
 from eternal_guesses.util.message_provider import MessageProvider
@@ -150,7 +151,12 @@ async def test_close_already_closed_game():
     assert response.content == game_already_closed_message
 
 
-def _make_event(guild_id: int = -1, options: Dict = None, discord_member: DiscordMember = None, channel_id: int = -1):
+def _make_event(
+    guild_id: int = -1,
+    options: Dict = None,
+    discord_member: DiscordMember = None,
+    channel_id: int = -1
+):
     if options is None:
         options = {}
 

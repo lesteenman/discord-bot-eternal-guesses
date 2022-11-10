@@ -49,8 +49,10 @@ def _guess_command_from_data(event_data: Dict) -> DiscordCommand:
     for option in event_data['options']:
         options[option['name']] = option['value']
 
-    return DiscordCommand(command_id=event_data['id'],
-                          command_name=event_data['name'], options=options)
+    return DiscordCommand(
+        command_id=event_data['id'],
+        command_name=event_data['name'], options=options
+    )
 
 
 def _test_command_from_data(event_data: Dict) -> DiscordCommand:
@@ -60,9 +62,11 @@ def _test_command_from_data(event_data: Dict) -> DiscordCommand:
         for o in event_data['options']:
             options[o['name']] = o['value']
 
-    return DiscordCommand(command_id=event_data['id'],
-                          command_name=event_data['name'],
-                          options=options)
+    return DiscordCommand(
+        command_id=event_data['id'],
+        command_name=event_data['name'],
+        options=options
+    )
 
 
 def _create_command_from_data(event_data: Dict) -> DiscordCommand:
@@ -75,8 +79,10 @@ def _create_command_from_data(event_data: Dict) -> DiscordCommand:
     for option in sub_command.get('options', {}):
         options[option['name']] = option['value']
 
-    return DiscordCommand(command_id=command_id, command_name=command_name,
-                          options=options)
+    return DiscordCommand(
+        command_id=command_id, command_name=command_name,
+        options=options
+    )
 
 
 def _admin_or_manage_command_from_data(event_data: Dict) -> DiscordCommand:

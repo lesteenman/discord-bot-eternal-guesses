@@ -25,7 +25,9 @@ async def test_add_management_role():
     # And we add a new management role
     event = _make_event(
         guild_id=guild_id,
-        options={'role': role}
+        options={
+            'role': role
+        }
     )
 
     message = "Management role added"
@@ -62,7 +64,9 @@ async def test_add_duplicate_management_role():
     # And we try to add it again
     event = _make_event(
         guild_id=guild_id,
-        options={'role': duplicate_role, }
+        options={
+            'role': duplicate_role,
+        }
     )
 
     message = "Role is already a management role."
@@ -86,7 +90,10 @@ async def test_add_duplicate_management_role():
     assert response.content == message
 
 
-def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent:
+def _make_event(
+    guild_id: int = -1,
+    options: typing.Dict = None
+) -> DiscordEvent:
     if options is None:
         options = {}
 

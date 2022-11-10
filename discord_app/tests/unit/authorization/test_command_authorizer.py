@@ -1,6 +1,7 @@
 import pytest
 
-from eternal_guesses.authorization.command_authorizer import CommandAuthorizerImpl
+from eternal_guesses.authorization.command_authorizer import \
+    CommandAuthorizerImpl
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from tests.fakes import FakeConfigsRepository
@@ -22,7 +23,9 @@ async def test_unauthorized_management_call():
         management_roles=[management_role]
     )
 
-    command_authorizer = CommandAuthorizerImpl(configs_repository=configs_repository)
+    command_authorizer = CommandAuthorizerImpl(
+        configs_repository=configs_repository
+    )
 
     event = DiscordEvent(
         guild_id=guild_id,
@@ -50,7 +53,9 @@ async def test_authorized_role_management_call():
         management_roles=[management_role]
     )
 
-    command_authorizer = CommandAuthorizerImpl(configs_repository=configs_repository)
+    command_authorizer = CommandAuthorizerImpl(
+        configs_repository=configs_repository
+    )
 
     event = DiscordEvent(
         guild_id=guild_id,
@@ -78,7 +83,9 @@ async def test_authorized_channel_management_call():
         management_roles=[management_role]
     )
 
-    command_authorizer = CommandAuthorizerImpl(configs_repository=configs_repository)
+    command_authorizer = CommandAuthorizerImpl(
+        configs_repository=configs_repository
+    )
 
     event = DiscordEvent(
         guild_id=guild_id,
@@ -107,7 +114,9 @@ async def test_admin_management_call():
         management_roles=[management_role]
     )
 
-    command_authorizer = CommandAuthorizerImpl(configs_repository=configs_repository)
+    command_authorizer = CommandAuthorizerImpl(
+        configs_repository=configs_repository
+    )
 
     event = DiscordEvent(
         guild_id=guild_id,
@@ -129,7 +138,9 @@ async def test_unauthorized_admin_call():
     # Given
     guild_id = 1000
 
-    command_authorizer = CommandAuthorizerImpl(configs_repository=FakeConfigsRepository(guild_id))
+    command_authorizer = CommandAuthorizerImpl(
+        configs_repository=FakeConfigsRepository(guild_id)
+    )
 
     event = DiscordEvent(
         guild_id=guild_id,
@@ -147,7 +158,9 @@ async def test_authorized_admin_call():
     # Given
     guild_id = 1000
 
-    command_authorizer = CommandAuthorizerImpl(configs_repository=FakeConfigsRepository(guild_id))
+    command_authorizer = CommandAuthorizerImpl(
+        configs_repository=FakeConfigsRepository(guild_id)
+    )
 
     event = DiscordEvent(
         guild_id=guild_id,

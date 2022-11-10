@@ -16,6 +16,7 @@ class ComponentIds:
 
     component_button_delete_guess_prefix = "action-manage_game-delete_guess-"
     component_button_delete_guess_regex = "action-manage_game-delete_guess-(.*)"
+
     @classmethod
     def component_button_delete_guess_id(cls, game_id):
         return f"{cls.component_button_delete_guess_prefix}{game_id}"

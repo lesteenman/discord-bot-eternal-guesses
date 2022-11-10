@@ -6,9 +6,11 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class RemoveManagementRoleRoute(Route):
-    def __init__(self,
-                 message_provider: MessageProvider,
-                 configs_repository: ConfigsRepository):
+    def __init__(
+        self,
+        message_provider: MessageProvider,
+        configs_repository: ConfigsRepository
+    ):
         self.message_provider = message_provider
         self.configs_repository = configs_repository
 

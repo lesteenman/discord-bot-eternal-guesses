@@ -6,9 +6,11 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class ListGamesRoute(Route):
-    def __init__(self,
-                 games_repository: GamesRepository,
-                 message_provider: MessageProvider):
+    def __init__(
+        self,
+        games_repository: GamesRepository,
+        message_provider: MessageProvider
+    ):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
@@ -21,12 +23,16 @@ class ListGamesRoute(Route):
             if event.command.options['closed']:
                 closed_games = list(filter(lambda g: g.closed, all_games))
                 message = self.message_provider.channel_manage_list_closed_games(
-                    closed_games)
+                    closed_games
+                )
             else:
                 open_games = list(filter(lambda g: not g.closed, all_games))
                 message = self.message_provider.channel_manage_list_open_games(
-                    open_games)
+                    open_games
+                )
         else:
-            message = self.message_provider.channel_manage_list_all_games(all_games)
+            message = self.message_provider.channel_manage_list_all_games(
+                all_games
+            )
 
         return DiscordResponse.ephemeral_channel_message(message)

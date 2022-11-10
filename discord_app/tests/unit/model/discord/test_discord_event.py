@@ -547,7 +547,6 @@ def test_from_modal_submit_event():
 
 
 def test_from_message_component_event():
-
     event_body = {
         'type': 3,
         'version': 1,

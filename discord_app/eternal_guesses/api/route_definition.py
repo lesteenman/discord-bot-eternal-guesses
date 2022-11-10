@@ -56,7 +56,12 @@ class ApplicationCommandDefinition(RouteDefinition):
 
 
 class ComponentActionRouteDefinition(RouteDefinition):
-    def __init__(self, route: Route, component_type: ComponentType, custom_id_starts_with: str):
+    def __init__(
+        self,
+        route: Route,
+        component_type: ComponentType,
+        custom_id_starts_with: str
+    ):
         super().__init__(permission=PermissionSet.ANYONE)
         self.route = route
         self.component_type = component_type
@@ -85,4 +90,6 @@ class ModalSubmitRouteDefinition(RouteDefinition):
         return False
 
     def matches_modal_submit(self, modal_submit: DiscordModalSubmit):
-        return modal_submit.modal_custom_id.startswith(self.custom_id_starts_with)
+        return modal_submit.modal_custom_id.startswith(
+            self.custom_id_starts_with
+        )

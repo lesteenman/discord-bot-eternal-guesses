@@ -18,8 +18,12 @@ class GamePostManager(ABC):
 
 
 class GamePostManagerImpl(GamePostManager):
-    def __init__(self, games_repository: GamesRepository, message_provider: MessageProvider,
-                 discord_messaging: DiscordMessaging):
+    def __init__(
+        self,
+        games_repository: GamesRepository,
+        message_provider: MessageProvider,
+        discord_messaging: DiscordMessaging
+    ):
         self.discord_messaging = discord_messaging
         self.games_repository = games_repository
         self.message_provider = message_provider
@@ -28,13 +32,17 @@ class GamePostManagerImpl(GamePostManager):
         pass
 
     async def update(self, game: Game):
-        logger.info(f"updating {len(game.channel_messages)} channel messages for {game.game_id}")
+        logger.info(
+            f"updating {len(game.channel_messages)} channel messages for {game.game_id}"
+        )
         if game.channel_messages is not None:
             new_embed = self.message_provider.game_post_embed(game)
             view = self.message_provider.game_post_view(game)
             for channel_message in game.channel_messages:
-                logger.debug(f"sending update to channel message, channel_id={channel_message.channel_id}, "
-                             f"message_id={channel_message.message_id}, message='{new_embed}'")
+                logger.debug(
+                    f"sending update to channel message, channel_id={channel_message.channel_id}, "
+                    f"message_id={channel_message.message_id}, message='{new_embed}'"
+                )
 
                 try:
                     await self.discord_messaging.update_channel_message(

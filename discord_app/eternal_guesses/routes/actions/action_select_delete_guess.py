@@ -49,7 +49,7 @@ class ActionSelectDeleteGuessRoute(Route):
                 error_guess_not_found
             )
 
-        del game.guesses[member]
+        del game.guesses[member_id]
 
         self.games_repository.save(game)
 

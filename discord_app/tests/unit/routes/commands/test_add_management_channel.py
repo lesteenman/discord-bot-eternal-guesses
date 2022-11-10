@@ -6,7 +6,8 @@ import pytest
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.routes.commands.add_management_channel import AddManagementChannelRoute
+from eternal_guesses.routes.commands.add_management_channel import \
+    AddManagementChannelRoute
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeConfigsRepository
 
@@ -19,7 +20,10 @@ async def test_add_duplicate_management_channel():
     channel = 9500
 
     # We have a channel that's a management channel
-    configs_repository = FakeConfigsRepository(guild_id=guild_id, management_channels=[channel])
+    configs_repository = FakeConfigsRepository(
+        guild_id=guild_id,
+        management_channels=[channel]
+    )
 
     # And we try to add it again
     event = _make_event(
@@ -66,7 +70,9 @@ async def test_add_management_channel():
     # We add the new management channel
     event = _make_event(
         guild_id=guild_id,
-        options={'channel': channel},
+        options={
+            'channel': channel
+        },
     )
 
     route = AddManagementChannelRoute(
@@ -85,7 +91,10 @@ async def test_add_management_channel():
     assert response.content == message
 
 
-def _make_event(guild_id: int = -1, options: typing.Dict = None) -> DiscordEvent:
+def _make_event(
+    guild_id: int = -1,
+    options: typing.Dict = None
+) -> DiscordEvent:
     if options is None:
         options = {}
 

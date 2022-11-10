@@ -27,12 +27,14 @@ class ApiAuthorizerImpl(ApiAuthorizer):
         timestamp = headers['x-signature-timestamp']
 
         result = self.verify_key(
-            body, signature, timestamp, app_config.discord_public_key())
+            body, signature, timestamp, app_config.discord_public_key()
+        )
         if result:
             return AuthorizationResult.PASS, None
         else:
             return AuthorizationResult.FAIL, LambdaResponse.unauthorized(
-                "could not verify authorization")
+                "could not verify authorization"
+            )
 
     def verify_key(self, body, signature, timestamp, public_key):
         message = timestamp.encode() + body

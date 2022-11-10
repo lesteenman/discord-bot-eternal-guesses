@@ -11,7 +11,11 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class SubmitCreateRoute(Route):
-    def __init__(self, games_repository: GamesRepository, message_provider: MessageProvider):
+    def __init__(
+        self,
+        games_repository: GamesRepository,
+        message_provider: MessageProvider
+    ):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
@@ -20,7 +24,9 @@ class SubmitCreateRoute(Route):
 
         inputs = event.modal_submit.inputs
 
-        game_id = self.normalize(inputs[ComponentIds.submit_create_input_game_id])
+        game_id = self.normalize(
+            inputs[ComponentIds.submit_create_input_game_id]
+        )
 
         title = inputs[ComponentIds.submit_create_input_title]
         description = inputs[ComponentIds.submit_create_input_description]
@@ -60,4 +66,3 @@ class SubmitCreateRoute(Route):
         game_id = re.sub(r"[^a-z0-9-]", "-", game_id.lower())
         game_id = re.sub(r"-+", "-", game_id)
         return game_id
-

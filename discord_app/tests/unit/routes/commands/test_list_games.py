@@ -37,7 +37,8 @@ async def test_list_all_without_closed_option():
 
     # Then
     message_provider.channel_manage_list_all_games.assert_called()
-    used_games = message_provider.channel_manage_list_all_games.call_args.args[0]
+    used_games = message_provider.channel_manage_list_all_games.call_args.args[
+        0]
     assert closed_game in used_games
     assert open_game in used_games
 
@@ -65,14 +66,17 @@ async def test_list_all_closed_games():
     )
 
     # When we list only the closed games
-    event = _make_event(guild_id=guild_id, options={
-        'closed': True
-    })
+    event = _make_event(
+        guild_id=guild_id, options={
+            'closed': True
+        }
+    )
     response = await route.call(event)
 
     # Then: a message is sent based on only the closed games
-    message_provider.channel_manage_list_closed_games.assert_called()
-    used_games = message_provider.channel_manage_list_closed_games.call_args.args[0]
+    list_games_call = message_provider.channel_manage_list_closed_games
+    list_games_call.assert_called()
+    used_games = list_games_call.call_args.args[0]
     assert closed_game in used_games
     assert open_game not in used_games
 
@@ -100,14 +104,17 @@ async def test_list_all_open_games():
     )
 
     # When we list only the open games
-    event = _make_event(guild_id=guild_id, options={
-        'closed': False
-    })
+    event = _make_event(
+        guild_id=guild_id, options={
+            'closed': False
+        }
+    )
     response = await route.call(event)
 
     # Then: a message is sent based on only the open games
     message_provider.channel_manage_list_open_games.assert_called()
-    used_games = message_provider.channel_manage_list_open_games.call_args.args[0]
+    used_games = message_provider.channel_manage_list_open_games.call_args.args[
+        0]
     assert closed_game not in used_games
     assert open_game in used_games
 
@@ -115,10 +122,12 @@ async def test_list_all_open_games():
     assert response.content == list_games_message
 
 
-def _make_event(guild_id: int = -1,
-                options: typing.Dict = None,
-                discord_member: DiscordMember = None,
-                channel_id: int = -1):
+def _make_event(
+    guild_id: int = -1,
+    options: typing.Dict = None,
+    discord_member: DiscordMember = None,
+    channel_id: int = -1
+):
     if options is None:
         options = {}
 

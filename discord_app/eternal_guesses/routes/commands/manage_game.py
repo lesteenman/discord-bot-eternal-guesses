@@ -35,19 +35,27 @@ class ManageGameRoute(Route):
             ActionRow(
                 components=[
                     DiscordComponent.button(
-                        custom_id=ComponentIds.component_button_close_game_id(game_id),
+                        custom_id=ComponentIds.component_button_close_game_id(
+                            game_id
+                        ),
                         label="Close",
                     ),
                     DiscordComponent.button(
-                        custom_id=ComponentIds.component_button_post_game_id(game_id),
+                        custom_id=ComponentIds.component_button_post_game_id(
+                            game_id
+                        ),
                         label="Post",
                     ),
                     DiscordComponent.button(
-                        custom_id=ComponentIds.component_button_edit_guess_id(game_id),
+                        custom_id=ComponentIds.component_button_edit_guess_id(
+                            game_id
+                        ),
                         label="Edit Guess",
                     ),
                     DiscordComponent.button(
-                        custom_id=ComponentIds.component_button_delete_guess_id(game_id),
+                        custom_id=ComponentIds.component_button_delete_guess_id(
+                            game_id
+                        ),
                         label="Delete Guess",
                     ),
                 ]

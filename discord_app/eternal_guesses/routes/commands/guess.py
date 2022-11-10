@@ -12,10 +12,12 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 # Deprecated; Should be removed once the component-based flow has been thoroughly tested.
 class GuessRoute(Route):
-    def __init__(self,
-                 games_repository: GamesRepository,
-                 message_provider: MessageProvider,
-                 game_post_manager: GamePostManager):
+    def __init__(
+        self,
+        games_repository: GamesRepository,
+        message_provider: MessageProvider,
+        game_post_manager: GamePostManager
+    ):
         self.games_repository = games_repository
         self.message_provider = message_provider
         self.game_post_manager = game_post_manager
@@ -30,14 +32,18 @@ class GuessRoute(Route):
         game = self.games_repository.get(guild_id, game_id)
         if game is None:
             error_message = self.message_provider.error_game_not_found(game_id)
-            return DiscordResponse.ephemeral_channel_message(content=error_message)
+            return DiscordResponse.ephemeral_channel_message(
+                content=error_message
+            )
 
         if game.guesses.get(user_id) is not None:
             error_message = self.message_provider.error_duplicate_guess(game_id)
             return DiscordResponse.ephemeral_channel_message(error_message)
 
         if game.closed:
-            error_message = self.message_provider.error_guess_on_closed_game(game_id)
+            error_message = self.message_provider.error_guess_on_closed_game(
+                game_id
+            )
             return DiscordResponse.ephemeral_channel_message(error_message)
 
         if game.is_numeric():
@@ -57,7 +63,9 @@ class GuessRoute(Route):
         await self.game_post_manager.update(game)
 
         guess_added_message = self.message_provider.guess_added(game_id, guess)
-        return DiscordResponse.ephemeral_channel_message(content=guess_added_message)
+        return DiscordResponse.ephemeral_channel_message(
+            content=guess_added_message
+        )
 
     def validate_guess(self, game: Game, guess: str):
         if not self.is_numeric(guess):

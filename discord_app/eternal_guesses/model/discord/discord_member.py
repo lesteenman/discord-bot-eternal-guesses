@@ -2,8 +2,14 @@ from typing import List, Dict
 
 
 class DiscordMember:
-    def __init__(self, username: str = None, user_id: int = None, nickname: str = None, roles: List[int] = None,
-                 is_admin: bool = False):
+    def __init__(
+        self,
+        username: str = None,
+        user_id: int = None,
+        nickname: str = None,
+        roles: List[int] = None,
+        is_admin: bool = False
+    ):
         if roles is None:
             roles = []
 

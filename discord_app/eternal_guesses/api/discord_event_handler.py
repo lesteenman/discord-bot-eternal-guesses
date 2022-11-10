@@ -4,9 +4,10 @@ from typing import Dict
 
 from loguru import logger
 
-from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, AuthorizationResult
-from eternal_guesses.model.discord import discord_event
 from eternal_guesses.api.router import Router
+from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, \
+    AuthorizationResult
+from eternal_guesses.model.discord import discord_event
 
 
 class DiscordEventHandler:

@@ -1,8 +1,8 @@
 import pytest
 
 from eternal_guesses.model.data.guild_config import GuildConfig
-from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
-from tests.integration.conftest import TABLE_NAME, DYNAMODB_HOST
+from eternal_guesses.repositories.configs_repository import \
+    ConfigsRepositoryImpl
 
 pytestmark = pytest.mark.asyncio
 

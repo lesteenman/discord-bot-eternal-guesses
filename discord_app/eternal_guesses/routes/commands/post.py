@@ -10,10 +10,12 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class PostRoute(Route):
-    def __init__(self,
-                 games_repository: GamesRepository,
-                 message_provider: MessageProvider,
-                 discord_messaging: DiscordMessaging):
+    def __init__(
+        self,
+        games_repository: GamesRepository,
+        message_provider: MessageProvider,
+        discord_messaging: DiscordMessaging
+    ):
         self.discord_messaging = discord_messaging
         self.message_provider = message_provider
         self.games_repository = games_repository
@@ -22,7 +24,9 @@ class PostRoute(Route):
         guild_id = event.guild_id
         game_id = event.command.options['game-id']
 
-        logger.debug(f"posting a game's info. guild_id={guild_id}, game_id={game_id}")
+        logger.debug(
+            f"posting a game's info. guild_id={guild_id}, game_id={game_id}"
+        )
 
         if 'channel' in event.command.options:
             channel_id = int(event.command.options['channel'])

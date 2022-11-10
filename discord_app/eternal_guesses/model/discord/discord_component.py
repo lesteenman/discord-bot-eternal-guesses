@@ -61,7 +61,13 @@ class DiscordComponent(object):
         return {**data, **self.fields}
 
     @classmethod
-    def text_input(cls, custom_id: str, label: str, paragraph: bool = False, required: bool = True):
+    def text_input(
+        cls,
+        custom_id: str,
+        label: str,
+        paragraph: bool = False,
+        required: bool = True
+    ):
         return DiscordComponent(
             type=ComponentType.TEXT_INPUT,
             fields={
@@ -73,7 +79,12 @@ class DiscordComponent(object):
         )
 
     @classmethod
-    def button(cls, custom_id: str, label: str, style: ButtonStyle = ButtonStyle.SECONDARY):
+    def button(
+        cls,
+        custom_id: str,
+        label: str,
+        style: ButtonStyle = ButtonStyle.SECONDARY
+    ):
         return DiscordComponent(
             type=ComponentType.BUTTON,
             fields={
@@ -95,7 +106,12 @@ class DiscordComponent(object):
         )
 
     @classmethod
-    def string_select(cls, placeholder: str, custom_id: str, options: List[DiscordSelectOption]):
+    def string_select(
+        cls,
+        placeholder: str,
+        custom_id: str,
+        options: List[DiscordSelectOption]
+    ):
         return DiscordComponent(
             type=ComponentType.STRING_SELECT,
             fields={

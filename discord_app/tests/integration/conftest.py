@@ -27,8 +27,14 @@ ACCESS_KEY_ID = "LOCAL"
 @pytest.fixture(scope="session", autouse=True)
 def start_dynamodb_container():
     docker_client = docker.from_env()
-    dynamodb_container = docker_client.containers.run('amazon/dynamodb-local', ports={8000: 8000}, detach=True,
-                                                      auto_remove=True)
+    dynamodb_container = docker_client.containers.run(
+        'amazon/dynamodb-local',
+        ports={
+            8000: 8000
+        },
+        detach=True,
+        auto_remove=True
+    )
 
     yield
 
@@ -51,7 +57,11 @@ def dynamodb_resource(monkeypatch):
     )
 
 
-@opnieuw.retry(retry_on_exceptions=ClientError, max_calls_total=10, retry_window_after_first_call_in_seconds=10)
+@opnieuw.retry(
+    retry_on_exceptions=ClientError,
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=10
+)
 def _create_table(dynamodb, table_name):
     return dynamodb.create_table(
         TableName=table_name,
@@ -79,7 +89,11 @@ def _create_table(dynamodb, table_name):
     )
 
 
-@opnieuw.retry(retry_on_exceptions=ClientError, max_calls_total=10, retry_window_after_first_call_in_seconds=5)
+@opnieuw.retry(
+    retry_on_exceptions=ClientError,
+    max_calls_total=10,
+    retry_window_after_first_call_in_seconds=5
+)
 def _delete_table(table):
     table.delete()
 
@@ -97,11 +111,15 @@ def eternal_guesses_table(dynamodb_resource, monkeypatch):
 @pytest.fixture(autouse=True)
 def fixed_authorization_result(mocker):
     class PassingTestAuthorizer(ApiAuthorizer):
-        def authorize(self, event: Dict) -> (AuthorizationResult, LambdaResponse):
+        def authorize(self, event: Dict) -> (AuthorizationResult,
+                                             LambdaResponse):
             return AuthorizationResult.PASS, None
 
     test_authorizer = PassingTestAuthorizer()
-    mocker.patch('eternal_guesses.util.injector._api_authorizer', return_value=test_authorizer)
+    mocker.patch(
+        'eternal_guesses.util.injector._api_authorizer',
+        return_value=test_authorizer
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -133,7 +151,10 @@ def stub_discord_messaging(mocker):
             pass
 
     silent_discord_messaging = SilentDiscordMessaging()
-    mocker.patch('eternal_guesses.util.injector._discord_messaging', return_value=silent_discord_messaging)
+    mocker.patch(
+        'eternal_guesses.util.injector._discord_messaging',
+        return_value=silent_discord_messaging
+    )
 
 
 @pytest.fixture(autouse=True)

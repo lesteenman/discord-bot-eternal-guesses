@@ -11,7 +11,11 @@ from eternal_guesses.model.lambda_response import LambdaResponse
 
 
 class _TestAuthorizer(ApiAuthorizer):
-    def __init__(self, result: AuthorizationResult, response: Optional[LambdaResponse]):
+    def __init__(
+        self,
+        result: AuthorizationResult,
+        response: Optional[LambdaResponse]
+    ):
         self.result = result
         self.response = response
 
@@ -29,10 +33,14 @@ class _TestRouter(Router):
 
 def test_unauthorized_request():
     # Given
-    test_authorizer = _TestAuthorizer(AuthorizationResult.FAIL,
-                                      LambdaResponse.unauthorized("key does not check out"))
+    test_authorizer = _TestAuthorizer(
+        AuthorizationResult.FAIL,
+        LambdaResponse.unauthorized("key does not check out")
+    )
 
-    body = {'type': 1}
+    body = {
+        'type': 1
+    }
     event = {
         'body': json.dumps(body),
         'headers': {
@@ -42,24 +50,39 @@ def test_unauthorized_request():
     }
 
     # When
-    discord_event_handler = DiscordEventHandler(router=_TestRouter(None),
-                                                api_authorizer=test_authorizer)
+    discord_event_handler = DiscordEventHandler(
+        router=_TestRouter(None),
+        api_authorizer=test_authorizer
+    )
     response = discord_event_handler.handle(event)
 
     # Then
     assert response['statusCode'] == 401
 
 
-@patch('eternal_guesses.api.discord_event_handler.discord_event.from_event', autospec=True)
+@patch(
+    'eternal_guesses.api.discord_event_handler.discord_event.from_event',
+    autospec=True
+)
 def test_authorized_request(mock_from_event):
     # Given
     test_authorizer = _TestAuthorizer(AuthorizationResult.PASS, None)
-    test_router = _TestRouter(LambdaResponse.success({'response': 'mocked'}))
+    test_router = _TestRouter(
+        LambdaResponse.success(
+            {
+                'response': 'mocked'
+            }
+        )
+    )
 
     mock_from_event.return_value = None
 
     event = {
-        'body': json.dumps({'type': 1}),
+        'body': json.dumps(
+            {
+                'type': 1
+            }
+        ),
         'headers': {
             'x-signature-ed25519': '',
             'x-signature-timestamp': '',
@@ -67,23 +90,38 @@ def test_authorized_request(mock_from_event):
     }
 
     # When
-    discord_event_handler = DiscordEventHandler(router=test_router,
-                                                api_authorizer=test_authorizer)
+    discord_event_handler = DiscordEventHandler(
+        router=test_router,
+        api_authorizer=test_authorizer
+    )
     response = discord_event_handler.handle(event)
 
     # Then
     assert response['statusCode'] == 200
-    assert json.loads(response['body']) == {'response': 'mocked'}
+    assert json.loads(response['body']) == {
+        'response': 'mocked'
+    }
 
 
-@patch('eternal_guesses.api.discord_event_handler.discord_event.from_event', autospec=True)
+@patch(
+    'eternal_guesses.api.discord_event_handler.discord_event.from_event',
+    autospec=True
+)
 def test_discord_event(mock_from_event):
     # Given
     test_authorizer = _TestAuthorizer(AuthorizationResult.PASS, None)
 
-    test_router = _TestRouter(LambdaResponse.success({'response': 'mocked'}))
+    test_router = _TestRouter(
+        LambdaResponse.success(
+            {
+                'response': 'mocked'
+            }
+        )
+    )
 
-    event_body = {'type': 1}
+    event_body = {
+        'type': 1
+    }
 
     discord_event = DiscordEvent()
     mock_from_event.return_value = discord_event
@@ -97,10 +135,14 @@ def test_discord_event(mock_from_event):
     }
 
     # When
-    discord_event_handler = DiscordEventHandler(router=test_router,
-                                                api_authorizer=test_authorizer)
+    discord_event_handler = DiscordEventHandler(
+        router=test_router,
+        api_authorizer=test_authorizer
+    )
     response = discord_event_handler.handle(event)
 
     # Then
     assert response['statusCode'] == 200
-    assert json.loads(response['body']) == {'response': 'mocked'}
+    assert json.loads(response['body']) == {
+        'response': 'mocked'
+    }

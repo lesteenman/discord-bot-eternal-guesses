@@ -41,10 +41,12 @@ async def test_post_creates_channel_message():
     )
 
     # When we post a channel message for our game with an explicit channel
-    event = _make_event(guild_id=guild_id, options={
-        'game-id': game_id,
-        'channel': channel_id,
-    })
+    event = _make_event(
+        guild_id=guild_id, options={
+            'game-id': game_id,
+            'channel': channel_id,
+        }
+    )
     await post_route.call(event)
 
     # Then a message about that game is posted in the given channel
@@ -84,9 +86,13 @@ async def test_post_without_channel_uses_event_channel():
     )
 
     # When we post a channel message without an explicit target channel
-    event = _make_event(guild_id=guild_id,
-                        channel_id=event_channel_id,
-                        options={'game-id': game_id})
+    event = _make_event(
+        guild_id=guild_id,
+        channel_id=event_channel_id,
+        options={
+            'game-id': game_id
+        }
+    )
     await post_route.call(event)
 
     # Then a message for that game is posted in the channel we sent this command from
@@ -117,18 +123,22 @@ async def test_post_saves_message_id_to_game():
     )
 
     # When
-    event = _make_event(guild_id=guild_id, options={
-        'game-id': game_id,
-        'channel': channel_id,
-    })
+    event = _make_event(
+        guild_id=guild_id, options={
+            'game-id': game_id,
+            'channel': channel_id,
+        }
+    )
     await post_route.call(event)
 
     # Then
     updated_game = games_repository.get(guild_id, game_id)
     assert updated_game.channel_messages is not None
 
-    assert any(channel_message.channel_id == channel_id and channel_message.message_id == new_message_id
-               for channel_message in updated_game.channel_messages)
+    assert any(
+        channel_message.channel_id == channel_id and channel_message.message_id == new_message_id
+        for channel_message in updated_game.channel_messages
+    )
 
 
 async def test_post_invalid_game_id_sends_dm_error():
@@ -173,8 +183,12 @@ async def test_post_invalid_game_id_sends_dm_error():
     assert response.content == formatted_error
 
 
-def _make_event(guild_id: int = -1, options: typing.Dict = None, discord_member: DiscordMember = None,
-                channel_id: int = -1):
+def _make_event(
+    guild_id: int = -1,
+    options: typing.Dict = None,
+    discord_member: DiscordMember = None,
+    channel_id: int = -1
+):
     if options is None:
         options = {}
 

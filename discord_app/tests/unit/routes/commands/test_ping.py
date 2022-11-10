@@ -15,4 +15,6 @@ async def test_ping():
     response = await ping_route.call(DiscordEvent())
 
     # Then
-    assert response.json() == {'type': InteractionType.PING.value}
+    assert response.json() == {
+        'type': InteractionType.PING.value
+    }

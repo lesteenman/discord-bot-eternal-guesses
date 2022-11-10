@@ -30,7 +30,9 @@ async def test_handle_component_action():
         )
     )
 
-    mock_response = DiscordResponse.ephemeral_channel_message("Component action well handled.")
+    mock_response = DiscordResponse.ephemeral_channel_message(
+        "Component action well handled."
+    )
 
     mock_route_handler = AsyncMock(RouteHandler)
     mock_route_handler.handle.return_value = mock_response
@@ -66,7 +68,9 @@ async def test_handle_modal_submit_action():
         )
     )
 
-    mock_response = DiscordResponse.ephemeral_channel_message("Modal submission well handled.")
+    mock_response = DiscordResponse.ephemeral_channel_message(
+        "Modal submission well handled."
+    )
 
     mock_route_handler = AsyncMock(RouteHandler)
     mock_route_handler.handle.return_value = mock_response
@@ -103,7 +107,9 @@ async def test_handle_command():
         member=DiscordMember()
     )
 
-    mock_response = DiscordResponse.ephemeral_channel_message("Well handled brother!")
+    mock_response = DiscordResponse.ephemeral_channel_message(
+        "Well handled brother!"
+    )
 
     mock_route_handler = AsyncMock(RouteHandler)
     mock_route_handler.handle.return_value = mock_response

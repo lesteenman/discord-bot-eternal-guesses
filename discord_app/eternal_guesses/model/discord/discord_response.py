@@ -111,7 +111,12 @@ class DiscordResponse(object):
         )
 
     @classmethod
-    def modal(cls, custom_id: str, title: str, components: List[DiscordComponent]):
+    def modal(
+        cls,
+        custom_id: str,
+        title: str,
+        components: List[DiscordComponent]
+    ):
         return DiscordResponse(
             response_type=ResponseType.MODAL,
             custom_id=custom_id,
