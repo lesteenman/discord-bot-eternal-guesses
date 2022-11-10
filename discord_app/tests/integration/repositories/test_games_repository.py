@@ -1,15 +1,16 @@
 from datetime import datetime
 
-from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.channel_message import ChannelMessage
+from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
-from tests.integration.conftest import TABLE_NAME, HOST
 
 
-def test_get_unknown_game_returns_none():
+def test_get_unknown_game_returns_none(eternal_guesses_table):
     # Given: an empty database
-    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(
+        eternal_guesses_table=eternal_guesses_table
+    )
     other_game = Game(guild_id=1, game_id='game-id-1', created_by=10)
 
     # When
@@ -20,9 +21,11 @@ def test_get_unknown_game_returns_none():
     assert game is None
 
 
-def test_get_minimal_game():
+def test_get_minimal_game(eternal_guesses_table):
     # Given
-    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(
+        eternal_guesses_table=eternal_guesses_table
+    )
 
     game = Game(
         guild_id=1,
@@ -40,9 +43,11 @@ def test_get_minimal_game():
     assert not game.is_numeric()
 
 
-def test_get_game():
+def test_get_game(eternal_guesses_table):
     # Given
-    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(
+        eternal_guesses_table=eternal_guesses_table
+    )
 
     guild_id = 50
     created_by = 120
@@ -117,9 +122,11 @@ def test_get_game():
     assert retrieved_game.channel_messages[0].message_id == message_message_id
 
 
-def test_get_all_games_without_games():
+def test_get_all_games_without_games(eternal_guesses_table):
     # Given
-    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(
+        eternal_guesses_table=eternal_guesses_table
+    )
 
     # When
     games = games_repository.get_all(1)
@@ -128,9 +135,11 @@ def test_get_all_games_without_games():
     assert len(games) == 0
 
 
-def test_get_all_games():
+def test_get_all_games(eternal_guesses_table):
     # Given
-    games_repository = GamesRepositoryImpl(table_name=TABLE_NAME, host=HOST)
+    games_repository = GamesRepositoryImpl(
+        eternal_guesses_table=eternal_guesses_table
+    )
 
     guild_id = 50000
 

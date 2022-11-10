@@ -15,7 +15,7 @@ async def send_dm(user_id: int, message: str):
 @contextlib.asynccontextmanager
 async def discord_client() -> discord.Client:
     client = discord.Client()
-    await client.login(app_config.discord_bot_token)
+    await client.login(app_config.discord_bot_token())
 
     try:
         yield client

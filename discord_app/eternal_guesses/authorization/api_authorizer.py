@@ -1,4 +1,3 @@
-import os
 from abc import ABC
 from enum import Enum
 from typing import Dict
@@ -7,6 +6,7 @@ from loguru import logger
 from nacl.signing import VerifyKey
 
 from eternal_guesses.model.lambda_response import LambdaResponse
+from eternal_guesses.util import app_config
 
 
 class AuthorizationResult(Enum):
@@ -27,7 +27,7 @@ class ApiAuthorizerImpl(ApiAuthorizer):
         timestamp = headers['x-signature-timestamp']
 
         result = self.verify_key(
-            body, signature, timestamp, os.environ.get('DISCORD_PUBLIC_KEY'))
+            body, signature, timestamp, app_config.discord_public_key())
         if result:
             return AuthorizationResult.PASS, None
         else:

@@ -2,14 +2,14 @@ import pytest
 
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.repositories.configs_repository import ConfigsRepositoryImpl
-from tests.integration.conftest import TABLE_NAME, HOST
+from tests.integration.conftest import TABLE_NAME, DYNAMODB_HOST
 
 pytestmark = pytest.mark.asyncio
 
 
-async def test_get_unknown_guild_returns_empty_config():
+async def test_get_unknown_guild_returns_empty_config(eternal_guesses_table):
     # Given
-    configs_repository = ConfigsRepositoryImpl(table_name=TABLE_NAME, host=HOST)
+    configs_repository = ConfigsRepositoryImpl(eternal_guesses_table)
     guild_id = 12000
 
     # When
@@ -21,9 +21,9 @@ async def test_get_unknown_guild_returns_empty_config():
     assert config.management_roles == []
 
 
-async def test_get_guild():
+async def test_get_guild(eternal_guesses_table):
     # Given
-    configs_repository = ConfigsRepositoryImpl(table_name=TABLE_NAME, host=HOST)
+    configs_repository = ConfigsRepositoryImpl(eternal_guesses_table)
 
     guild_id = 12000
     management_channel_1 = 1000

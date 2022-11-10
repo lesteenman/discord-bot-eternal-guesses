@@ -1,10 +1,7 @@
 import re
 from abc import ABC
 
-from pynamodb.exceptions import DoesNotExist
-
 from eternal_guesses.model.data.guild_config import GuildConfig
-from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
 
 PK_REGEX = r"GUILD#(.*)"
 
@@ -17,14 +14,14 @@ def _range_key():
     return "CONFIG"
 
 
-def _config_from_model(model: EternalGuessesTable) -> GuildConfig:
-    guild_id = int(re.match(PK_REGEX, model.pk).group(1))
+def _config_from_model(model: dict) -> GuildConfig:
+    guild_id = int(re.match(PK_REGEX, model['pk']).group(1))
     guild_config = GuildConfig(guild_id)
 
-    for channel in model.management_channels:
+    for channel in model.get('management_channels', []):
         guild_config.management_channels.append(channel)
 
-    for role in model.management_roles:
+    for role in model.get('management_roles', []):
         guild_config.management_roles.append(role)
 
     return guild_config
@@ -39,27 +36,32 @@ class ConfigsRepository(ABC):
 
 
 class ConfigsRepositoryImpl(ConfigsRepository):
-    def __init__(self, table_name: str = None, host: str = None):
-        self.table = EternalGuessesTable
-
-        if table_name is not None:
-            self.table.Meta.table_name = table_name
-
-        if host is not None:
-            self.table.Meta.host = host
+    def __init__(self, eternal_guesses_table):
+        self.table = eternal_guesses_table
 
     def get(self, guild_id: int) -> GuildConfig:
-        try:
-            model = self.table.get(_hash_key(guild_id), _range_key())
-        except DoesNotExist:
+        result = self.table.get_item(
+            Key={
+                'pk': _hash_key(guild_id),
+                'sk': _range_key(),
+            },
+        )
+
+        if 'Item' not in result:
             return GuildConfig(guild_id)
 
-        return _config_from_model(model)
+        return _config_from_model(result['Item'])
 
     def save(self, guild_config: GuildConfig):
-        model = self.table(_hash_key(guild_config.guild_id), _range_key())
+        model = {
+            'pk': _hash_key(guild_config.guild_id),
+            'sk': _range_key(),
+            'management_channels': list(
+                int(channel) for channel in guild_config.management_channels
+            ),
+            'management_roles': list(
+                int(role) for role in guild_config.management_roles
+            )
+        }
 
-        model.management_channels = list(int(channel) for channel in guild_config.management_channels)
-        model.management_roles = list(int(role) for role in guild_config.management_roles)
-
-        model.save()
+        self.table.put_item(Item=model)

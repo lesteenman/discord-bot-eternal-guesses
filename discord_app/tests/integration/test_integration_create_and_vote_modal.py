@@ -14,14 +14,14 @@ from tests.integration.helpers import make_discord_create_event, \
     make_discord_modal_event
 
 
-def test_integration_full_flow():
+def test_integration_full_flow(eternal_guesses_table):
     # Given
     guild_id = 1
-    games_repository = GamesRepositoryImpl()
+    games_repository = GamesRepositoryImpl(eternal_guesses_table)
 
     management_channel = 500
     guild_config = GuildConfig(guild_id=guild_id, management_channels=[management_channel])
-    configs_repository = ConfigsRepositoryImpl()
+    configs_repository = ConfigsRepositoryImpl(eternal_guesses_table)
     configs_repository.save(guild_config)
 
     # We start without games

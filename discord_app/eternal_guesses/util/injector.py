@@ -1,3 +1,5 @@
+import boto3
+
 from eternal_guesses.api.discord_event_handler import DiscordEventHandler
 from eternal_guesses.api.route_handler import RouteHandlerImpl
 from eternal_guesses.api.router import Router, RouterImpl
@@ -39,6 +41,7 @@ from eternal_guesses.routes.commands.remove_management_role import \
     RemoveManagementRoleRoute
 from eternal_guesses.routes.modal_submits.modal_test import ModalTestRoute
 from eternal_guesses.routes.modal_submits.submit_guess import SubmitGuessRoute
+from eternal_guesses.util import app_config
 from eternal_guesses.util.discord_messaging import DiscordMessaging, \
     DiscordMessagingImpl
 from eternal_guesses.util.game_post_manager import GamePostManager, \
@@ -59,10 +62,13 @@ def _api_authorizer() -> ApiAuthorizer:
 
 
 def _router() -> Router:
-    games_repository = _games_repository()
-    configs_repository = _configs_repository()
+    eternal_guesses_table = _eternal_guesses_table()
+    games_repository = _games_repository(eternal_guesses_table)
+    configs_repository = _configs_repository(eternal_guesses_table)
+
     discord_messaging = _discord_messaging()
     message_provider = _message_provider()
+
     command_authorizer = _command_authorizer(configs_repository=configs_repository)
 
     game_post_manager = GamePostManagerImpl(
@@ -369,12 +375,20 @@ def _message_with_buttons_route(game_post_manager):
     return MessageWithButtonsRoute()
 
 
-def _games_repository() -> GamesRepository:
-    return GamesRepositoryImpl()
+def _eternal_guesses_table():
+    dynamodb = boto3.resource(
+        service_name='dynamodb',
+        endpoint_url=app_config.aws_endpoint_url(),
+    )
+    return dynamodb.Table(app_config.dynamodb_table_name())
 
 
-def _configs_repository() -> ConfigsRepository:
-    return ConfigsRepositoryImpl()
+def _games_repository(eternal_guesses_table) -> GamesRepository:
+    return GamesRepositoryImpl(eternal_guesses_table)
+
+
+def _configs_repository(eternal_guesses_table) -> ConfigsRepository:
+    return ConfigsRepositoryImpl(eternal_guesses_table)
 
 
 def _discord_messaging() -> DiscordMessaging:

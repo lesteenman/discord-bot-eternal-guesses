@@ -84,7 +84,7 @@ class DiscordMessagingImpl(DiscordMessaging):
         # intents.webhooks = True
         client = discord.Client(intents=intents)
 
-        await client.login(app_config.discord_bot_token)
+        await client.login(app_config.discord_bot_token())
 
         try:
             yield client

@@ -12,7 +12,7 @@ from tests.integration.helpers import make_discord_manage_list_event, \
     make_discord_admin_remove_role_event
 
 
-def test_integration_channel_permissions():
+def test_integration_channel_permissions(eternal_guesses_table):
     # Given
     guild_id = 1
     management_channel = 100
@@ -23,7 +23,7 @@ def test_integration_channel_permissions():
     add_management_role(guild_id=guild_id, management_role=management_role)
 
     # We see it in the config
-    config = get_guild_config(guild_id=guild_id)
+    config = get_guild_config(eternal_guesses_table=eternal_guesses_table, guild_id=guild_id)
     assert management_channel in config.management_channels
     assert management_role in config.management_roles
 
@@ -105,8 +105,8 @@ def remove_management_role(guild_id, management_role):
     return json.loads(response['body'])
 
 
-def get_guild_config(guild_id) -> GuildConfig:
-    configs_repository = ConfigsRepositoryImpl()
+def get_guild_config(eternal_guesses_table, guild_id) -> GuildConfig:
+    configs_repository = ConfigsRepositoryImpl(eternal_guesses_table)
     return configs_repository.get(guild_id=guild_id)
 
 
