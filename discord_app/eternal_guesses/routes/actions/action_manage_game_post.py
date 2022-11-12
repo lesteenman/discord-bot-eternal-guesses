@@ -1,7 +1,7 @@
 import re
 
 from eternal_guesses.model.discord.discord_component import ActionRow, \
-    DiscordComponent
+    DiscordComponent, ComponentType
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.routes.route import Route
@@ -9,6 +9,16 @@ from eternal_guesses.util.component_ids import ComponentIds
 
 
 class ActionManageGamePostRoute(Route):
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        return (
+            event.component_action is not None and
+            event.component_action.component_type == ComponentType.BUTTON and
+            event.component_action.component_custom_id.startswith(
+                ComponentIds.component_button_post_game_prefix
+            )
+        )
+
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         custom_id = event.component_action.component_custom_id
         game_id = re.search(
@@ -21,9 +31,11 @@ class ActionManageGamePostRoute(Route):
         response.action_rows = [
             ActionRow(
                 components=[
-                    DiscordComponent.channel_select(
-                        placeholder="select guess",
-                        custom_id=f"select-post_game-{game_id}",
+                    DiscordComponent.text_channel_select(
+                        placeholder="select channel",
+                        custom_id=ComponentIds.component_select_post_game_id(
+                            game_id
+                        )
                     )
                 ]
             )

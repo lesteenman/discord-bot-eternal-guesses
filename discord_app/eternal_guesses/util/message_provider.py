@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import List
+from typing import List, Optional
 
 import discord
 from discord import ButtonStyle
@@ -11,7 +11,7 @@ from eternal_guesses.util.component_ids import ComponentIds
 
 
 class MessageProvider(ABC):
-    def game_post_view(self, game: Game) -> discord.ui.View:
+    def game_post_view(self, game: Game) -> Optional[discord.ui.View]:
         raise NotImplementedError()
 
     def game_post_embed(self, game: Game) -> discord.Embed:
@@ -106,7 +106,10 @@ class MessageProvider(ABC):
 
 
 class MessageProviderImpl(MessageProvider):
-    def game_post_view(self, game: Game) -> discord.ui.View:
+    def game_post_view(self, game: Game) -> Optional[discord.ui.View]:
+        if game.closed:
+            return None
+
         view = discord.ui.View()
 
         make_guess_button = discord.ui.Button(

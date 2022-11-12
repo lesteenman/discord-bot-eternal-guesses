@@ -17,6 +17,7 @@ def component_action(
     guild_id: int,
     component_custom_id: str,
     component_type: ComponentType,
+    values: List[str] = None,
     user_id: int = DEFAULT_USER_ID,
     role_id: int = DEFAULT_ROLE_ID,
     channel_id: int = DEFAULT_CHANNEL_ID,
@@ -37,6 +38,9 @@ def component_action(
         "custom_id": component_custom_id,
         "component_type": component_type.value,
     }
+
+    if values is not None:
+        event_body['data']['values'] = values
 
     return _make_event(event_body)
 
@@ -577,7 +581,7 @@ def _base_event_body(
     return {
         "channel_id": channel_id,
         "guild_id": guild_id,
-        "data": None,
+        "data": {},
         "id": "9991",
         "member": _create_member(
             user_id=user_id,

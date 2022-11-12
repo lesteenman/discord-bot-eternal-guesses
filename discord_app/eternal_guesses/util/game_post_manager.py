@@ -10,7 +10,7 @@ from eternal_guesses.util.message_provider import MessageProvider
 
 
 class GamePostManager(ABC):
-    async def post(self, game: Game):
+    async def post(self, game: Game, channel_id: int):
         raise NotImplementedError()
 
     async def update(self, game: Game):
@@ -28,8 +28,14 @@ class GamePostManagerImpl(GamePostManager):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
-    async def post(self, game: Game):
-        pass
+    async def post(self, game: Game, channel_id: int):
+        embed = self.message_provider.game_post_embed(game)
+        view = self.message_provider.game_post_view(game)
+        return await self.discord_messaging.send_channel_message(
+            channel_id=channel_id,
+            embed=embed,
+            view=view,
+        )
 
     async def update(self, game: Game):
         logger.info(

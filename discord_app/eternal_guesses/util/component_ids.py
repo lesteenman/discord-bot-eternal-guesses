@@ -10,19 +10,39 @@ class ComponentIds:
     def component_button_post_game_id(cls, game_id: str):
         return f"{ComponentIds.component_button_post_game_prefix}{game_id}"
 
+    component_button_edit_guess_prefix = "button-manage_game-edit_guess-"
+
     @classmethod
     def component_button_edit_guess_id(cls, game_id):
-        return f"action-manage_game-edit_guess-{game_id}"
+        return f"{cls.component_button_edit_guess_prefix}{game_id}"
 
-    component_button_delete_guess_prefix = "action-manage_game-delete_guess-"
-    component_button_delete_guess_regex = "action-manage_game-delete_guess-(.*)"
+    component_button_delete_guess_prefix = "button-manage_game-delete_guess-"
 
     @classmethod
     def component_button_delete_guess_id(cls, game_id):
         return f"{cls.component_button_delete_guess_prefix}{game_id}"
 
+    component_select_delete_guess_prefix = "selector-manage_game-delete_guess-"
+
+    @classmethod
+    def component_select_delete_guess_id(cls, game_id):
+        return f"{cls.component_select_delete_guess_prefix}{game_id}"
+
+    component_select_edit_guess_prefix = "selector-manage_game-edit_guess-"
+
+    @classmethod
+    def component_select_edit_guess_id(cls, game_id):
+        return f"{cls.component_select_edit_guess_prefix}{game_id}"
+
+    component_select_game_to_manage = "selector-select-game-to-manage"
+
+    component_button_edit_game_prefix = "button-manage_game-edit-"
+
+    @classmethod
+    def component_button_edit_game_id(cls, game_id):
+        return f"{cls.component_button_edit_game_prefix}{game_id}"
+
     component_button_guess_prefix = "button_trigger_guess_modal_"
-    component_button_guess_regex = r"button_trigger_guess_modal_(.*)"
 
     @staticmethod
     def component_button_guess_id(game_id: str):
@@ -42,3 +62,18 @@ class ComponentIds:
     @classmethod
     def submit_guess_modal_id(cls, game_id):
         return f"modal_submit_guess_{game_id}"
+
+    edit_guess_modal_prefix = "modal-edit_guess-game_"
+    edit_guess_modal_regex = r"modal-edit_guess-game_(.*)-member_(.*)"
+
+    @classmethod
+    def edit_guess_modal_id(cls, game_id, member_id):
+        return f"{cls.edit_guess_modal_prefix}{game_id}-member_{member_id}"
+
+    edit_guess_modal_input_id = "modal-edit_guess-new_guess_input"
+
+    component_select_post_game_prefix = "select-post_game-"
+
+    @classmethod
+    def component_select_post_game_id(cls, game_id):
+        return f"{cls.component_select_post_game_prefix}{game_id}"

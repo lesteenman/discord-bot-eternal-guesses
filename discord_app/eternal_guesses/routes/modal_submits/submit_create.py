@@ -19,6 +19,14 @@ class SubmitCreateRoute(Route):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        submit = event.modal_submit
+        return (
+            submit is not None and
+            submit.modal_custom_id == ComponentIds.submit_create_modal_id
+        )
+
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
 

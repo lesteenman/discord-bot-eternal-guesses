@@ -2,27 +2,12 @@ from typing import List, Optional
 
 import discord
 
-from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
-from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.util.discord_messaging import DiscordMessaging
 from eternal_guesses.util.message_provider import MessageProvider
-
-
-class FakeCommandAuthorizer(CommandAuthorizer):
-    def __init__(self, management: bool = True, admin: bool = True):
-        self.management = management
-        self.admin = admin
-
-    async def authorize_management_call(self, event: DiscordEvent) -> bool:
-        return self.management
-
-    async def authorize_admin_call(self, event: DiscordEvent) -> bool:
-        return self.admin
 
 
 class FakeNotFound(discord.NotFound):
@@ -121,35 +106,28 @@ class FakeGamesRepository(GamesRepository):
         return self.games
 
 
-class FakeConfigsRepository(ConfigsRepository):
-    def __init__(
-        self,
-        guild_id: int,
-        management_channels: List[int] = None,
-        management_roles: List[int] = None
-    ):
-        if management_channels is None:
-            management_channels = []
-
-        if management_roles is None:
-            management_roles = []
-
-        self.guild_config = GuildConfig(
-            guild_id=guild_id,
-            management_channels=management_channels,
-            management_roles=management_roles
-        )
-
-    def get(self, guild_id: int) -> GuildConfig:
-        if guild_id == self.guild_config.guild_id:
-            return self.guild_config
-
-    def save(self, guild_config: GuildConfig):
-        if guild_config.guild_id == self.guild_config.guild_id:
-            self.guild_config = guild_config
-
-
 class FakeMessageProvider(MessageProvider):
+    def error_guess_not_found(self, game_id: str, member_id: int) -> str:
+        pass
+
+    def bot_missing_access(self) -> str:
+        pass
+
+    def guess_edited(self) -> str:
+        pass
+
+    def guess_deleted(self) -> str:
+        pass
+
+    def invalid_guess(self, game: Game) -> str:
+        pass
+
+    def modal_input_label_guess_value(self, game: Game) -> str:
+        pass
+
+    def modal_title_place_guess(self, game: Game) -> str:
+        pass
+
     def game_post_view(self, game: Game) -> discord.ui.View:
         pass
 

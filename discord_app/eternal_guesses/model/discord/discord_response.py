@@ -9,7 +9,6 @@ from eternal_guesses.model.discord.discord_component import DiscordComponent, \
 
 class ResponseType(Enum):
     PONG = 1
-    # ACKNOWLEDGE = 2  # TODO: Deprecated!
     CHANNEL_MESSAGE = 4
     DEFERRED_CHANNEL_MESSAGE = 5
     DEFERRED_UPDATE_MESSAGE = 6
@@ -89,16 +88,27 @@ class DiscordResponse(object):
         )
 
     @classmethod
-    def channel_message(cls):
+    def channel_message(
+        cls,
+        content: str = None,
+        embed: discord.Embed = None
+    ):
         return DiscordResponse(
-            response_type=ResponseType.CHANNEL_MESSAGE
+            response_type=ResponseType.CHANNEL_MESSAGE,
+            content=content,
+            embed=embed,
         )
 
     @classmethod
-    def ephemeral_channel_message(cls, content: str):
+    def ephemeral_channel_message(
+        cls,
+        content: str = None,
+        embed: discord.Embed = None
+    ):
         response = DiscordResponse(
             response_type=ResponseType.CHANNEL_MESSAGE,
             content=content,
+            embed=embed,
         )
         response.is_ephemeral = True
 

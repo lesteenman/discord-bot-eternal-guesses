@@ -22,6 +22,13 @@ class GuessRoute(Route):
         self.message_provider = message_provider
         self.game_post_manager = game_post_manager
 
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        return (
+            event.command is not None and
+            event.command.command_name == 'guess'
+        )
+
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
         user_id = event.member.user_id

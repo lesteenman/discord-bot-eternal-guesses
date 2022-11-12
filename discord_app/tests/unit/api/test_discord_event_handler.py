@@ -2,10 +2,10 @@ import json
 from typing import Dict, Optional
 from unittest.mock import patch
 
+from eternal_guesses.api.api_authorizer import AuthorizationResult, \
+    ApiAuthorizer
 from eternal_guesses.api.discord_event_handler import DiscordEventHandler
 from eternal_guesses.api.router import Router
-from eternal_guesses.authorization.api_authorizer import AuthorizationResult, \
-    ApiAuthorizer
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.lambda_response import LambdaResponse
 

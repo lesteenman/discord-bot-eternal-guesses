@@ -18,6 +18,13 @@ class CreateRoute(Route):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        return (
+            event.command is not None and
+            event.command.command_name == 'create-game'
+        )
+
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         return DiscordResponse.modal(
             custom_id="modal_create_game",

@@ -1,7 +1,10 @@
+from eternal_guesses.model.discord.discord_component import ActionRow, \
+    DiscordComponent, DiscordSelectOption
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
+from eternal_guesses.util.component_ids import ComponentIds
 from eternal_guesses.util.message_provider import MessageProvider
 
 
@@ -13,6 +16,13 @@ class ListGamesRoute(Route):
     ):
         self.games_repository = games_repository
         self.message_provider = message_provider
+
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        return (
+            event.command is not None and
+            event.command.command_name == 'list-games'
+        )
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
@@ -35,4 +45,25 @@ class ListGamesRoute(Route):
                 all_games
             )
 
-        return DiscordResponse.ephemeral_channel_message(message)
+        # TODO: Add a multi-selector to select a game to manage
+
+        response = DiscordResponse.ephemeral_channel_message(message)
+        response.action_rows = [
+            ActionRow(
+                components=[
+                    DiscordComponent.string_select(
+                        placeholder="Manage Game",
+                        custom_id=ComponentIds.component_select_game_to_manage,
+                        options=[
+                            DiscordSelectOption(
+                                label=game.game_id,
+                                value=game.game_id,
+                                description=None,
+                            ) for game in all_games
+                        ]
+                    )
+                ]
+            )
+        ]
+
+        return response

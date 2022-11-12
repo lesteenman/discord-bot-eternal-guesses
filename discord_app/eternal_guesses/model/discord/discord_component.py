@@ -30,6 +30,21 @@ class ButtonStyle(Enum):
     LINK = 5
 
 
+class ChannelType(Enum):
+    GUILD_TEXT = 0
+    DM = 1
+    GUILD_VOICE = 2
+    GROUP_DM = 3
+    GUILD_CATEGORY = 4
+    GUILD_ANNOUNCEMENT = 5
+    ANNOUNCEMENT_THREAD = 10
+    PUBLIC_THREAD = 11
+    PRIVATE_THREAD = 12
+    GUILD_STAGE_VOICE = 13
+    GUILD_DIRECTORY = 14
+    GUILD_FORUM = 15
+
+
 @dataclass
 class DiscordSelectOption:
     label: str
@@ -122,12 +137,15 @@ class DiscordComponent(object):
         )
 
     @classmethod
-    def channel_select(cls, placeholder, custom_id):
+    def text_channel_select(cls, placeholder, custom_id):
         return DiscordComponent(
             type=ComponentType.CHANNEL_SELECT,
             fields={
                 "custom_id": custom_id,
                 "placeholder": placeholder,
+                "channel_types": [
+                    ChannelType.GUILD_TEXT.value,
+                ]
             }
         )
 

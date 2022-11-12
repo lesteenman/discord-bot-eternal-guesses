@@ -3,12 +3,13 @@ import re
 import discord
 
 from eternal_guesses.model.discord.discord_component import ActionRow, \
-    DiscordComponent, DiscordSelectOption
+    DiscordComponent, DiscordSelectOption, ComponentType
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse, \
     ResponseType
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
+from eternal_guesses.util.component_ids import ComponentIds
 from eternal_guesses.util.message_provider import MessageProvider
 
 
@@ -21,12 +22,22 @@ class ActionManageGameEditGuessRoute(Route):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        return (
+            event.component_action is not None and
+            event.component_action.component_type == ComponentType.BUTTON and
+            event.component_action.component_custom_id.startswith(
+                ComponentIds.component_button_edit_guess_prefix
+            )
+        )
+
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
 
         custom_id = event.component_action.component_custom_id
         game_id = re.search(
-            r"action-manage_game-edit_guess-(.*)",
+            fr"{ComponentIds.component_button_edit_guess_prefix}(.*)",
             custom_id
         ).group(1)
 
@@ -51,7 +62,9 @@ class ActionManageGameEditGuessRoute(Route):
                 components=[
                     DiscordComponent.string_select(
                         placeholder="select guess",
-                        custom_id=f"select-edit_guess-{game_id}",
+                        custom_id=ComponentIds.component_select_edit_guess_id(
+                            game_id
+                        ),
                         options=[
                             DiscordSelectOption(
                                 label=f"{u} -> {g.guess}",

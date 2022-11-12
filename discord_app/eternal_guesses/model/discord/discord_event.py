@@ -111,17 +111,29 @@ def from_message_component_event(event_source):
     if component_type == ComponentType.BUTTON:
         component_action = DiscordComponentAction(
             component_custom_id=event_source['data']['custom_id'],
-            component_type=ComponentType.BUTTON,
+            component_type=component_type,
         )
     elif component_type == ComponentType.STRING_SELECT:
         component_action = DiscordComponentAction(
             component_custom_id=event_source['data']['custom_id'],
-            component_type=ComponentType.BUTTON,
+            component_type=component_type,
             values=event_source['data']['values'],
+        )
+    elif component_type in [
+        ComponentType.CHANNEL_SELECT,
+        ComponentType.MENTIONABLE_SELECT,
+        ComponentType.ROLE_SELECT,
+        ComponentType.USER_SELECT,
+    ]:
+        component_action = DiscordComponentAction(
+            component_custom_id=event_source['data']['custom_id'],
+            component_type=component_type,
+            values=[int(c) for c in event_source['data']['values']],
         )
     else:
         raise NotImplementedError(
-            f"Not implemented: component interaction of type {component_type}"
+            f"Not implemented: component interaction of type {component_type} "
+            f"(event {event_source})"
         )
 
     return DiscordEvent(

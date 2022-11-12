@@ -1,6 +1,7 @@
 import re
 
-from eternal_guesses.model.discord.discord_component import DiscordComponent
+from eternal_guesses.model.discord.discord_component import DiscordComponent, \
+    ComponentType
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
@@ -20,10 +21,20 @@ class ActionGameGuessRoute(Route):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        return (
+            event.component_action is not None and
+            event.component_action.component_type == ComponentType.BUTTON and
+            event.component_action.component_custom_id.startswith(
+                ComponentIds.component_button_guess_prefix
+            )
+        )
+
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         component_action = event.component_action
         game_id = re.search(
-            ComponentIds.component_button_guess_regex,
+            fr"{ComponentIds.component_button_guess_prefix}(.*)",
             component_action.component_custom_id
         ).group(1)
 

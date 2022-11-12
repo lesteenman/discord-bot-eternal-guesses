@@ -23,6 +23,14 @@ class SubmitGuessRoute(Route):
         self.message_provider = message_provider
         self.game_post_manager = game_post_manager
 
+    @staticmethod
+    def matches(event: DiscordEvent) -> bool:
+        if event.modal_submit is None:
+            return False
+
+        custom_id = event.modal_submit.modal_custom_id
+        return custom_id.startswith(ComponentIds.submit_guess_modal_prefix)
+
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
         user_id = event.member.user_id

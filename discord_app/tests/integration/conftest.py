@@ -9,7 +9,7 @@ import pytest
 from botocore.exceptions import ClientError
 from loguru import logger
 
-from eternal_guesses.authorization.api_authorizer import ApiAuthorizer, \
+from eternal_guesses.api.api_authorizer import ApiAuthorizer, \
     AuthorizationResult
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.lambda_response import LambdaResponse
@@ -152,7 +152,7 @@ def stub_discord_messaging(mocker):
 
     silent_discord_messaging = SilentDiscordMessaging()
     mocker.patch(
-        'eternal_guesses.util.injector._discord_messaging',
+        'eternal_guesses.util.injector.DiscordMessagingImpl',
         return_value=silent_discord_messaging
     )
 

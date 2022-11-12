@@ -1,14 +1,11 @@
-import typing
 from unittest.mock import MagicMock, AsyncMock
 
 import pytest
 
+from eternal_guesses.exceptions import GuessNotFoundError, GameNotFoundError
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
-from eternal_guesses.model.discord.discord_command import DiscordCommand
-from eternal_guesses.model.discord.discord_event import DiscordEvent
-from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.routes.commands.delete_guess import DeleteGuessRoute
+from eternal_guesses.services.guesses_service import GuessesService
 from eternal_guesses.util.game_post_manager import GamePostManager
 from eternal_guesses.util.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository
@@ -21,10 +18,6 @@ async def test_delete_guess():
     guild_id = 10
     game_id = "game-1"
     guessing_player_id = 100
-
-    guess_deleted_message = "Guess has been deleted."
-    message_provider = MagicMock(MessageProvider)
-    message_provider.guess_deleted.return_value = guess_deleted_message
 
     game = Game(
         guild_id=guild_id,
@@ -40,30 +33,24 @@ async def test_delete_guess():
 
     game_post_manager = AsyncMock(GamePostManager)
 
-    route = _route(
+    service = _service(
         games_repository=games_repository,
-        message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
 
     # When
-    event = _make_event(
+    await service.delete(
         guild_id=guild_id,
-        options={
-            'game-id': game_id,
-            'member': str(guessing_player_id),
-        }
+        game_id=game_id,
+        member=guessing_player_id,
     )
-    response = await route.call(event)
 
     # Then
     updated_game = games_repository.get(guild_id, game_id)
     assert guessing_player_id not in updated_game.guesses
 
+    # ToDo: check with fake
     game_post_manager.update.assert_called_with(game)
-
-    assert response.is_ephemeral
-    assert response.content == guess_deleted_message
 
 
 async def test_delete_guess_does_not_exist():
@@ -90,27 +77,21 @@ async def test_delete_guess_does_not_exist():
 
     game_post_manager = AsyncMock(GamePostManager)
 
-    route = _route(
+    service = _service(
         games_repository=games_repository,
-        message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
 
     # When
-    event = _make_event(
-        guild_id=guild_id,
-        options={
-            'game-id': game_id,
-            'member': str(delete_member_id),
-        }
-    )
-    response = await route.call(event)
+    with pytest.raises(GuessNotFoundError):
+        await service.delete(
+            guild_id=guild_id,
+            game_id=game_id,
+            member=delete_member_id,
+        )
 
     # Then
     game_post_manager.update.assert_not_called()
-
-    assert response.is_ephemeral
-    assert response.content == guess_not_found_message
 
 
 async def test_delete_guess_game_does_not_exist():
@@ -125,66 +106,30 @@ async def test_delete_guess_game_does_not_exist():
 
     games_repository = FakeGamesRepository(games=[])
 
-    route = _route(
+    service = _service(
         games_repository=games_repository,
-        message_provider=message_provider,
     )
 
     # When
-    event = _make_event(
-        guild_id=guild_id,
-        options={
-            'game-id': game_id,
-            'member': str(guessing_player_id),
-        }
-    )
-    response = await route.call(event)
-
-    # Then
-    assert response.is_ephemeral
-    assert response.content == game_not_found_message
+    with pytest.raises(GameNotFoundError):
+        await service.delete(
+            guild_id=guild_id,
+            game_id=game_id,
+            member=guessing_player_id,
+        )
 
 
-def _make_event(
-    guild_id: int = -1,
-    options: typing.Dict = None,
-    discord_member: DiscordMember = None,
-    channel_id: int = -1
-):
-    if options is None:
-        options = {}
-
-    if discord_member is None:
-        discord_member = DiscordMember()
-
-    return DiscordEvent(
-        guild_id=guild_id,
-        channel_id=channel_id,
-        command=DiscordCommand(
-            command_name="manage",
-            subcommand_name="delete-guess",
-            options=options,
-        ),
-        member=discord_member
-    )
-
-
-def _route(
+def _service(
     games_repository=None,
-    message_provider=None,
     game_post_manager=None
 ):
     if games_repository is None:
         games_repository = FakeGamesRepository()
 
-    if message_provider is None:
-        message_provider = MagicMock(MessageProvider)
-
     if game_post_manager is None:
         game_post_manager = AsyncMock(GamePostManager)
 
-    return DeleteGuessRoute(
+    return GuessesService(
         games_repository=games_repository,
-        message_provider=message_provider,
         game_post_manager=game_post_manager,
     )
