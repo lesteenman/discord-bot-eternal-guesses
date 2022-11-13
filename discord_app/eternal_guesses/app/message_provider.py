@@ -7,7 +7,7 @@ from discord import ButtonStyle
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
 from eternal_guesses.model.discord.discord_command import DiscordCommand
-from eternal_guesses.util.component_ids import ComponentIds
+from eternal_guesses.app.component_ids import ComponentIds
 
 
 class MessageProvider(ABC):

@@ -4,8 +4,8 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.routes.route import Route
 from eternal_guesses.services.games_service import GamesService
-from eternal_guesses.util.component_ids import ComponentIds
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.component_ids import ComponentIds
+from eternal_guesses.app.message_provider import MessageProvider
 
 
 class ActionSelectPostGameRoute(Route):
@@ -25,13 +25,13 @@ class ActionSelectPostGameRoute(Route):
 
         custom_id = action.component_custom_id
         return custom_id.startswith(
-            ComponentIds.component_select_post_game_prefix
+            ComponentIds.selector_post_game_prefix
         )
 
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         custom_id = event.component_action.component_custom_id
         game_id = re.search(
-            fr"{ComponentIds.component_select_post_game_prefix}(.*)",
+            fr"{ComponentIds.selector_post_game_prefix}(.*)",
             custom_id
         ).group(1)
 

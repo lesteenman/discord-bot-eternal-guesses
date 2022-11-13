@@ -13,9 +13,9 @@ from eternal_guesses.model.discord.discord_modal_submit import \
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.modal_submits import submit_guess
 from eternal_guesses.routes.modal_submits.submit_guess import SubmitGuessRoute
-from eternal_guesses.util.component_ids import ComponentIds
-from eternal_guesses.util.game_post_manager import GamePostManager
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.component_ids import ComponentIds
+from eternal_guesses.app.game_post_manager import GamePostManager
+from eternal_guesses.app.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository, FakeMessageProvider
 
 pytestmark = pytest.mark.asyncio

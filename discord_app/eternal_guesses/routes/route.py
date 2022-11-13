@@ -8,7 +8,5 @@ class Route(ABC):
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         raise NotImplementedError()
 
-    # TODO: Merge RouteDefinition with Route.
-    @staticmethod
-    def matches(event: DiscordEvent) -> bool:
+    def matches(self, event: DiscordEvent) -> bool:
         raise NotImplementedError()

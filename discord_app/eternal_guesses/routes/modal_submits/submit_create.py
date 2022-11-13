@@ -2,12 +2,14 @@ import re
 from datetime import datetime
 
 from eternal_guesses.model.data.game import Game
+from eternal_guesses.model.discord.discord_component import ActionRow, \
+    DiscordComponent
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.component_ids import ComponentIds
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.component_ids import ComponentIds
+from eternal_guesses.app.message_provider import MessageProvider
 
 
 class SubmitCreateRoute(Route):
@@ -68,7 +70,19 @@ class SubmitCreateRoute(Route):
         self.games_repository.save(game)
 
         game_created_message = self.message_provider.game_created(game)
-        return DiscordResponse.ephemeral_channel_message(game_created_message)
+        return DiscordResponse.ephemeral_channel_message(
+            content=game_created_message,
+            action_rows=[
+                ActionRow(
+                    components=[
+                        DiscordComponent.button(
+                            custom_id=ComponentIds.component_button_post_game_id(game_id),
+                            label="Post to channel",
+                        )
+                    ]
+                )
+            ]
+        )
 
     def normalize(self, game_id):
         game_id = re.sub(r"[^a-z0-9-]", "-", game_id.lower())

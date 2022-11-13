@@ -125,6 +125,14 @@ def register(config: Dict):
             "name": "list-games",
             "description": "List all guessing games",
             "default_member_permissions": f"{PERMISSION_ADMINISTRATOR}",
+            "options": [
+                {
+                    "name": "include-closed",
+                    "description": "Include closed games",
+                    "type": COMMAND_OPTION_TYPE_BOOLEAN,
+                    "required": False,
+                }
+            ]
         },
         # {
         #     "name": "guess",

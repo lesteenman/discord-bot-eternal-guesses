@@ -11,7 +11,7 @@ from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.discord.discord_response import ResponseType
 from eternal_guesses.routes.actions.action_game_guess import \
     ActionGameGuessRoute
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository
 
 pytestmark = pytest.mark.asyncio

@@ -2,10 +2,10 @@ import json
 from typing import Dict, Optional
 from unittest.mock import patch
 
-from eternal_guesses.api.api_authorizer import AuthorizationResult, \
+from eternal_guesses.app.api_authorizer import AuthorizationResult, \
     ApiAuthorizer
-from eternal_guesses.api.discord_event_handler import DiscordEventHandler
-from eternal_guesses.api.router import Router
+from eternal_guesses.app.discord_event_handler import DiscordEventHandler
+from eternal_guesses.app.router import Router
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.lambda_response import LambdaResponse
 
@@ -61,7 +61,7 @@ def test_unauthorized_request():
 
 
 @patch(
-    'eternal_guesses.api.discord_event_handler.discord_event.from_event',
+    'eternal_guesses.app.discord_event_handler.discord_event.from_event',
     autospec=True
 )
 def test_authorized_request(mock_from_event):
@@ -104,7 +104,7 @@ def test_authorized_request(mock_from_event):
 
 
 @patch(
-    'eternal_guesses.api.discord_event_handler.discord_event.from_event',
+    'eternal_guesses.app.discord_event_handler.discord_event.from_event',
     autospec=True
 )
 def test_discord_event(mock_from_event):

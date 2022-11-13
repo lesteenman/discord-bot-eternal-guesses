@@ -5,8 +5,8 @@ from loguru import logger
 
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.repositories.games_repository import GamesRepository
-from eternal_guesses.util.discord_messaging import DiscordMessaging
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.discord_messaging import DiscordMessaging
+from eternal_guesses.app.message_provider import MessageProvider
 
 
 class GamePostManager(ABC):

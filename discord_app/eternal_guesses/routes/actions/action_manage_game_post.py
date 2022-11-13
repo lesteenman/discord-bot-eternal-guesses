@@ -5,7 +5,7 @@ from eternal_guesses.model.discord.discord_component import ActionRow, \
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.component_ids import ComponentIds
+from eternal_guesses.app.component_ids import ComponentIds
 
 
 class ActionManageGamePostRoute(Route):
@@ -33,7 +33,7 @@ class ActionManageGamePostRoute(Route):
                 components=[
                     DiscordComponent.text_channel_select(
                         placeholder="select channel",
-                        custom_id=ComponentIds.component_select_post_game_id(
+                        custom_id=ComponentIds.selector_post_game_id(
                             game_id
                         )
                     )

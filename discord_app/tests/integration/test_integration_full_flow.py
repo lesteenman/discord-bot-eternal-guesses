@@ -1,11 +1,12 @@
 import json
 
-from eternal_guesses import event_handler
-from eternal_guesses.model.discord.discord_component import ComponentType
+from eternal_guesses.app.component_ids import ComponentIds
 from eternal_guesses.model.discord.discord_response import ResponseType
 from eternal_guesses.repositories.games_repository import GamesRepositoryImpl
-from eternal_guesses.util.component_ids import ComponentIds
-from tests.integration import discord_events
+from tests.integration.test_helpers import is_ephemeral_channel_message, \
+    select_string, has_selector_with_option, click_button_component, \
+    submit_modal, is_modal_with_id, send_command, response_has_button, select_channel, \
+    has_channel_selector, trigger_manage_game_post
 
 
 def test_integration_full_flow(eternal_guesses_table):
@@ -129,16 +130,20 @@ def test_integration_full_flow(eternal_guesses_table):
     assert one_more_user_id not in game.guesses
 
     # Close the game
-    # TODO
-
-    # Try to vote again
-    # TODO
+    close_game(
+        guild_id=guild_id,
+        game_id=game_id,
+    )
+    game = games_repository.get(guild_id, game_id)
+    assert game.closed
 
     # Reopen the game
-    # TODO
-
-    # Vote as another user after reopening
-    # TODO
+    reopen_game(
+        guild_id=guild_id,
+        game_id=game_id,
+    )
+    game = games_repository.get(guild_id, game_id)
+    assert not game.closed
 
 
 def guess_on_game(guild_id: int, game_id: str, guess: str, user_id: int):
@@ -188,10 +193,9 @@ def create_new_game(
     body = json.loads(response['body'])
     assert body['type'] == ResponseType.MODAL.value
 
-    submit_modal_event = discord_events.modal_submit_event(
+    submit_modal(
         guild_id=guild_id,
-        channel_id=channel_id,
-        modal_custom_id=ComponentIds.submit_create_modal_id,
+        modal_id=ComponentIds.submit_create_modal_id,
         inputs={
             ComponentIds.submit_create_input_game_id: game_id,
             ComponentIds.submit_create_input_title: title,
@@ -201,9 +205,6 @@ def create_new_game(
         }
     )
 
-    response = event_handler.handle(submit_modal_event)
-    assert response['statusCode'] == 200
-
 
 def post_channel_message(
     guild_id: int,
@@ -211,7 +212,18 @@ def post_channel_message(
     target_channel: int
 ):
     # Trigger the 'manage game' post
-    trigger_manage_game_post(game_id, guild_id)
+    body = trigger_manage_game_post(
+        game_id=game_id,
+        guild_id=guild_id,
+        is_closed=False,
+    )
+
+    # Verify the message has a 'post' button
+    assert body['type'] == ResponseType.CHANNEL_MESSAGE.value
+    assert response_has_button(
+        body,
+        component_custom_id=ComponentIds.component_button_post_game_id(game_id),
+    )
 
     # Click the 'post' button on the 'manage game' post
     body = click_button_component(
@@ -222,41 +234,63 @@ def post_channel_message(
     # Select the channel to post to
     assert has_channel_selector(
         body,
-        ComponentIds.component_select_post_game_id(game_id),
+        ComponentIds.selector_post_game_id(game_id),
     )
     select_channel(
         guild_id=guild_id,
-        component_custom_id=ComponentIds.component_select_post_game_id(game_id),
+        component_custom_id=ComponentIds.selector_post_game_id(game_id),
         values=[target_channel],
     )
 
 
-def trigger_manage_game_post(game_id, guild_id):
-    # List the games
-    response = send_command(
-        command_name="list-games",
-        guild_id=guild_id
-    )
-    body = json.loads(response['body'])
-    assert body['type'] == ResponseType.CHANNEL_MESSAGE.value
-
-    # Verify the game is one of the options
-    assert has_selector_with_option(
-        body=body,
-        component_custom_id=ComponentIds.component_select_game_to_manage,
-        value=game_id
-    )
-
-    # Select the game to manage
-    body = select_string(
+def close_game(guild_id, game_id):
+    # Trigger the 'manage game' post
+    body = trigger_manage_game_post(
+        game_id=game_id,
         guild_id=guild_id,
-        component_custom_id=ComponentIds.component_select_game_to_manage,
-        values=[game_id],
+        is_closed=False,
     )
+
+    # Verify the 'close' button is on the post
     assert body['type'] == ResponseType.CHANNEL_MESSAGE.value
     assert response_has_button(
         body,
-        component_custom_id=ComponentIds.component_button_post_game_id(game_id),
+        component_custom_id=ComponentIds.component_button_close_game_id(
+            game_id=game_id
+        ),
+    )
+
+    # Click the 'close' button on the 'manage game' post
+    click_button_component(
+        component_custom_id=ComponentIds.component_button_close_game_id(
+            game_id=game_id,
+        ),
+        guild_id=guild_id,
+    )
+
+
+def reopen_game(guild_id, game_id):
+    body = trigger_manage_game_post(
+        game_id=game_id,
+        guild_id=guild_id,
+        is_closed=True,
+    )
+
+    # Verify the 'reopen' button is on the post
+    assert body['type'] == ResponseType.CHANNEL_MESSAGE.value
+    assert response_has_button(
+        body,
+        component_custom_id=ComponentIds.component_button_reopen_game_id(
+            game_id=game_id
+        ),
+    )
+
+    # Click the 'reopen' button on the 'manage game' post
+    click_button_component(
+        component_custom_id=ComponentIds.component_button_reopen_game_id(
+            game_id=game_id,
+        ),
+        guild_id=guild_id,
     )
 
 
@@ -267,7 +301,11 @@ def change_guess(
     guessing_user_id: int,
 ):
     # Trigger the 'manage game' post
-    trigger_manage_game_post(game_id, guild_id)
+    trigger_manage_game_post(
+        game_id=game_id,
+        guild_id=guild_id,
+        is_closed=False,
+    )
 
     # Click the 'edit guess' button on the 'manage game' post
     body = click_button_component(
@@ -292,7 +330,7 @@ def change_guess(
         ),
         values=[guessing_user_id]
     )
-    assert is_modal(
+    assert is_modal_with_id(
         select_body,
         ComponentIds.edit_guess_modal_id(
             game_id=game_id,
@@ -321,7 +359,11 @@ def delete_guess(
     guessing_user_id: int,
 ):
     # Trigger the 'manage game' post
-    trigger_manage_game_post(game_id, guild_id)
+    trigger_manage_game_post(
+        game_id=game_id,
+        guild_id=guild_id,
+        is_closed=False,
+    )
 
     # Click the 'delete guess' button on the 'manage game' post
     body = click_button_component(
@@ -347,126 +389,3 @@ def delete_guess(
         values=[guessing_user_id]
     )
     assert is_ephemeral_channel_message(select_body)
-
-
-def send_command(command_name, guild_id):
-    response = event_handler.handle(
-        discord_events.application_command(
-            guild_id=guild_id,
-            command_name=command_name,
-        )
-    )
-    assert response['statusCode'] == 200
-    return response
-
-
-def select_string(guild_id, component_custom_id, values):
-    response = event_handler.handle(
-        discord_events.component_action(
-            guild_id=guild_id,
-            component_custom_id=component_custom_id,
-            component_type=ComponentType.STRING_SELECT,
-            values=values,
-        )
-    )
-    assert response['statusCode'] == 200
-    return json.loads(response['body'])
-
-
-def select_channel(guild_id, component_custom_id, values):
-    response = event_handler.handle(
-        discord_events.component_action(
-            guild_id=guild_id,
-            component_custom_id=component_custom_id,
-            component_type=ComponentType.CHANNEL_SELECT,
-            values=values,
-        )
-    )
-    assert response['statusCode'] == 200
-    return json.loads(response['body'])
-
-
-def click_button_component(
-    component_custom_id,
-    guild_id,
-    user_id=discord_events.DEFAULT_USER_ID
-):
-    event = discord_events.component_action(
-        guild_id=guild_id,
-        component_custom_id=component_custom_id,
-        component_type=ComponentType.BUTTON,
-        user_id=user_id,
-    )
-    response = event_handler.handle(event)
-    assert response['statusCode'] == 200
-    return json.loads(response['body'])
-
-
-def submit_modal(
-    guild_id,
-    modal_id,
-    inputs,
-    user_id=discord_events.DEFAULT_USER_ID
-):
-    response = event_handler.handle(
-        discord_events.modal_submit_event(
-            guild_id=guild_id,
-            user_id=user_id,
-            modal_custom_id=modal_id,
-            inputs=inputs,
-        ),
-    )
-    assert response['statusCode'] == 200
-    return json.loads(response['body'])
-
-
-def is_modal(body, modal_id):
-    if body['type'] != ResponseType.MODAL.value:
-        return False
-
-    return body['data']['custom_id'] == modal_id
-
-
-def is_ephemeral_channel_message(body):
-    # https://discord.com/developers/docs/resources/channel#message-object-message-flags
-    return (
-        body['type'] == ResponseType.CHANNEL_MESSAGE.value and
-        body['data']['flags'] & (1 << 6)
-    )
-
-
-def has_selector_with_option(body, component_custom_id, value):
-    for action_bar in body['data']['components']:
-        for component in action_bar['components']:
-            if (
-                component['type'] == ComponentType.STRING_SELECT.value and
-                component['custom_id'] == component_custom_id and
-                any([value == o['value'] for o in component['options']])
-            ):
-                return True
-
-    return False
-
-
-def has_channel_selector(body: dict, component_custom_id: str):
-    for action_bar in body['data']['components']:
-        for component in action_bar['components']:
-            if (
-                component['type'] == ComponentType.CHANNEL_SELECT.value and
-                component['custom_id'] == component_custom_id
-            ):
-                return True
-
-    return False
-
-
-def response_has_button(body, component_custom_id):
-    for action_bar in body['data']['components']:
-        for component in action_bar['components']:
-            if (
-                component['type'] == ComponentType.BUTTON.value and
-                component['custom_id'] == component_custom_id
-            ):
-                return True
-
-    assert False

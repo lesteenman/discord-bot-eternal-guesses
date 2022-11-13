@@ -1,20 +1,20 @@
+from eternal_guesses.app.component_ids import ComponentIds
+from eternal_guesses.app.message_provider import MessageProvider
 from eternal_guesses.model.discord.discord_component import ActionRow, \
     DiscordComponent, DiscordSelectOption
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
-from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.component_ids import ComponentIds
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.services.games_service import GamesService
 
 
 class ListGamesRoute(Route):
     def __init__(
         self,
-        games_repository: GamesRepository,
-        message_provider: MessageProvider
+        message_provider: MessageProvider,
+        games_service: GamesService,
     ):
-        self.games_repository = games_repository
+        self.games_service = games_service
         self.message_provider = message_provider
 
     @staticmethod
@@ -27,25 +27,29 @@ class ListGamesRoute(Route):
     async def call(self, event: DiscordEvent) -> DiscordResponse:
         guild_id = event.guild_id
 
-        all_games = self.games_repository.get_all(guild_id)
+        include_closed = False
+        if 'include-closed' in event.command.options:
+            include_closed = event.command.options['include-closed']
 
-        if 'closed' in event.command.options:
-            if event.command.options['closed']:
-                closed_games = list(filter(lambda g: g.closed, all_games))
-                message = self.message_provider.channel_manage_list_closed_games(
-                    closed_games
-                )
-            else:
-                open_games = list(filter(lambda g: not g.closed, all_games))
-                message = self.message_provider.channel_manage_list_open_games(
-                    open_games
-                )
+        games = self.games_service.list(
+            guild_id=guild_id,
+            include_closed=include_closed
+        )
+
+        lines = []
+        for game in games:
+            line = f"- {game.game_id}"
+            if game.closed:
+                line = f"{line} (closed)"
+
+            lines.append(line)
+
+        if include_closed:
+            message = "All games:\n"
         else:
-            message = self.message_provider.channel_manage_list_all_games(
-                all_games
-            )
+            message = "All open games:\n"
 
-        # TODO: Add a multi-selector to select a game to manage
+        message = message + "\n".join(sorted(lines))
 
         response = DiscordResponse.ephemeral_channel_message(message)
         response.action_rows = [
@@ -59,7 +63,7 @@ class ListGamesRoute(Route):
                                 label=game.game_id,
                                 value=game.game_id,
                                 description=None,
-                            ) for game in all_games
+                            ) for game in games
                         ]
                     )
                 ]

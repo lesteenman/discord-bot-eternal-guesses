@@ -6,7 +6,7 @@ from loguru import logger
 from nacl.signing import VerifyKey
 
 from eternal_guesses.model.lambda_response import LambdaResponse
-from eternal_guesses.util import app_config
+from eternal_guesses.app import app_config
 
 
 class AuthorizationResult(Enum):

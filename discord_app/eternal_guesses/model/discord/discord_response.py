@@ -103,12 +103,14 @@ class DiscordResponse(object):
     def ephemeral_channel_message(
         cls,
         content: str = None,
-        embed: discord.Embed = None
+        embed: discord.Embed = None,
+        action_rows: List[ActionRow] = None,
     ):
         response = DiscordResponse(
             response_type=ResponseType.CHANNEL_MESSAGE,
             content=content,
             embed=embed,
+            action_rows=action_rows,
         )
         response.is_ephemeral = True
 

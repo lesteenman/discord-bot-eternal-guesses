@@ -6,8 +6,8 @@ import pytest
 
 from eternal_guesses.model.data.channel_message import ChannelMessage
 from eternal_guesses.model.data.game import Game
-from eternal_guesses.util.game_post_manager import GamePostManagerImpl
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.game_post_manager import GamePostManagerImpl
+from eternal_guesses.app.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository, FakeDiscordMessaging
 
 pytestmark = pytest.mark.asyncio

@@ -6,8 +6,8 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.routes.route import Route
 from eternal_guesses.services.guesses_service import GuessesService
-from eternal_guesses.util.component_ids import ComponentIds
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.component_ids import ComponentIds
+from eternal_guesses.app.message_provider import MessageProvider
 
 
 class ActionSelectDeleteGuessRoute(Route):

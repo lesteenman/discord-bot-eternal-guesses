@@ -1,6 +1,6 @@
 from eternal_guesses.exceptions import GuessNotFoundError, GameNotFoundError
 from eternal_guesses.repositories.games_repository import GamesRepository
-from eternal_guesses.util.game_post_manager import GamePostManager
+from eternal_guesses.app.game_post_manager import GamePostManager
 
 
 class GuessesService:

@@ -1,14 +1,15 @@
 import typing
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 
+from eternal_guesses.app.message_provider import MessageProvider
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_command import DiscordCommand
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.routes.commands.list_games import ListGamesRoute
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.services.games_service import GamesService
 from tests.fakes import FakeGamesRepository
 
 pytestmark = pytest.mark.asyncio
@@ -20,12 +21,15 @@ async def test_list_all_without_closed_option():
     message_provider = MagicMock(MessageProvider)
     message_provider.channel_manage_list_all_games.return_value = list_games_message
 
-    open_game = Game(closed=False)
-    closed_game = Game(closed=True)
+    open_game = Game(game_id="open-game", closed=False)
+    closed_game = Game(game_id="closed-game", closed=True)
     games_repository = FakeGamesRepository([open_game, closed_game])
 
     route = ListGamesRoute(
-        games_repository=games_repository,
+        games_service=GamesService(
+            games_repository=games_repository,
+            game_post_manager=Mock(),
+        ),
         message_provider=message_provider,
     )
 
@@ -36,23 +40,18 @@ async def test_list_all_without_closed_option():
     response = await route.call(event)
 
     # Then
-    message_provider.channel_manage_list_all_games.assert_called()
-    used_games = message_provider.channel_manage_list_all_games.call_args.args[
-        0]
-    assert closed_game in used_games
-    assert open_game in used_games
-
     assert response.is_ephemeral
-    assert response.content == list_games_message
+    assert open_game.game_id in response.content
+    assert closed_game.game_id not in response.content
 
 
-async def test_list_all_closed_games():
+async def test_list_all_games_including_closed():
     # Given
     guild_id = 100
 
     # We have one open and one closed game
-    open_game = Game(closed=False)
-    closed_game = Game(closed=True)
+    open_game = Game(game_id="open-game", closed=False)
+    closed_game = Game(game_id="closed-game", closed=True)
     games_repository = FakeGamesRepository([open_game, closed_game])
 
     # And we have a mock message provider
@@ -61,65 +60,25 @@ async def test_list_all_closed_games():
     message_provider.channel_manage_list_closed_games.return_value = list_games_message
 
     route = ListGamesRoute(
-        games_repository=games_repository,
+        games_service=GamesService(
+            games_repository=games_repository,
+            game_post_manager=Mock(),
+        ),
         message_provider=message_provider,
     )
 
     # When we list only the closed games
     event = _make_event(
         guild_id=guild_id, options={
-            'closed': True
+            'include-closed': True
         }
     )
     response = await route.call(event)
 
     # Then: a message is sent based on only the closed games
-    list_games_call = message_provider.channel_manage_list_closed_games
-    list_games_call.assert_called()
-    used_games = list_games_call.call_args.args[0]
-    assert closed_game in used_games
-    assert open_game not in used_games
-
     assert response.is_ephemeral
-    assert response.content == list_games_message
-
-
-async def test_list_all_open_games():
-    # Given
-    guild_id = 100
-
-    # We have one open and one closed game
-    open_game = Game(closed=False)
-    closed_game = Game(closed=True)
-    games_repository = FakeGamesRepository([open_game, closed_game])
-
-    # And we have a mock message provider
-    list_games_message = "message listing all games, open and closed"
-    message_provider = MagicMock(MessageProvider)
-    message_provider.channel_manage_list_open_games.return_value = list_games_message
-
-    route = ListGamesRoute(
-        games_repository=games_repository,
-        message_provider=message_provider,
-    )
-
-    # When we list only the open games
-    event = _make_event(
-        guild_id=guild_id, options={
-            'closed': False
-        }
-    )
-    response = await route.call(event)
-
-    # Then: a message is sent based on only the open games
-    message_provider.channel_manage_list_open_games.assert_called()
-    used_games = message_provider.channel_manage_list_open_games.call_args.args[
-        0]
-    assert closed_game not in used_games
-    assert open_game in used_games
-
-    assert response.is_ephemeral
-    assert response.content == list_games_message
+    assert closed_game.game_id in response.content
+    assert open_game.game_id in response.content
 
 
 def _make_event(

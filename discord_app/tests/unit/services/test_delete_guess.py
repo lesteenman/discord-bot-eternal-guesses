@@ -6,8 +6,8 @@ from eternal_guesses.exceptions import GuessNotFoundError, GameNotFoundError
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.services.guesses_service import GuessesService
-from eternal_guesses.util.game_post_manager import GamePostManager
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.game_post_manager import GamePostManager
+from eternal_guesses.app.message_provider import MessageProvider
 from tests.fakes import FakeGamesRepository
 
 pytestmark = pytest.mark.asyncio

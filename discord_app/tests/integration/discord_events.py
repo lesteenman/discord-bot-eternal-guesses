@@ -87,6 +87,7 @@ def modal_submit_event(
 def application_command(
     command_name: str,
     guild_id: int,
+    options: dict = None,
     channel_id: int = DEFAULT_CHANNEL_ID,
     user_id: int = DEFAULT_USER_ID,
     member_nickname: str = DEFAULT_MEMBER_NICK,
@@ -107,6 +108,9 @@ def application_command(
         "id": "2001",
         "name": command_name,
     }
+
+    if options:
+        event_body['data']['options'] = options
 
     return _make_event(event_body)
 

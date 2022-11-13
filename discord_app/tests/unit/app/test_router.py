@@ -3,7 +3,7 @@ import pprint
 
 import pytest
 
-from eternal_guesses.api.router import RouterImpl
+from eternal_guesses.app.router import RouterImpl
 from eternal_guesses.model.discord.discord_component import ComponentType
 from eternal_guesses.model.discord.discord_component_action import \
     DiscordComponentAction

@@ -5,7 +5,7 @@ import discord
 from discord import AllowedMentions, Intents
 from loguru import logger
 
-from eternal_guesses.util import app_config
+from eternal_guesses.app import app_config
 
 
 class DiscordMessaging(ABC):

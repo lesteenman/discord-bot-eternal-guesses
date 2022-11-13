@@ -1,4 +1,4 @@
-from eternal_guesses.util import injector
+from eternal_guesses.app import injector
 
 discord_event_handler = None
 

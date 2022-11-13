@@ -9,14 +9,11 @@ import pytest
 from botocore.exceptions import ClientError
 from loguru import logger
 
-from eternal_guesses.api.api_authorizer import ApiAuthorizer, \
+from eternal_guesses.app.api_authorizer import ApiAuthorizer, \
     AuthorizationResult
+from eternal_guesses.app.discord_messaging import DiscordMessaging
 from eternal_guesses.model.discord.discord_member import DiscordMember
 from eternal_guesses.model.lambda_response import LambdaResponse
-# from eternal_guesses.repositories.dynamodb_models import EternalGuessesTable
-from eternal_guesses.util.discord_messaging import DiscordMessaging
-
-# from pynamodb.exceptions import TableError
 
 REGION = "eu-west-1"
 TABLE_NAME = "eternal-guesses-test"
@@ -117,7 +114,7 @@ def fixed_authorization_result(mocker):
 
     test_authorizer = PassingTestAuthorizer()
     mocker.patch(
-        'eternal_guesses.util.injector._api_authorizer',
+        'eternal_guesses.app.injector._api_authorizer',
         return_value=test_authorizer
     )
 
@@ -152,7 +149,7 @@ def stub_discord_messaging(mocker):
 
     silent_discord_messaging = SilentDiscordMessaging()
     mocker.patch(
-        'eternal_guesses.util.injector.DiscordMessagingImpl',
+        'eternal_guesses.app.injector.DiscordMessagingImpl',
         return_value=silent_discord_messaging
     )
 

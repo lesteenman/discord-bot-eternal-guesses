@@ -3,8 +3,8 @@ from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.repositories.games_repository import GamesRepository
 from eternal_guesses.routes.route import Route
-from eternal_guesses.util.discord_messaging import DiscordMessaging
-from eternal_guesses.util.message_provider import MessageProvider
+from eternal_guesses.app.discord_messaging import DiscordMessaging
+from eternal_guesses.app.message_provider import MessageProvider
 
 
 class CreateRoute(Route):

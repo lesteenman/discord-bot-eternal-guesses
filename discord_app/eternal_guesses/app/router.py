@@ -1,5 +1,7 @@
 from abc import ABC
 
+from loguru import logger
+
 from eternal_guesses.exceptions import BadRouteException, UnknownEventException
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.lambda_response import LambdaResponse
@@ -19,7 +21,11 @@ class RouterImpl(Router):
     async def route(self, event: DiscordEvent) -> LambdaResponse:
         for route in self.routes:
             if route.matches(event):
-                discord_response = await route.call(event)
+                try:
+                    discord_response = await route.call(event)
+                except Exception as e:
+                    logger.error(f"Error occurred in route {route}")
+                    raise e
 
                 if discord_response is None:
                     raise BadRouteException(
