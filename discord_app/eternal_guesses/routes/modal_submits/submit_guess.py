@@ -85,10 +85,10 @@ class SubmitGuessRoute(Route):
         if not self.is_numeric(guess):
             return False
 
-        if game.max_guess is not None and int(guess) > game.max_guess:
+        if game.max_guess is not None and int(guess) > int(game.max_guess):
             return False
 
-        if game.min_guess is not None and int(guess) < game.min_guess:
+        if game.min_guess is not None and int(guess) < int(game.min_guess):
             return False
 
         return True
