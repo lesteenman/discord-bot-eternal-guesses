@@ -12,13 +12,15 @@ from eternal_guesses.services.games_service import GamesService
 class SubmitEditGameRoute(Route, ABC):
     def __init__(
         self,
-        games_helper: GamesService,
+        games_service: GamesService,
         modal_prefix: str,
         input_id: str,
         game_update_func: typing.Callable[
-            [int, str, str], typing.Awaitable[typing.Any]]
+            [int, str, str], typing.Awaitable[typing.Any]],
+        is_numeric: bool,
     ):
-        self.games_helper = games_helper
+        self.is_numeric = is_numeric
+        self.games_helper = games_service
         self.modal_prefix = modal_prefix
         self.input_id = input_id
         self.game_update_func = game_update_func
@@ -37,6 +39,8 @@ class SubmitEditGameRoute(Route, ABC):
         ).group(1)
 
         new_value = event.modal_submit.inputs[self.input_id]
+        if self.is_numeric:
+            new_value = int(new_value)
 
         await self.game_update_func(event.guild_id, game_id, new_value)
 
@@ -48,38 +52,42 @@ class SubmitEditGameRoute(Route, ABC):
 class SubmitEditGameTitleRoute(SubmitEditGameRoute):
     def __init__(self, games_service: GamesService):
         super().__init__(
-            games_service,
-            ComponentIds.edit_game_title_modal_prefix,
-            ComponentIds.edit_game_title_input,
-            games_service.edit_title
+            games_service=games_service,
+            modal_prefix=ComponentIds.edit_game_title_modal_prefix,
+            input_id=ComponentIds.edit_game_title_input,
+            game_update_func=games_service.edit_title,
+            is_numeric=False,
         )
 
 
 class SubmitEditGameMinGuessRoute(SubmitEditGameRoute):
     def __init__(self, games_service: GamesService):
         super().__init__(
-            games_service,
-            ComponentIds.edit_game_min_guess_modal_prefix,
-            ComponentIds.edit_game_min_guess_input,
-            games_service.edit_min_guess
+            games_service=games_service,
+            modal_prefix=ComponentIds.edit_game_min_guess_modal_prefix,
+            input_id=ComponentIds.edit_game_min_guess_input,
+            game_update_func=games_service.edit_min_guess,
+            is_numeric=True,
         )
 
 
 class SubmitEditGameMaxGuessRoute(SubmitEditGameRoute):
     def __init__(self, games_service: GamesService):
         super().__init__(
-            games_service,
-            ComponentIds.edit_game_max_guess_modal_prefix,
-            ComponentIds.edit_game_max_guess_input,
-            games_service.edit_max_guess
+            games_service=games_service,
+            modal_prefix=ComponentIds.edit_game_max_guess_modal_prefix,
+            input_id=ComponentIds.edit_game_max_guess_input,
+            game_update_func=games_service.edit_max_guess,
+            is_numeric=True,
         )
 
 
 class SubmitEditGameDescriptionRoute(SubmitEditGameRoute):
     def __init__(self, games_service: GamesService):
         super().__init__(
-            games_service,
-            ComponentIds.edit_game_description_modal_prefix,
-            ComponentIds.edit_game_description_input,
-            games_service.edit_description
+            games_service=games_service,
+            modal_prefix=ComponentIds.edit_game_description_modal_prefix,
+            input_id=ComponentIds.edit_game_description_input,
+            game_update_func=games_service.edit_description,
+            is_numeric=False,
         )

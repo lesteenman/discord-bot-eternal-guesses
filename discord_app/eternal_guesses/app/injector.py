@@ -166,10 +166,5 @@ def _router() -> Router:
                 discord_messaging=discord_messaging,
                 message_provider=message_provider,
             ),
-            # GuessRoute(
-            #     games_repository=games_repository,
-            #     message_provider=message_provider,
-            #     game_post_manager=game_post_manager,
-            # ),
         ]
     )

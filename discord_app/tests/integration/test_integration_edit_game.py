@@ -40,10 +40,39 @@ def test_integration_edit_game(eternal_guesses_table):
     assert game.title == new_game_title
 
     # Edit the description
+    new_description = "New game description"
+    edit_description(
+        guild_id=guild_id,
+        game_id=game_id,
+        new_description=new_description,
+    )
+
+    game = games_repository.get(guild_id, game_id)
+    assert game.description == new_description
 
     # Edit the min guess
+    new_min_guess = "50"
+    edit_min_guess(
+        guild_id=guild_id,
+        game_id=game_id,
+        new_min_guess=new_min_guess,
+    )
+
+    game = games_repository.get(guild_id, game_id)
+    assert game.min_guess == int(new_min_guess)
 
     # Edit the max guess
+    new_max_guess = "246"
+    edit_max_guess(
+        guild_id=guild_id,
+        game_id=game_id,
+        new_max_guess=new_max_guess,
+    )
+
+    game = games_repository.get(guild_id, game_id)
+    assert game.max_guess == int(new_max_guess)
+
+    # Edit the min guess with a non-numeric value
 
 
 def trigger_manage_game_post(game_id: str, guild_id: int, is_closed: bool):
@@ -79,39 +108,95 @@ def trigger_manage_game_post(game_id: str, guild_id: int, is_closed: bool):
 
 
 def edit_title(guild_id, game_id, new_title):
+    button_id = ComponentIds.button_edit_game_title_id(game_id)
+    modal_id = ComponentIds.edit_game_title_modal_id(game_id)
+    input_id = ComponentIds.edit_game_title_input
+
+    edit_game_field(
+        guild_id=guild_id,
+        game_id=game_id,
+        button_id=button_id,
+        modal_id=modal_id,
+        modal_input_id=input_id,
+        new_value=new_title
+    )
+
+
+def edit_description(guild_id, game_id, new_description):
+    button_id = ComponentIds.button_edit_game_description_id(game_id)
+    modal_id = ComponentIds.edit_game_description_modal_id(game_id)
+    input_id = ComponentIds.edit_game_description_input
+
+    edit_game_field(
+        guild_id=guild_id,
+        game_id=game_id,
+        button_id=button_id,
+        modal_id=modal_id,
+        modal_input_id=input_id,
+        new_value=new_description
+    )
+
+
+def edit_min_guess(guild_id, game_id, new_min_guess):
+    button_id = ComponentIds.button_edit_game_min_guess_id(game_id)
+    modal_id = ComponentIds.edit_game_min_guess_modal_id(game_id)
+    modal_input_id = ComponentIds.edit_game_min_guess_input
+
+    edit_game_field(
+        guild_id,
+        game_id,
+        button_id,
+        modal_id,
+        modal_input_id,
+        new_min_guess
+    )
+
+
+def edit_max_guess(guild_id, game_id, new_max_guess):
+    button_id = ComponentIds.button_edit_game_max_guess_id(game_id)
+    modal_id = ComponentIds.edit_game_max_guess_modal_id(game_id)
+    modal_input_id = ComponentIds.edit_game_max_guess_input
+
+    edit_game_field(
+        guild_id,
+        game_id,
+        button_id,
+        modal_id,
+        modal_input_id,
+        new_max_guess
+    )
+
+
+def edit_game_field(
+    guild_id,
+    game_id,
+    button_id,
+    modal_id,
+    modal_input_id,
+    new_value
+):
     body = trigger_edit_game_post(game_id, guild_id)
 
-    # Click 'edit title'
-    assert response_has_button(
-        body,
-        ComponentIds.button_edit_game_title_id(game_id),
-    )
-
+    # Click 'edit min_guess'
+    assert response_has_button(body, button_id)
     body = click_button_component(
-        component_custom_id=ComponentIds.button_edit_game_title_id(
-            game_id
-        ),
+        component_custom_id=button_id,
         guild_id=guild_id
     )
-
-    # Submit the new title
-    modal_id = ComponentIds.edit_game_title_modal_id(game_id)
+    # Submit the new min_guess
     assert is_modal_with_id(
         body,
         modal_id=modal_id
     )
-
-    input_id = ComponentIds.edit_game_title_input
     assert has_input(
         body,
-        component_custom_id=input_id
+        component_custom_id=modal_input_id
     )
-
     submit_modal(
         guild_id=guild_id,
         modal_id=modal_id,
         inputs={
-            input_id: new_title
+            modal_input_id: new_value
         }
     )
 

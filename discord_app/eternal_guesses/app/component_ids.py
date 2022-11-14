@@ -131,5 +131,4 @@ class ComponentIds:
 
     @classmethod
     def button_edit_game_description_id(cls, game_id):
-
         return f"{cls.button_edit_game_description_prefix}{game_id}"

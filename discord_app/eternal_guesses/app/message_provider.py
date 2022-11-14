@@ -151,8 +151,6 @@ class MessageProviderImpl(MessageProvider):
 
         if game.closed:
             embed.set_footer(text="Game closed.")
-        # else:
-        #     embed.add_field(name="Place your guess", value=f"/guess game-id:{game.game_id} guess:1234")
 
         return embed
 
