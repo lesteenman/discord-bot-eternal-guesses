@@ -69,12 +69,6 @@ jobs:
       - name: Pytest
         run: cd discord_app && poetry run coverage run -m pytest && poetry run coverage xml
 
-      - name: Package discord-app
-        run: cd discord_app/ && npx serverless package && cd ../
-
-      - name: Package error-parser
-        run: cd error_parser_function/ && npx serverless package && cd ../
-
       - name: Synthesize CDK
         run: cd infra && poetry run npx cdk synth --output build/cdk.out
         env:

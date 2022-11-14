@@ -35,7 +35,6 @@ jobs:
         with:
           path: |
             discord_app/.venv
-            discord_app/.serverless/cache
           key: venv-${{ runner.os }}-${{ hashFiles('discord_app/poetry.lock') }}
 
       - name: Poetry install for discord_app/
@@ -79,24 +78,6 @@ jobs:
           path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
 
-      - name: Package discord-app
-        run: cd discord_app/ && npx serverless package && cd ../
-
-      - name: Create artifact for the discord-app bot
-        uses: actions/upload-artifact@v3
-        with:
-          name: discord-app-package
-          path: discord_app/.serverless/discord-app.zip
-
-      - name: Package error-parser
-        run: cd error_parser_function/ && npx serverless package && cd ../
-
-      - name: Create artifact for the error-parser
-        uses: actions/upload-artifact@v3
-        with:
-          name: error-parser-package
-          path: error_parser_function/.serverless/error-parser.zip
-
       - name: Create artifact for the infra module
         uses: actions/upload-artifact@v3
         with:
@@ -109,18 +90,6 @@ jobs:
     environment: Production
     steps:
       - uses: actions/checkout@v3
-
-      - name: Restore the artifact for the discord-app
-        uses: actions/download-artifact@v3
-        with:
-          name: discord-app-package
-          path: discord_app/.serverless/
-
-      - name: Restore the artifact for the error-parser
-        uses: actions/download-artifact@v3
-        with:
-          name: error-parser-package
-          path: error_parser_function/.serverless/
 
       - name: Install Python 3.8
         uses: actions/setup-python@v3
