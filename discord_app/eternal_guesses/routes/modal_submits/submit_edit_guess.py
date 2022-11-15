@@ -1,5 +1,7 @@
 import re
 
+from loguru import logger
+
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.routes.route import Route
@@ -34,6 +36,10 @@ class SubmitEditGuessRoute(Route):
         game_id = matches.group(1)
         member_id = int(matches.group(2))
         new_guess = modal_submit.inputs[ComponentIds.edit_guess_modal_input_id]
+
+        logger.info(f"guild_id={event.guild_id}, user {event.member.user_id} "
+                    f"editing guess by member {member_id} in "
+                    f"game {game_id} to guess '{new_guess}'")
 
         await self.guesses_service.edit(
             guild_id=event.guild_id,

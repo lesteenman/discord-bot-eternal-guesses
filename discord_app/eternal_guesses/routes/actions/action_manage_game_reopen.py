@@ -1,5 +1,7 @@
 import re
 
+from loguru import logger
+
 from eternal_guesses.app.component_ids import ComponentIds
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
@@ -34,6 +36,10 @@ class ActionManageGameReopenRoute(Route):
             fr"{ComponentIds.component_button_reopen_game_prefix}(.*)",
             event.component_action.component_custom_id
         ).group(1)
+
+        logger.info(f"guild {event.guild_id}, user {event.member.user_id}, "
+                    f"reopening game {game_id}")
+
         await self.games_service.reopen(
             guild_id=guild_id,
             game_id=game_id,

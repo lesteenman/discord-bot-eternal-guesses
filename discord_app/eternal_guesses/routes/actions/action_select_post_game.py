@@ -1,5 +1,7 @@
 import re
 
+from loguru import logger
+
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
 from eternal_guesses.routes.route import Route
@@ -36,6 +38,9 @@ class ActionSelectPostGameRoute(Route):
         ).group(1)
 
         channel_id = int(event.component_action.values[0])
+
+        logger.info(f"guild {event.guild_id}, user {event.member.user_id}, "
+                    f"posting game {game_id} to channel {channel_id}")
 
         await self.games_service.post(
             guild_id=event.guild_id,

@@ -1,6 +1,6 @@
+from eternal_guesses.app.game_post_manager import GamePostManager
 from eternal_guesses.exceptions import GuessNotFoundError, GameNotFoundError
 from eternal_guesses.repositories.games_repository import GamesRepository
-from eternal_guesses.app.game_post_manager import GamePostManager
 
 
 class GuessesService:
@@ -16,7 +16,7 @@ class GuessesService:
         game = self.games_repository.get(guild_id=guild_id, game_id=game_id)
 
         if game is None:
-            raise GameNotFoundError(f"could not foind game {game_id}")
+            raise GameNotFoundError(f"could not find game {game_id}")
 
         if member not in game.guesses:
             raise GuessNotFoundError(

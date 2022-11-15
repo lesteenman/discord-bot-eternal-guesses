@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 
+from loguru import logger
+
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.discord.discord_component import ActionRow, \
     DiscordComponent
@@ -37,6 +39,8 @@ class SubmitCreateRoute(Route):
         game_id = self.normalize(
             inputs[ComponentIds.submit_create_input_game_id]
         )
+
+        logger.info(f"user {event.member.user_id} creating game {game_id}")
 
         title = inputs[ComponentIds.submit_create_input_title]
         description = inputs[ComponentIds.submit_create_input_description]
