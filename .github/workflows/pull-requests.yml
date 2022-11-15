@@ -70,7 +70,7 @@ jobs:
         run: cd discord_app && poetry run coverage run -m pytest && poetry run coverage xml
 
       - name: Synthesize CDK
-        run: cd infra && poetry run npx cdk synth --output build/cdk.out
+        run: cd infra && poetry run npx cdk synth -v --output build/cdk.out
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
