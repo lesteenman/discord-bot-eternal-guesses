@@ -55,7 +55,7 @@ exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
 
 [[package]]
 name = "constructs"
-version = "10.1.157"
+version = "10.1.160"
 description = "A programming model for software-defined state"
 category = "main"
 optional = false
@@ -68,7 +68,7 @@ typeguard = ">=2.13.3,<2.14.0"
 
 [[package]]
 name = "exceptiongroup"
-version = "1.0.1"
+version = "1.0.3"
 description = "Backport of PEP 654 (exception groups)"
 category = "main"
 optional = false
@@ -163,12 +163,12 @@ cattrs = [
     {file = "cattrs-22.2.0.tar.gz", hash = "sha256:f0eed5642399423cf656e7b66ce92cdc5b963ecafd041d1b24d136fdde7acf6d"},
 ]
 constructs = [
-    {file = "constructs-10.1.157-py3-none-any.whl", hash = "sha256:94c630d5c1a6a1ae1ccd1826c8772e493e48f5b9046aedefd51099ee6d02e9af"},
-    {file = "constructs-10.1.157.tar.gz", hash = "sha256:9cf94616b74ce3d07ac9e2070a27d93b0ee15cf1c1b7c7532830ed099945154b"},
+    {file = "constructs-10.1.160-py3-none-any.whl", hash = "sha256:384175d57d80dd40503d2a596bb02d67e279eb327b993482a45eeabab4dce810"},
+    {file = "constructs-10.1.160.tar.gz", hash = "sha256:3af0fe656a5c6687e3b6ad8850346fe54973801c23c9401031a6b7d340a170b9"},
 ]
 exceptiongroup = [
-    {file = "exceptiongroup-1.0.1-py3-none-any.whl", hash = "sha256:4d6c0aa6dd825810941c792f53d7b8d71da26f5e5f84f20f9508e8f2d33b140a"},
-    {file = "exceptiongroup-1.0.1.tar.gz", hash = "sha256:73866f7f842ede6cb1daa42c4af078e2035e5f7607f0e2c762cc51bb31bbe7b2"},
+    {file = "exceptiongroup-1.0.3-py3-none-any.whl", hash = "sha256:6002703c7d31fb9950ddc8780840f67880c440895dc1151dd551553aa1246e4a"},
+    {file = "exceptiongroup-1.0.3.tar.gz", hash = "sha256:76cac74b5207c5997678a1c7105cb6f14213c9c63c096a38cfcb529d83ce5c02"},
 ]
 jsii = [
     {file = "jsii-1.71.0-py3-none-any.whl", hash = "sha256:0f081498d9f2a12850577caedebe604e4b6e98e7fb20c3bbcca05a5ab8bd0f0b"},
