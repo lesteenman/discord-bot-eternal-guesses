@@ -134,11 +134,8 @@ def get_config():
             return json.loads(config_file.read())
     except FileNotFoundError:
         return {
-            "DISCORD_PUBLIC_KEY": os.environ['DISCORD_PUBLIC_KEY'],
             "DISCORD_APPLICATION_ID": os.environ['DISCORD_APPLICATION_ID'],
             "DISCORD_BOT_TOKEN": os.environ['DISCORD_BOT_TOKEN'],
-            "NOTIFICATION_EMAIL": os.environ['NOTIFICATION_EMAIL'],
-            "APP_LOG_LEVEL": "INFO"
         }
 
 
