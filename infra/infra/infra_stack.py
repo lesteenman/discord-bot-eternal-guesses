@@ -1,14 +1,17 @@
-from aws_cdk import (core, aws_lambda, aws_apigateway, aws_dynamodb, aws_sns, aws_logs, aws_logs_destinations)
+from aws_cdk import (Stack, Duration, aws_lambda, aws_apigateway, aws_dynamodb,
+                     aws_sns, aws_logs, aws_logs_destinations)
 from aws_cdk.aws_dynamodb import ITable
-from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_lambda import Function, Runtime, Tracing
+from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from aws_cdk.aws_sns import Topic
+from constructs import Construct
 
 from infra import config
 
 
-class InfraStack(core.Stack):
+class InfraStack(Stack):
 
-    def __init__(self, scope: core.Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         self.config = config.config
@@ -46,14 +49,17 @@ class InfraStack(core.Stack):
             'LOGURU_LEVEL': self.config['APP_LOG_LEVEL'],
         }
 
-        return aws_lambda.Function(self, "DiscordAppFunction",
-                                   runtime=aws_lambda.Runtime.PYTHON_3_8,
-                                   timeout=core.Duration.seconds(10),
-                                   memory_size=1024,
-                                   code=aws_lambda.Code.from_asset("../discord_app/.serverless/discord-app.zip"),
-                                   handler="eternal_guesses.handler.handle_lambda",
-                                   environment=environment
-                                   )
+        return PythonFunction(
+            self, "DiscordAppFunction",
+            runtime=Runtime.PYTHON_3_9,
+            timeout=Duration.seconds(10),
+            memory_size=1024,
+            entry="../discord_app",
+            index="eternal_guesses/handler.py",
+            handler="handle_lambda",
+            environment=environment,
+            tracing=Tracing.ACTIVE,
+        )
 
     def grant_table_readwrite_permissions(self, dynamodb_table: ITable, function: Function):
         dynamodb_table.grant_full_access(function)
@@ -84,16 +90,16 @@ class InfraStack(core.Stack):
                              endpoint=email_address)
 
     def create_logs_handler(self, topic: Topic) -> Function:
-        code_asset = aws_lambda.Code.from_asset("../error_parser_function/.serverless/error-parser.zip")
         environment = {
             'snsARN': topic.topic_arn,
         }
 
-        logs_handler = aws_lambda.Function(self, "eternal-guess-logs-parser",
-                                           runtime=aws_lambda.Runtime.PYTHON_3_7,
-                                           code=code_asset,
-                                           handler="parser.lambda_handler",
-                                           environment=environment)
+        logs_handler = PythonFunction(self, "eternal-guess-logs-parser",
+                                      runtime=aws_lambda.Runtime.PYTHON_3_9,
+                                      entry="../error_parser_function",
+                                      index="parser.py",
+                                      handler="lambda_handler",
+                                      environment=environment)
 
         topic.grant_publish(logs_handler)
 

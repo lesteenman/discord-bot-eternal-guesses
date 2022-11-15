@@ -6,27 +6,22 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  test-code:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install Python 3.8
+      - name: Install Python 3.9
         uses: actions/setup-python@v3
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Install poetry
-        uses: snok/install-poetry@v1.3.1
+        uses: snok/install-poetry@v1.3.3
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14'
 
       - name: Load cached venv for discord-app
         id: cached-discord-app-poetry
@@ -41,16 +36,22 @@ jobs:
         run: cd discord_app && poetry install
         if: steps.cached-discord-app-poetry.outputs.cache-hit != 'true'
 
-      - name: Load cached venv for infra
-        id: cached-infra-poetry
-        uses: actions/cache@v3
-        with:
-          path: infra/.venv
-          key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
+      - name: Flake8
+        run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
 
-      - name: Poetry install for infra/
-        run: cd infra && poetry install
-        if: steps.cached-infra-poetry.outputs.cache-hit != 'true'
+      - name: Pytest
+        run: cd discord_app && poetry run coverage run -m pytest && poetry run coverage xml
+
+  test-synth:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
 
       - name: Load cached node modules
         id: cached-node-modules
@@ -63,20 +64,30 @@ jobs:
         run: npm install
         if: steps.cached-node-modules.outputs.cache-hit != 'true'
 
-      - name: Flake8
-        run: cd discord_app && poetry run flake8 --config ../.flake8 ./tests ./eternal_guesses ../error_parser_function ../infra
+      - name: Install Python 3.9
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
 
-      - name: Pytest
-        run: cd discord_app && poetry run coverage run -m pytest && poetry run coverage xml
+      - name: Install poetry
+        uses: snok/install-poetry@v1.3.3
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
 
-      - name: Package discord-app
-        run: cd discord_app/ && npx serverless package && cd ../
+      - name: Load cached venv for infra
+        id: cached-infra-poetry
+        uses: actions/cache@v3
+        with:
+          path: infra/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('infra/poetry.lock') }}
 
-      - name: Package error-parser
-        run: cd error_parser_function/ && npx serverless package && cd ../
+      - name: Poetry install for infra/
+        run: cd infra && poetry install
+        if: steps.cached-infra-poetry.outputs.cache-hit != 'true'
 
       - name: Synthesize CDK
-        run: cd infra && poetry run npx cdk synth --output build/cdk.out
+        run: cd infra && poetry run npx cdk synth -vvv --output build/cdk.out
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

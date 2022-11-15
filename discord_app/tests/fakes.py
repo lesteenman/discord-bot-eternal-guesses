@@ -2,27 +2,12 @@ from typing import List, Optional
 
 import discord
 
-from eternal_guesses.authorization.command_authorizer import CommandAuthorizer
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.guild_config import GuildConfig
-from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_member import DiscordMember
-from eternal_guesses.repositories.configs_repository import ConfigsRepository
 from eternal_guesses.repositories.games_repository import GamesRepository
-from eternal_guesses.util.discord_messaging import DiscordMessaging
-from eternal_guesses.util.message_provider import MessageProvider
-
-
-class FakeCommandAuthorizer(CommandAuthorizer):
-    def __init__(self, management: bool = True, admin: bool = True):
-        self.management = management
-        self.admin = admin
-
-    async def authorize_management_call(self, event: DiscordEvent) -> bool:
-        return self.management
-
-    async def authorize_admin_call(self, event: DiscordEvent) -> bool:
-        return self.admin
+from eternal_guesses.app.discord_messaging import DiscordMessaging
+from eternal_guesses.app.message_provider import MessageProvider
 
 
 class FakeNotFound(discord.NotFound):
@@ -39,34 +24,58 @@ class FakeDiscordMessaging(DiscordMessaging):
         self.created_channel_message_id = 0
         self.deleted_messages = []
 
-    async def send_channel_message(self, channel_id: int, text: str = None, embed: discord.Embed = None) -> int:
+    async def send_channel_message(
+        self,
+        channel_id: int,
+        text: str = None,
+        embed: discord.Embed = None,
+        view: discord.ui.View = None
+    ) -> int:
+        obj = {
+            'channel_id': channel_id
+        }
+
         if text is not None:
-            self.sent_channel_messages.append({'channel_id': channel_id, 'text': text})
-        elif embed is not None:
-            self.sent_channel_messages.append({'channel_id': channel_id, 'embed': embed})
+            obj['text'] = text
+
+        if embed is not None:
+            obj['embed'] = embed
+
+        if view is not None:
+            obj['view'] = view
+
+        self.sent_channel_messages.append(obj)
 
         return self.created_channel_message_id
 
-    async def update_channel_message(self, channel_id: int, message_id: int, text: str = None,
-                                     embed: discord.Embed = None):
+    async def update_channel_message(
+        self, channel_id: int, message_id: int, text: str = None,
+        embed: discord.Embed = None, view: discord.ui.View = None
+    ):
         if message_id in self.deleted_messages:
             raise FakeNotFound()
         else:
+            obj = {
+                'channel_id': channel_id,
+                'message_id': message_id,
+            }
+
             if text is not None:
-                self.updated_channel_messages.append({
-                    'channel_id': channel_id,
-                    'message_id': message_id,
-                    'text': text,
-                })
-            elif embed is not None:
-                self.updated_channel_messages.append({
-                    'channel_id': channel_id,
-                    'message_id': message_id,
-                    'embed': embed,
-                })
+                obj['text'] = text
+            if embed is not None:
+                obj['embed'] = embed
+            if view is not None:
+                obj['view'] = view
+
+            self.updated_channel_messages.append(obj)
 
     async def send_dm(self, member: DiscordMember, text: str):
-        self.sent_dms.append({'member': member, 'text': text})
+        self.sent_dms.append(
+            {
+                'member': member,
+                'text': text
+            }
+        )
 
     def raise_404_on_update_of_message(self, message_id):
         self.deleted_messages.append(message_id)
@@ -97,30 +106,31 @@ class FakeGamesRepository(GamesRepository):
         return self.games
 
 
-class FakeConfigsRepository(ConfigsRepository):
-    def __init__(self, guild_id: int, management_channels: List[int] = None, management_roles: List[int] = None):
-        if management_channels is None:
-            management_channels = []
-
-        if management_roles is None:
-            management_roles = []
-
-        self.guild_config = GuildConfig(
-            guild_id=guild_id,
-            management_channels=management_channels,
-            management_roles=management_roles
-        )
-
-    def get(self, guild_id: int) -> GuildConfig:
-        if guild_id == self.guild_config.guild_id:
-            return self.guild_config
-
-    def save(self, guild_config: GuildConfig):
-        if guild_config.guild_id == self.guild_config.guild_id:
-            self.guild_config = guild_config
-
-
 class FakeMessageProvider(MessageProvider):
+    def error_guess_not_found(self, game_id: str, member_id: int) -> str:
+        pass
+
+    def bot_missing_access(self) -> str:
+        pass
+
+    def guess_edited(self) -> str:
+        pass
+
+    def guess_deleted(self) -> str:
+        pass
+
+    def invalid_guess(self, game: Game) -> str:
+        pass
+
+    def modal_input_label_guess_value(self, game: Game) -> str:
+        pass
+
+    def modal_title_place_guess(self, game: Game) -> str:
+        pass
+
+    def game_post_view(self, game: Game) -> discord.ui.View:
+        pass
+
     def game_post_embed(self, game: Game) -> discord.Embed:
         pass
 
@@ -176,7 +186,11 @@ class FakeMessageProvider(MessageProvider):
         self.message = None
         self.expected_config = None
 
-    def expect_channel_admin_info_call(self, expected_config: GuildConfig, message: str):
+    def expect_channel_admin_info_call(
+        self,
+        expected_config: GuildConfig,
+        message: str
+    ):
         self.expected_config = expected_config
         self.message = message
 

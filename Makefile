@@ -20,6 +20,6 @@ build:
 	cd ${ERROR_PARSER_DIR} && serverless package
 
 deploy:
-	cd ${INFRA_DIR} && cdk deploy
+	cd ${INFRA_DIR} && poetry run cdk deploy
 
 all: test build deploy
