@@ -128,8 +128,17 @@ def register(config: Dict):
 
 
 def get_config():
-    with open('app_config.json', 'r') as config_file:
-        return json.loads(config_file.read())
+    try:
+        with open('app_config.json', 'r') as config_file:
+            return json.loads(config_file.read())
+    except FileNotFoundError:
+        return {
+            "DISCORD_PUBLIC_KEY": "$DISCORD_PUBLIC_KEY",
+            "DISCORD_APPLICATION_ID": "$DISCORD_APPLICATION_ID",
+            "DISCORD_BOT_TOKEN": "$DISCORD_BOT_TOKEN",
+            "NOTIFICATION_EMAIL": "$NOTIFICATION_EMAIL",
+            "APP_LOG_LEVEL": "INFO"
+        }
 
 
 if __name__ == "__main__":
