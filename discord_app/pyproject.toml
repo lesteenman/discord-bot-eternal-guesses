@@ -21,7 +21,7 @@ pytest-cov = "^4.0.0"
 localstack = "^1.2.0"
 opnieuw = "^1.1.0"
 coverage = { extras = ["toml"], version = "^6.3" }
-docker = "^5.0"
+docker = "^6.0"
 moto = "^4.0.9"
 
 [build-system]
