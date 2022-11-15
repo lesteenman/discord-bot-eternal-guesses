@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 
+from loguru import logger
+
 from eternal_guesses.model.data.game import Game
 from eternal_guesses.model.data.game_guess import GameGuess
 from eternal_guesses.model.discord.discord_event import DiscordEvent
@@ -42,6 +44,10 @@ class SubmitGuessRoute(Route):
             modal_id
         ).group(1)
         guess = event.modal_submit.inputs[ComponentIds.submit_guess_input_value]
+
+        logger.info(f"guild_id={guild_id}, user {user_id} "
+                    f"(nick='{user_nickname}') placed guess {guess} "
+                    f"on game {game_id}")
 
         game = self.games_repository.get(guild_id, game_id)
         if game is None:

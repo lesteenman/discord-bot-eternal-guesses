@@ -2,6 +2,8 @@ import re
 import typing
 from abc import ABC
 
+from loguru import logger
+
 from eternal_guesses.app.component_ids import ComponentIds
 from eternal_guesses.model.discord.discord_event import DiscordEvent
 from eternal_guesses.model.discord.discord_response import DiscordResponse
@@ -41,6 +43,10 @@ class SubmitEditGameRoute(Route, ABC):
         new_value = event.modal_submit.inputs[self.input_id]
         if self.is_numeric:
             new_value = int(new_value)
+
+        logger.info(f"guild_id={event.guild_id}, user {event.member.user_id} "
+                    f"editing game, field {self.input_id}, new value is"
+                    f"{new_value}")
 
         await self.game_update_func(event.guild_id, game_id, new_value)
 
