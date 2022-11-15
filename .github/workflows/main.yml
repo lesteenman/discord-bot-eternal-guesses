@@ -88,6 +88,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: Production
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v3
 
@@ -125,13 +128,15 @@ jobs:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE }}
+          role-session-name: github-actions-deployment
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Deploy CDK
         run: cd infra && poetry run npx cdk deploy --app ./build/cdk.out --require-approval never
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_TARGET_ACCOUNT: ${{ secrets.AWS_TARGET_ACCOUNT }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   release:
     needs: deploy
