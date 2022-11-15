@@ -138,6 +138,9 @@ jobs:
       - name: Deploy CDK
         run: cd infra && poetry run npx cdk deploy --app ./build/cdk.out --require-approval never
 
+      - name: Poetry install for /
+        run: poetry install
+
       - name: Update commands
         run: poetry run ./bin/register_commands.py
 
