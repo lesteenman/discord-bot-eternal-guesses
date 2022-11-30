@@ -166,6 +166,35 @@ async def test_create_with_min_max():
     assert response.content == GAME_CREATED_MESSAGE
 
 
+@pytest.mark.parametrize("min_guess,max_guess", [(10, ""), ("", 10)])
+async def test_create_with_only_min_or_max(min_guess, max_guess):
+    # Given
+    guild_id = 1
+    game_id = 'game-with-min-max'
+
+    games_repository = FakeGamesRepository()
+
+    event = _make_event(
+        guild_id=guild_id,
+        game_id=game_id,
+        min_guess=min_guess,
+        max_guess=max_guess,
+    )
+
+    # When
+    create_route = _route(games_repository=games_repository)
+    response = await create_route.call(event)
+
+    # Then
+    saved_game = games_repository.get(guild_id, game_id)
+
+    assert saved_game.min_guess == min_guess
+    assert saved_game.max_guess == max_guess
+
+    assert response.is_ephemeral
+    assert response.content == GAME_CREATED_MESSAGE
+
+
 @pytest.mark.parametrize(
     "entered_game_id,expected_game_id", [
         ('identifier', 'identifier'),

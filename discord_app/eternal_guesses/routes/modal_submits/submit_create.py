@@ -46,11 +46,11 @@ class SubmitCreateRoute(Route):
         description = inputs[ComponentIds.submit_create_input_description]
 
         min_guess = inputs[ComponentIds.submit_create_input_min_value]
-        if min_guess is not None:
+        if min_guess or min_guess == 0:
             min_guess = int(min_guess)
 
         max_guess = inputs[ComponentIds.submit_create_input_max_value]
-        if max_guess is not None:
+        if max_guess or max_guess == 0:
             max_guess = int(max_guess)
 
         existing_game = self.games_repository.get(guild_id, game_id)
