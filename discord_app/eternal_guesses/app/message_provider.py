@@ -143,6 +143,15 @@ class MessageProviderImpl(MessageProvider):
             guesses = "None yet!"
         description = f"{description}{guesses}"
 
+        if game.min_guess or game.max_guess:
+            minmax = []
+            if game.min_guess:
+                minmax.append(f"_minimum guess: {game.min_guess}_")
+            if game.max_guess:
+                minmax.append(f"_maximum guess: {game.max_guess}_")
+            minmax = "\n".join(minmax)
+            description = f"{description}\n\n{minmax}"
+
         embed = discord.Embed(
             title=title,
             description=description,

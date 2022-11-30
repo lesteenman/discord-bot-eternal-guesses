@@ -70,13 +70,15 @@ class DiscordMessagingImpl(DiscordMessaging):
 
             message = await text_channel.fetch_message(message_id)
 
-            await message.edit(
+            edited_message = await message.edit(
                 content=text,
                 embed=embed,
                 allowed_mentions=AllowedMentions.none(),
                 view=view
             )
-            logger.debug("updated channel message")
+            logger.debug(f"updated channel message {message_id} in channel"
+                         f" {channel_id}")
+            logger.debug(f"new text is:\n{edited_message}")
 
     @contextlib.asynccontextmanager
     async def _discord_client(self) -> discord.Client:
