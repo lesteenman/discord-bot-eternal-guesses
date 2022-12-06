@@ -1,6 +1,7 @@
 import re
 
 import discord
+from loguru import logger
 
 from eternal_guesses.model.discord.discord_component import ActionRow, \
     DiscordComponent, DiscordSelectOption, ComponentType
@@ -22,8 +23,7 @@ class ActionManageGameEditGuessRoute(Route):
         self.games_repository = games_repository
         self.message_provider = message_provider
 
-    @staticmethod
-    def matches(event: DiscordEvent) -> bool:
+    def matches(self, event: DiscordEvent) -> bool:
         return (
             event.component_action is not None and
             event.component_action.component_type == ComponentType.BUTTON and
@@ -40,6 +40,8 @@ class ActionManageGameEditGuessRoute(Route):
             fr"{ComponentIds.component_button_edit_guess_prefix}(.*)",
             custom_id
         ).group(1)
+
+        logger.info(f"editing a guess for game_id={game_id}, guild_id={guild_id}")
 
         game = self.games_repository.get(guild_id, game_id)
 
@@ -76,6 +78,8 @@ class ActionManageGameEditGuessRoute(Route):
                 ]
             )
         ]
+
+        logger.debug(f"response = {response}")
 
         return response
 
