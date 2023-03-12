@@ -130,7 +130,7 @@ jobs:
           APP_LOG_LEVEL: ${{ secrets.APP_LOG_LEVEL }}
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE }}
           role-session-name: github-actions-deployment
