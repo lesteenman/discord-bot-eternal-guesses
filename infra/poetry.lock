@@ -55,14 +55,14 @@ exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
 
 [[package]]
 name = "constructs"
-version = "10.1.160"
+version = "10.3.0"
 description = "A programming model for software-defined state"
 category = "main"
 optional = false
 python-versions = "~=3.7"
 
 [package.dependencies]
-jsii = ">=1.71.0,<2.0.0"
+jsii = ">=1.90.0,<2.0.0"
 publication = ">=0.0.3"
 typeguard = ">=2.13.3,<2.14.0"
 
@@ -78,20 +78,36 @@ python-versions = ">=3.7"
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "importlib-resources"
+version = "6.1.1"
+description = "Read resources from Python packages"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
+
+[package.extras]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff", "zipp (>=3.17)"]
+
+[[package]]
 name = "jsii"
-version = "1.71.0"
+version = "1.92.0"
 description = "Python client for jsii runtime"
 category = "main"
 optional = false
-python-versions = "~=3.7"
+python-versions = "~=3.8"
 
 [package.dependencies]
-attrs = ">=21.2,<23.0"
-cattrs = ">=1.8,<22.3"
+attrs = ">=21.2,<24.0"
+cattrs = ">=1.8,<23.2"
+importlib-resources = ">=5.2.0"
 publication = ">=0.0.3"
 python-dateutil = "*"
 typeguard = ">=2.13.3,<2.14.0"
-typing-extensions = ">=3.7,<5.0"
+typing-extensions = ">=3.8,<5.0"
 
 [[package]]
 name = "publication"
@@ -140,6 +156,18 @@ category = "main"
 optional = false
 python-versions = ">=3.7"
 
+[[package]]
+name = "zipp"
+version = "3.17.0"
+description = "Backport of pathlib-compatible object wrapper for zip files"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.extras]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
@@ -163,16 +191,20 @@ cattrs = [
     {file = "cattrs-22.2.0.tar.gz", hash = "sha256:f0eed5642399423cf656e7b66ce92cdc5b963ecafd041d1b24d136fdde7acf6d"},
 ]
 constructs = [
-    {file = "constructs-10.1.160-py3-none-any.whl", hash = "sha256:384175d57d80dd40503d2a596bb02d67e279eb327b993482a45eeabab4dce810"},
-    {file = "constructs-10.1.160.tar.gz", hash = "sha256:3af0fe656a5c6687e3b6ad8850346fe54973801c23c9401031a6b7d340a170b9"},
+    {file = "constructs-10.3.0-py3-none-any.whl", hash = "sha256:2972f514837565ff5b09171cfba50c0159dfa75ee86a42921ea8c86f2941b3d2"},
+    {file = "constructs-10.3.0.tar.gz", hash = "sha256:518551135ec236f9cc6b86500f4fbbe83b803ccdc6c2cb7684e0b7c4d234e7b1"},
 ]
 exceptiongroup = [
     {file = "exceptiongroup-1.0.3-py3-none-any.whl", hash = "sha256:6002703c7d31fb9950ddc8780840f67880c440895dc1151dd551553aa1246e4a"},
     {file = "exceptiongroup-1.0.3.tar.gz", hash = "sha256:76cac74b5207c5997678a1c7105cb6f14213c9c63c096a38cfcb529d83ce5c02"},
 ]
+importlib-resources = [
+    {file = "importlib_resources-6.1.1-py3-none-any.whl", hash = "sha256:e8bf90d8213b486f428c9c39714b920041cb02c184686a3dee24905aaa8105d6"},
+    {file = "importlib_resources-6.1.1.tar.gz", hash = "sha256:3893a00122eafde6894c59914446a512f728a0c1a45f9bb9b63721b6bacf0b4a"},
+]
 jsii = [
-    {file = "jsii-1.71.0-py3-none-any.whl", hash = "sha256:0f081498d9f2a12850577caedebe604e4b6e98e7fb20c3bbcca05a5ab8bd0f0b"},
-    {file = "jsii-1.71.0.tar.gz", hash = "sha256:e8fedaf077c192917f1d43100b2bbb5d107e4393b713f8ca2814d7653d64a026"},
+    {file = "jsii-1.92.0-py3-none-any.whl", hash = "sha256:30deaea011e146e1d4c0dbb35bd7effd4d292cef676052e5672a825fc1aaaebf"},
+    {file = "jsii-1.92.0.tar.gz", hash = "sha256:2b5205c0fec87e1a9a9f283f60577ad172d7124bb614b8cdadc963306e1ac75f"},
 ]
 publication = [
     {file = "publication-0.0.3-py2.py3-none-any.whl", hash = "sha256:0248885351febc11d8a1098d5c8e3ab2dabcf3e8c0c96db1e17ecd12b53afbe6"},
@@ -193,4 +225,8 @@ typeguard = [
 typing-extensions = [
     {file = "typing_extensions-4.4.0-py3-none-any.whl", hash = "sha256:16fa4864408f655d35ec496218b85f79b3437c829e93320c7c9215ccfd92489e"},
     {file = "typing_extensions-4.4.0.tar.gz", hash = "sha256:1511434bb92bf8dd198c12b1cc812e800d4181cfcb867674e0f8279cc93087aa"},
+]
+zipp = [
+    {file = "zipp-3.17.0-py3-none-any.whl", hash = "sha256:0e923e726174922dce09c53c59ad483ff7bbb8e572e00c7f7c46b88556409f31"},
+    {file = "zipp-3.17.0.tar.gz", hash = "sha256:84e64a1c28cf7e91ed2078bb8cc8c259cb19b76942096c8d7b84947690cabaf0"},
 ]
